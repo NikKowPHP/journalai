@@ -7,7 +7,7 @@
 ### 1. Epic 1 & 8 - Onboarding & Account Management Components
 **Associated Pages:** `/dashboard` (for first-time users), `/settings`
 
--   [ ] **Task 1.1: Create Onboarding Wizard Component (`OnboardingWizard.tsx`)**
+-   [x] **Task 1.1: Create Onboarding Wizard Component (`极OnboardingWizard.tsx`)**
     *   **File:** `src/components/OnboardingWizard.tsx`
     *   **Action:** Create a multi-step modal component. Use `shadcn/ui`'s `Dialog`, `Input`, `Select`, and `Button` components.
     *   **Steps:**
