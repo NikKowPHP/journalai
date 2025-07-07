@@ -27,3 +27,35 @@ This document outlines the high-level plan for building the static UI for Lingua
 **Goal:** Perform final code cleanup, add developer documentation, and prepare the static codebase for handoff to the backend integration phase.
 
 *   [Detailed Steps](./docs/phases/phase-d-finalization-and-handoff.md)
+
+---
+### `[ ]` Phase E: Database & Schema Implementation
+**Goal:** Establish the application's data layer by creating the database schema, running the initial migration, and seeding it with necessary initial data.
+
+*   [Detailed Steps](./docs/phases/phase-e-database-and-schema.md)
+
+---
+### `[ ]` Phase F: API Route & Backend Logic Implementation
+**Goal:** Build all the backend API routes as defined in the application epics. This involves creating the logic for CRUD operations, AI interactions, and business rules.
+
+*   [Detailed Steps](./docs/phases/phase-f-api-implementation.md)
+
+---
+### `[ ]` Phase G: Frontend Integration with React Query
+**Goal:** Replace all mock data in the frontend components with live data from the newly created API. This involves using `@tanstack/react-query` for data fetching, caching, and mutations.
+
+*   [Detailed Steps](./docs/phases/phase-g-frontend-integration.md)
+
+---
+### `[ ]` Phase H: External Service Integration (Stripe)
+**Goal:** Implement the complete billing and subscription lifecycle by integrating with the Stripe API, including checkout sessions, the customer portal, and webhook handling.
+
+*   [Detailed Steps](./docs/phases/phase-h-stripe-integration.md)
+
+---
+### `[ ]` Phase I: Final Testing & Deployment Preparation
+**Goal:** Conduct end-to-end testing of the fully integrated application, configure production environment variables, and prepare the project for its first deployment.
+
+*   [Detailed Steps](./docs/phases/phase-i-testing-and-deployment.md)
+
+---
