@@ -5,7 +5,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ## **The Plan**
 
-### `[ ]` Phase A: Project Setup & UI Scaffolding
+### `[x]` Phase A: Project Setup & UI Scaffolding
 **Goal:** Execute all initial project setup, dependency installation, core layout adaptation, and scaffold all new LinguaScribe pages. The output will be a fully prepared codebase ready for feature component implementation.
 
 *   [Detailed Steps](./docs/phases/phase-a-setup-and-scaffolding.md)

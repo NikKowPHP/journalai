@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PrepAI - Interview Preparation",
-  description: "AI-driven interview preparation platform",
+  title: "LinguaScribe - Language Learning",
+  description: "AI-powered language learning through writing",
 };
 
 import { Providers } from '@/providers';
@@ -35,11 +35,15 @@ export default function RootLayout({
         <Providers>
           <nav className="bg-gray-800 text-white p-4">
             <div className="container mx-auto flex justify-between items-center">
-              <div className="text-lg font-bold">PrepAI</div>
-              <div className="space-x-4">
-                <Link href="/dashboard" className="hover:underline">Home</Link>
-                <Link href="/questions" className="hover:underline">Questions</Link>
-                <Link href="/generate" className="hover:underline">Generate</Link>
+              <Link href="/" className="text-lg font-bold">LinguaScribe</Link>
+              <div className="space-x-4 flex items-center">
+                {/* New LinguaScribe Navigation */}
+                <Link href="/dashboard" className="hover:underline">Dashboard</Link>
+                <Link href="/journal" className="hover:underline">Journal</Link>
+                <Link href="/study" className="hover:underline">Study Deck</Link>
+                <Link href="/analytics" className="hover:underline">Analytics</Link>
+                
+                {/* This component correctly handles login/logout links */}
                 <AuthLinks />
               </div>
             </div>

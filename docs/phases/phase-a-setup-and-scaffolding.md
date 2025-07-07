@@ -104,7 +104,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
 
 ### 3. Authentication Flow Verification
 
--   [ ] **Task 3.1: Verify Existence of Auth Pages & Components:** This is a verification step. Confirm that the following files and directories exist, as they are essential for the next steps. No code changes are needed.
+-   [x] **Task 3.1: Verify Existence of Auth Pages & Components:** This is a verification step. Confirm that the following files and directories exist, as they are essential for the next steps. No code changes are needed.
     -   `src/app/login/`
     -   `src/app/signup/`
     -   `src/app/forgot-password/`
@@ -114,7 +114,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
 
 ### 4. LinguaScribe Page Scaffolding
 
--   [ ] **Task 4.1: Create Dashboard Page:** Create the file `src/app/dashboard/page.tsx` with placeholder content.
+-   [x] **Task 4.1: Create Dashboard Page:** Create the file `src/app/dashboard/page.tsx` with placeholder content.
     *   **Command:** `mkdir -p src/app/dashboard`
     *   **File:** `src/app/dashboard/page.tsx`
     *   **Content:**
@@ -131,7 +131,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
         }
         ```
 
--   [ ] **Task 4.2: Create Journal Page:** Create the file `src/app/journal/page.tsx` with placeholder content.
+-   [x] **Task 极4.2: Create Journal Page:** Create the file `src/app/journal/page.tsx` with placeholder content.
     *   **Command:** `mkdir -p src/app/journal`
     *   **File:** `src/app/journal/page.tsx`
     *   **Content:**
@@ -148,7 +148,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
         }
         ```
 
--   [ ] **Task 4.3: Create Study Deck Page:** Create the file `src/app/study/page.tsx` with placeholder content.
+-   [x] **Task 4.3: Create Study Deck Page:** Create the file `src/app/study/page.tsx` with placeholder content.
     *   **Command:** `mkdir -p src/app/study`
     *   **File:** `src/app/study/page.tsx`
     *   **Content:**
@@ -165,7 +165,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
         }
         ```
 
--   [ ] **Task 4.4: Create Analytics Page:** Create the file `src/app/analytics/page.tsx` with placeholder content.
+-   [x] **Task 4.4: Create Analytics Page:** Create the file `src/app/analytics/page.tsx` with placeholder content.
     *   **Command:** `mkdir -p src/app/analytics`
     *   **File:** `src/app/analytics/page.tsx`
     *   **Content:**
@@ -182,7 +182,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
         }
         ```
 
--   [ ] **Task 4.5: Create Settings Page:** Create the file `src/app/settings/page.tsx` with placeholder content.
+-   [x] **Task 4.5: Create Settings Page:** Create the file `src/app/settings/page.tsx` with placeholder content.
     *   **Command:** `mkdir -p src/app/settings`
     *   **File:** `src/app/settings/page.tsx`
     *   **Content:**
