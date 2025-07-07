@@ -113,3 +113,24 @@
         -   A search input for "Find user by email".
         -   A mock data table (use `<table>` or `shadcn/ui`'s upcoming `Table` component) displaying user information (Email, Subscription Tier, Status).
     *   **Integration:** Create a new page `src/app/admin/page.tsx` and place this component inside.
+
+
+### 7. Epic 8 & Compliance Components
+**Associated Pages:** `/settings`, new `/privacy` and `/cookies` pages
+
+-   [ ] **Task 7.1: Add "Export Data" Button to Profile Form**
+    *   **File:** `src/components/ProfileForm.tsx`
+    *   **Action:** Add a new button to the form with the text "Export My Data". It will be non-functional.
+
+-   [ ] **Task 7.2: Create Static Compliance Pages**
+    *   **Action:** Create placeholder pages for Privacy Policy and Cookie Policy.
+    *   **Files & Content:**
+        -   `src/app/privacy/page.tsx`: Create a page with the title "Privacy Policy" and lorem ipsum text.
+        -   `src/app/cookies/page.tsx`: Create a page with the title "Cookie Policy" and lorem ipsum text.
+    *   **Integration:** Add links to these new pages in the application footer within `src/app/layout.tsx`.
+
+-   [ ] **Task 7.3: Create Cookie Consent Banner Component (`CookieBanner.tsx`)**
+    *   **File:** `src/components/CookieBanner.tsx`
+    *   **Action:** Create a simple, fixed-position banner at the bottom of the screen with a short message about cookies, an "Accept" button, and a "Decline" button.
+    *   **Integration:** Add this component to the root `src/app/layout.tsx` so it appears on all pages.
+    
