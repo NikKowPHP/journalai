@@ -107,7 +107,7 @@
     *   **Action:** Build a component that displays the three-tiered pricing plan (Free, Pro, Expert) as defined in the v7 documentation. Use `shadcn/ui`'s `Card` and `Button` components. Each tier should list its key features and have a call-to-action button like "Get Started" or "Upgrade to Pro".
     *   **Integration:** Add this component to a new page: `src/app/pricing/page.tsx`. Also, add a link to this page in the user settings page (`/settings`).
 
--   [ ] **Task 6.2: Create Admin Dashboard UI (`AdminDashboard.tsx`)**
+-   [x] **Task 6.2: Create Admin Dashboard UI (`AdminDashboard.tsx`)**
     *   **File:** `src/components/AdminDashboard.tsx`
     *   **Action:** Create a basic UI for the admin panel. It should include:
         -   A search input for "Find user by email".
