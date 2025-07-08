@@ -91,7 +91,7 @@
     *   **File:** `src/components/ProficiencyChart.tsx`
     *   **Action:** Adapt the existing `AnalyticsCharts.tsx` (or create a new component) to be a line chart showing "Proficiency Over Time". Use `recharts`. Populate it with mock data (e.g., an array of objects with `date` and `score` properties).
 
--   [ ] **Task 5.2: Create Sub-skill Scores Component (`SubskillScores.tsx`)**
+-   [x] **Task 5.2: Create Sub-skill Scores Component (`SubskillScores.tsx`)**
     *   **File:** `src/components/SubskillScores.tsx`
     *   **Action:** Create a radar chart or bar chart component using `recharts` to display mock scores for "Grammar", "Vocabulary", "Phrasing", and "Style".
 
