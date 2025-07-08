@@ -122,7 +122,7 @@
     *   **File:** `src/components/ProfileForm.tsx`
     *   **Action:** Add a new button to the form with the text "Export My Data". It will be non-functional.
 
--   [ ] **Task 7.2: Create Static Compliance Pages**
+-   [x] **Task 7.2: Create Static Compliance Pages**
     *   **Action:** Create placeholder pages for Privacy Policy and Cookie Policy.
     *   **Files & Content:**
         -   `src/app/privacy/page.tsx`: Create a page with the title "Privacy Policy" and lorem ipsum text.

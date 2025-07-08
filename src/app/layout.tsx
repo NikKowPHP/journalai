@@ -49,6 +49,16 @@ export default function RootLayout({
             </div>
           </nav>
           {children}
+          <footer className="border-t mt-8 py-4">
+            <div className="container mx-auto px-4 text-sm text-muted-foreground flex gap-4">
+              <Link href="/privacy" className="hover:text-foreground transition-colors">
+                Privacy Policy
+              </Link>
+              <Link href="/cookies" className="hover:text-foreground transition-colors">
+                Cookie Policy
+              </Link>
+            </div>
+          </footer>
         </Providers>
       </body>
     </html>
