@@ -8,13 +8,17 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-const mockUsers = [
-  { email: "user1@example.com", tier: "Pro", status: "Active" },
-  { email: "user2@example.com", tier: "Free", status: "Inactive" },
-  { email: "user3@example.com", tier: "Expert", status: "Active" },
-]
+interface User {
+  email: string
+  tier: string
+  status: string
+}
 
-export function AdminDashboard() {
+interface AdminDashboardProps {
+  users: User[]
+}
+
+export function AdminDashboard({ users }: AdminDashboardProps) {
   return (
     <div className="space-y-4">
       <Input placeholder="Search users by email..." />
@@ -27,7 +31,7 @@ export function AdminDashboard() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockUsers.map((user) => (
+          {users.map((user) => (
             <TableRow key={user.email}>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.tier}</TableCell>
