@@ -181,16 +181,16 @@
 
 ### 5. Integrate Settings and Account Management
 
-- [ ] **Task G.5.1: Fetch User Profile Data.**
+- [x] **Task G.5.1: Fetch User Profile Data.**
 
   - **File:** `src/app/settings/page.tsx`
   - **Action:** Use `useQuery` to fetch the current user's profile data from a new API endpoint (e.g., `/api/user/profile`). Populate the `ProfileForm` with this data.
 
-- [ ] **Task G.5.2: Implement Profile Update Mutation.**
+- [x] **Task G.5.2: Implement Profile Update Mutation.**
 
   - **File:** `src/components/ProfileForm.tsx`
   - **Action:** Use `useMutation` to connect the form's "Save" button to a `PUT /api/user/profile` endpoint to update user details. Show a success toast or message on completion.
 
-- [ ] **Task G.5.3: Implement Account Deletion Mutation.**
+- [x] **Task G.5.3: Implement Account Deletion Mutation.**
   - **File:** `src/components/AccountDeletion.tsx`
   - **Action:** Use `useMutation` to connect the "Delete Account" confirmation button to a `DELETE /api/user` endpoint. On success, log the user out and redirect them to the homepage.

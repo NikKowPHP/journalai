@@ -1,3 +1,5 @@
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,12 +14,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export function AccountDeletion() {
+  const router = useRouter();
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/user', {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete account');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      router.push('/');
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    deleteAccountMutation.mutate();
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="destructive">Delete Account</Button>
       </DialogTrigger>
       <DialogContent>
+        <form onSubmit={handleSubmit}>
         <DialogHeader>
           <DialogTitle>Confirm Account Deletion</DialogTitle>
           <DialogDescription>
@@ -36,10 +59,15 @@ export function AccountDeletion() {
           </div>
         </div>
         <DialogFooter>
-          <Button type="submit" variant="destructive">
-            Delete Account
+          <Button
+            type="submit"
+            variant="destructive"
+            disabled={deleteAccountMutation.isPending}
+          >
+            {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
           </Button>
         </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
