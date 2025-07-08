@@ -71,7 +71,7 @@
 ### 4. Epic 4 - Personalized SRS Study Components
 **Associated Page:** `/study`
 
--   [ ] **Task 4.1: Create SRS Flashcard Component (`Flashcard.tsx`)**
+-   [x] **Task 4.1: Create SRS Flashcard Component (`Flashcard.tsx`)**
     *   **File:** `src/components/Flashcard.tsx`
     *   **Action:** Create an interactive flashcard component.
     *   **Features:**

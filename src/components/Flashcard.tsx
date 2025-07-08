@@ -1,0 +1,57 @@
+import { useState } from 'react'
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+
+interface FlashcardProps {
+  frontContent: string
+  backContent: string
+  context?: string
+}
+
+export function Flashcard({ frontContent, backContent, context }: FlashcardProps) {
+  const [isFlipped, setIsFlipped] = useState(false)
+
+  return (
+    <Card className="p-6 space-y-6">
+      {!isFlipped ? (
+        <div className="space-y-4">
+          <div className="text-lg">{frontContent}</div>
+          <Button 
+            onClick={() => setIsFlipped(true)}
+            className="w-full"
+          >
+            Flip Card
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="text-lg">{backContent}</div>
+          {context && <div className="text-sm text-gray-600">{context}</div>}
+          <div className="flex gap-2">
+            <Button 
+              variant="destructive" 
+              className="flex-1"
+              onClick={() => setIsFlipped(false)}
+            >
+              Forgot
+            </Button>
+            <Button 
+              variant="default" 
+              className="flex-1"
+              onClick={() => setIsFlipped(false)}
+            >
+              Good
+            </Button>
+            <Button 
+              variant="secondary" 
+              className="flex-1"
+              onClick={() => setIsFlipped(false)}
+            >
+              Easy
+            </Button>
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
