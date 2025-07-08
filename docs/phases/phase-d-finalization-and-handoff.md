@@ -22,7 +22,7 @@
         -   `src/components/ProficiencyChart.tsx` & `src/components/SubskillScores.tsx`: Should accept a `data` prop.
         -   `src/components/AdminDashboard.tsx`: Should accept a `users` prop.
 
--   [ ] **Task 1.2: Remove All Temporary `console.log` Statements.**
+-   [x] **Task 1.2: Remove All Temporary `console.log` Statements.**
     *   **Action:** Perform a project-wide search for `console.log` and remove any instances used for debugging during development.
     *   **Verification Command (for human review or advanced AI):**
         ```bash
