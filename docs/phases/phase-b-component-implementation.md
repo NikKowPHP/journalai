@@ -79,7 +79,7 @@
         -   A "Flip" button toggles visibility between the front and back.
         -   When the back is visible, three buttons appear: "Forgot", "Good", "Easy".
 
--   [ ] **Task 4.2: Create Study Session UI (`StudySession.tsx`)**
+-   [x] **Task 4.2: Create Study Session UI (`StudySession.tsx`)**
     *   **File:** `src/components/StudySession.tsx`
     *   **Action:** Create a component that manages the study session. It should render a single `Flashcard` component at a time, using mock data for a deck of cards. Clicking the "Forgot/Good/Easy" buttons should cycle to the next card in the mock deck.
     *   **Integration:** Add the `StudySession` component to the `/study` page.
