@@ -9,7 +9,7 @@
 -   [x] **Task 1.1: Refactor Components to Receive Data via Props.**
         *   [x] `JournalHistoryList.tsx`
         *   [x] `AnalysisDisplay.tsx`
-        *   [ ] `FeedbackCard.tsx`
+        *   [x] `FeedbackCard.tsx`
         *   [ ] `StudySession.tsx`
         *   [ ] `ProficiencyChart.tsx` & `SubskillScores.tsx`
         *   [ ] `AdminDashboard.tsx`
