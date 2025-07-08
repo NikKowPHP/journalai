@@ -1,10 +1,22 @@
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 
-export function JournalEditor() {
+/**
+ * A rich text editor component for journal entries with basic formatting controls.
+ * @param {object} props - The component props.
+ * @param {string} props.initialContent - The initial text content for the editor.
+ * @param {function} props.onSubmit - Callback invoked when the submit button is clicked.
+ * @returns {React.ReactElement} The journal editor component.
+ */
+interface JournalEditorProps {
+  initialContent?: string;
+  onSubmit: () => void;
+}
+
+export function JournalEditor({ initialContent = "Start writing your thoughts in your target language...", onSubmit }: JournalEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
-    content: "Start writing your thoughts in your target language...",
+    content: initialContent,
     editorProps: {
       attributes: {
         class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4",
@@ -42,7 +54,10 @@ export function JournalEditor() {
       )}
       <EditorContent editor={editor} />
       <div className="p-4 border-t">
-        <button className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+        <button
+          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+          onClick={onSubmit}
+        >
           Submit for Analysis
         </button>
       </div>

@@ -29,7 +29,7 @@ export default function JournalPage() {
       <h1 className="text-2xl font-bold">My Journal</h1>
       <div className="grid gap-6 md:grid-cols-2">
         <JournalHistoryList journals={mockJournals} />
-        <JournalEditor />
+        <JournalEditor onSubmit={() => console.log('Journal submitted')} />
       </div>
     </div>
   );
