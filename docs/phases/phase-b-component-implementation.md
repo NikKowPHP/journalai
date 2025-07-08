@@ -32,7 +32,7 @@
 ### 2. Epic 2 - The Core Writing Experience Components
 **Associated Page:** `/journal`
 
--   [ ] **Task 2.1: Build the Rich Text Editor Component (`JournalEditor.tsx`)**
+-   [x] **Task 2.1: Build the Rich Text Editor Component (`JournalEditor.tsx`)**
     *   **File:** `src/components/JournalEditor.tsx`
     *   **Action:** Create a reusable rich text editor component using the Tiptap library installed in Phase A.
     *   **Features:**
