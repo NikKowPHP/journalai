@@ -95,7 +95,7 @@
     *   **File:** `src/components/SubskillScores.tsx`
     *   **Action:** Create a radar chart or bar chart component using `recharts` to display mock scores for "Grammar", "Vocabulary", "Phrasing", and "Style".
 
--   [ ] **Task 5.3: Assemble Analytics Dashboard**
+-   [x] **Task 5.3: Assemble Analytics Dashboard**
     *   **File:** `src/app/analytics/page.tsx`
     *   **Action:** Import and arrange `ProficiencyChart` and `SubskillScores` on the analytics page to form a dashboard layout.
 
