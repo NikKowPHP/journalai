@@ -19,7 +19,7 @@
         6.  Final Step: A summary and "Get Started" button.
     *   **Integration:** This component will be conditionally rendered on the `/dashboard` page for new users.
 
--   [ ] **Task 1.2: Create User Profile Form Component (`ProfileForm.tsx`)**
+-   [x] **Task 1.2: Create User Profile Form Component (`ProfileForm.tsx`)**
     *   **File:** `src/components/ProfileForm.tsx`
     *   **Action:** Create a form for updating the user's profile information (native language, target language, etc.). Use `shadcn/ui`'s `Card`, `Label`, `Input`, `Select`.
     *   **Integration:** Add this component to the `/settings` page.
