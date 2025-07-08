@@ -40,11 +40,11 @@
 -   [x] **Task 2.1: Add JSDoc to All Major Reusable Components.**
         *   [x] `OnboardingWizard.tsx`
         *   [x] `JournalEditor.tsx`
-        *   [ ] `AnalysisDisplay.tsx`
-        *   [ ] `FeedbackCard.tsx`
-        *   [ ] `Flashcard.tsx`
-        *   [ ] `StudySession.tsx`
-        *   [ ] `PricingTable.tsx`
+        *   [x] `AnalysisDisplay.tsx`
+        *   [x] `FeedbackCard.tsx`
+        *   [x] `Flashcard.tsx`
+        *   [x] `StudySession.tsx`
+        *   [x] `PricingTable.tsx`
         *   [ ] `ThemeToggle.tsx`
     *   **Action:** Add comprehensive JSDoc comment blocks to the components created in Phase B. The documentation should explain the component's purpose and define its props.
     *   **Example JSDoc format:**

@@ -1,45 +1,31 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
-const PRICING_PLANS = [
-  {
-    name: "Free",
-    price: "0",
-    features: [
-      "Basic writing analysis",
-      "5 journal entries/month",
-      "Community support"
-    ],
-    cta: "Get Started"
-  },
-  {
-    name: "Pro",
-    price: "15",
-    features: [
-      "Advanced writing analysis",
-      "Unlimited journal entries",
-      "Priority support",
-      "Weekly progress reports"
-    ],
-    cta: "Upgrade to Pro"
-  },
-  {
-    name: "Expert",
-    price: "30",
-    features: [
-      "All Pro features",
-      "1-on-1 coaching session",
-      "Custom learning plan",
-      "24/7 premium support"
-    ],
-    cta: "Contact Sales"
-  }
-]
+/**
+ * Displays a grid of pricing plans with features and call-to-action buttons.
+ * @param {object} props - The component props.
+ * @param {Array} props.plans - Array of pricing plan objects containing:
+ * @param {string} props.plans[].name - The name of the pricing tier.
+ * @param {string} props.plans[].price - The monthly price (as string to allow formatting).
+ * @param {string[]} props.plans[].features - Array of features included in this tier.
+ * @param {string} props.plans[].cta - Call-to-action text for the tier's button.
+ * @returns {React.ReactElement} A responsive grid of pricing cards.
+ */
+interface PricingPlan {
+  name: string;
+  price: string;
+  features: string[];
+  cta: string;
+}
 
-export function PricingTable() {
+interface PricingTableProps {
+  plans: PricingPlan[];
+}
+
+export function PricingTable({ plans }: PricingTableProps) {
   return (
     <div className="grid gap-6 md:grid-cols-3">
-      {PRICING_PLANS.map((plan) => (
+      {plans.map((plan) => (
         <Card key={plan.name} className="p-6 space-y-4">
           <div className="space-y-2">
             <h3 className="text-xl font-bold">{plan.name}</h3>
