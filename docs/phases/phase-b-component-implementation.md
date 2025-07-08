@@ -54,7 +54,7 @@
     *   **Action:** Create a component that shows the original user-submitted text. Use mock data to highlight parts of the text with different background colors (e.g., light red for grammar, light blue for phrasing) to simulate feedback.
     *   **Integration:** This will be the main component on a new page `src/app/journal/[id]/page.tsx`.
 
--   [ ] **Task 3.2: Create Granular Feedback Card (`FeedbackCard.tsx`)**
+-   [x] **Task 3.2: Create Granular Feedback Card (`FeedbackCard.tsx`)**
     *   **File:** `src/components/FeedbackCard.tsx`
     *   **Action:** Create a card component that displays a specific piece of feedback. It should contain:
         -   "Original Text" (with a strikethrough).
