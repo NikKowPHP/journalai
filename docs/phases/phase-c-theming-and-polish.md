@@ -6,7 +6,7 @@
 
 ### 1. Light/Dark Mode Implementation
 
--   [ ] **Task 1.1: Install `next-themes` Library.**
+-   [x] **Task 1.1: Install `next-themes` Library.**
     *   **Action:** Install the package responsible for managing theme state.
     ```bash
     npm install next-themes
