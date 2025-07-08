@@ -86,7 +86,7 @@
         npx shadcn-ui@latest add button
         ```
 
--   [ ] **Task 1.5: Add the Theme Toggle to the Main Navigation.**
+-   [x] **Task 1.5: Add the Theme Toggle to the Main Navigation.**
     *   **Action:** Import and place the `ThemeToggle` component in the main application layout's navigation bar.
     *   **File:** `src/app/layout.tsx`
     *   **Modification:** Add the `ThemeToggle` component inside the navigation `div`.
