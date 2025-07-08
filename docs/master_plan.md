@@ -11,7 +11,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 *   [Detailed Steps](./docs/phases/phase-a-setup-and-scaffolding.md)
 
 ---
-### `[ ]` Phase B: Component Implementation (By Epic)
+### `[x]` Phase B: Component Implementation (By Epic)
 **Goal:** Systematically build all new, static, reusable components required by the LinguaScribe epics, integrating them into the scaffolded pages from Phase A.
 
 *   [Detailed Steps](./docs/phases/phase-b-component-implementation.md)
