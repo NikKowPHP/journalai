@@ -87,7 +87,7 @@
 ### 5. Epic 5 - Comprehensive Analytics Components
 **Associated Page:** `/analytics`
 
--   [ ] **Task 5.1: Create Proficiency Chart Component (`ProficiencyChart.tsx`)**
+-   [x] **Task 5.1: Create Proficiency Chart Component (`ProficiencyChart.tsx`)**
     *   **File:** `src/components/ProficiencyChart.tsx`
     *   **Action:** Adapt the existing `AnalyticsCharts.tsx` (or create a new component) to be a line chart showing "Proficiency Over Time". Use `recharts`. Populate it with mock data (e.g., an array of objects with `date` and `score` properties).
 
