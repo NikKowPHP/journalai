@@ -17,7 +17,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 *   [Detailed Steps](./docs/phases/phase-b-component-implementation.md)
 
 ---
-### `[ ]` Phase C: Theming & Visual Polish
+### `[x]` Phase C: Theming & Visual Polish
 **Goal:** Implement light/dark mode and conduct a full visual review to refine styling and ensure a cohesive look and feel across all new components.
 
 *   [Detailed Steps](./docs/phases/phase-c-theming-and-polish.md)
