@@ -1,19 +1,19 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-const mockData = [
-  { date: '2023-01', score: 45 },
-  { date: '2023-02', score: 52 },
-  { date: '2023-03', score: 60 },
-  { date: '2023-04', score: 58 },
-  { date: '2023-05', score: 65 },
-  { date: '2023-06', score: 70 },
-]
+interface ProficiencyDataPoint {
+  date: string
+  score: number
+}
 
-export function ProficiencyChart() {
+interface ProficiencyChartProps {
+  data: ProficiencyDataPoint[]
+}
+
+export function ProficiencyChart({ data }: ProficiencyChartProps) {
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={mockData}>
+        <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis 
             dataKey="date" 
