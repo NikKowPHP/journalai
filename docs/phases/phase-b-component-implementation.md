@@ -49,7 +49,7 @@
 ### 3. Epic 3 - AI Analysis & Feedback Components
 **Associated Page:** `/journal/[id]` (A dynamic route for viewing a specific entry's analysis)
 
--   [ ] **Task 3.1: Create Analysis Display Component (`AnalysisDisplay.tsx`)**
+-   [x] **Task 3.1: Create Analysis Display Component (`AnalysisDisplay.tsx`)**
     *   **File:** `src/components/AnalysisDisplay.tsx`
     *   **Action:** Create a component that shows the original user-submitted text. Use mock data to highlight parts of the text with different background colors (e.g., light red for grammar, light blue for phrasing) to simulate feedback.
     *   **Integration:** This will be the main component on a new page `src/app/journal/[id]/page.tsx`.
