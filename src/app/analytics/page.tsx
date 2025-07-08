@@ -10,6 +10,13 @@ const mockProficiencyData = [
   { date: '2023-06', score: 70 },
 ]
 
+const mockSkillData = [
+  { skill: 'Grammar', score: 75 },
+  { skill: 'Vocabulary', score: 85 },
+  { skill: 'Phrasing', score: 65 },
+  { skill: 'Style', score: 70 },
+]
+
 export default function AnalyticsPage() {
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -23,7 +30,7 @@ export default function AnalyticsPage() {
         
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Skill Breakdown</h2>
-          <SubskillScores />
+          <SubskillScores data={mockSkillData} />
         </div>
       </div>
     </div>

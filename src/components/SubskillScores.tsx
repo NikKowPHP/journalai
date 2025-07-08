@@ -1,17 +1,19 @@
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts'
 
-const mockData = [
-  { skill: 'Grammar', score: 75 },
-  { skill: 'Vocabulary', score: 85 },
-  { skill: 'Phrasing', score: 65 },
-  { skill: 'Style', score: 70 },
-]
+interface SkillScore {
+  skill: string
+  score: number
+}
 
-export function SubskillScores() {
+interface SubskillScoresProps {
+  data: SkillScore[]
+}
+
+export function SubskillScores({ data }: SubskillScoresProps) {
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={mockData}>
+        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
           <PolarGrid />
           <PolarAngleAxis dataKey="skill" />
           <PolarRadiusAxis angle={30} domain={[0, 100]} />
