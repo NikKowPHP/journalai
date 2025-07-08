@@ -1,8 +1,19 @@
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /**
  * A multi-step onboarding wizard that guides new users through initial setup.
@@ -18,7 +29,11 @@ interface OnboardingWizardProps {
   onComplete: () => void;
 }
 
-export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWizardProps) {
+export function OnboardingWizard({
+  isOpen,
+  onClose,
+  onComplete,
+}: OnboardingWizardProps) {
   const [step, setStep] = React.useState(1);
 
   const nextStep = () => setStep(step + 1);
@@ -29,12 +44,12 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {step === 1 && 'Welcome to LinguaScribe!'}
-            {step === 2 && 'Native Language'}
-            {step === 3 && 'Target Language'} 
-            {step === 4 && 'Writing Purpose'}
-            {step === 5 && 'Skill Level'}
-            {step === 6 && 'Ready to Start!'}
+            {step === 1 && "Welcome to LinguaScribe!"}
+            {step === 2 && "Native Language"}
+            {step === 3 && "Target Language"}
+            {step === 4 && "Writing Purpose"}
+            {step === 5 && "Skill Level"}
+            {step === 6 && "Ready to Start!"}
           </DialogTitle>
         </DialogHeader>
 
@@ -132,7 +147,10 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
 
         {step === 6 && (
           <div className="space-y-4">
-            <p>You're all set! Click "Get Started" to begin your language journey.</p>
+            <p>
+              You're all set! Click "Get Started" to begin your language
+              journey.
+            </p>
           </div>
         )}
 

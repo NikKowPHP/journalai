@@ -1,22 +1,22 @@
-import { StudySession } from "@/components/StudySession"
+import { StudySession } from "@/components/StudySession";
 
 const mockDeck = [
   {
     front: "Bonjour",
     back: "Hello",
-    context: "French greeting"
+    context: "French greeting",
   },
   {
     front: "Merci",
     back: "Thank you",
-    context: "French expression of gratitude"
+    context: "French expression of gratitude",
   },
   {
     front: "Au revoir",
     back: "Goodbye",
-    context: "French farewell"
-  }
-]
+    context: "French farewell",
+  },
+];
 
 export default function StudyPage() {
   return (

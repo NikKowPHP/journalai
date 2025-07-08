@@ -1,14 +1,14 @@
-import Link from "next/link"
+import Link from "next/link";
 
 interface JournalEntry {
-  id: string
-  title: string
-  snippet: string
-  date: string
+  id: string;
+  title: string;
+  snippet: string;
+  date: string;
 }
 
 interface JournalHistoryListProps {
-  journals: JournalEntry[]
+  journals: JournalEntry[];
 }
 
 export function JournalHistoryList({ journals }: JournalHistoryListProps) {
@@ -27,5 +27,5 @@ export function JournalHistoryList({ journals }: JournalHistoryListProps) {
         </Link>
       ))}
     </div>
-  )
+  );
 }

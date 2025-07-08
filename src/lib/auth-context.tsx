@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from './supabase/client';
-import { User } from '@supabase/supabase-js';
+import React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "./supabase/client";
+import { User } from "@supabase/supabase-js";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   clearError: () => void;
 }
@@ -26,7 +32,11 @@ const AuthContext = createContext<AuthContextType>({
   clearError: () => {},
 });
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }): React.JSX.Element => {
+export const AuthProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       async (event, session) => {
         setUser(session?.user ?? null);
         setLoading(false);
-      }
+      },
     );
 
     return () => {
@@ -47,7 +57,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   }, []);
 
   const handleAuthOperation = async (
-    operation: () => Promise<{ error: { message: string } | null }>
+    operation: () => Promise<{ error: { message: string } | null }>,
   ): Promise<{ error: string | null }> => {
     setLoading(true);
     setError(null);
@@ -86,7 +96,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
       try {
         const supabase = createClient();
         await supabase.auth.signOut();
-        router.push('/login');
+        router.push("/login");
       } catch (err: unknown) {
         const error = err as Error;
         setError(error.message);
@@ -107,7 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

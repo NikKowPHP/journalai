@@ -1,8 +1,8 @@
-import React from 'react';
-import Link from "next/link"
-import { ProfileForm } from "@/components/ProfileForm"
-import { AccountDeletion } from "@/components/AccountDeletion"
-import { Button } from "@/components/ui/button"
+import React from "react";
+import Link from "next/link";
+import { ProfileForm } from "@/components/ProfileForm";
+import { AccountDeletion } from "@/components/AccountDeletion";
+import { Button } from "@/components/ui/button";
 
 export default function SettingsPage() {
   return (
@@ -16,9 +16,7 @@ export default function SettingsPage() {
           variant="outline"
           className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
-          <Link href="/pricing">
-            View Pricing Plans
-          </Link>
+          <Link href="/pricing">View Pricing Plans</Link>
         </Button>
       </div>
       <AccountDeletion />

@@ -1,19 +1,26 @@
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useState } from "react"
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useState } from "react";
 
 interface User {
-  email: string
-  tier: string
-  status: string
+  email: string;
+  tier: string;
+  status: string;
 }
 
 interface AdminDashboardProps {
-  users: User[]
+  users: User[];
 }
 
 export function AdminDashboard({ users }: AdminDashboardProps) {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="space-y-4">
@@ -23,7 +30,7 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
         onChange={(e) => setSearchTerm(e.target.value)}
         className="max-w-sm focus-visible:ring-2 focus-visible:ring-primary"
       />
-      
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -38,7 +45,11 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.tier}</TableCell>
               <TableCell>
-                <span className={user.status === "Active" ? "text-green-600" : "text-red-600"}>
+                <span
+                  className={
+                    user.status === "Active" ? "text-green-600" : "text-red-600"
+                  }
+                >
                   {user.status}
                 </span>
               </TableCell>
@@ -47,5 +58,5 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }

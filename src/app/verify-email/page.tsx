@@ -1,6 +1,6 @@
-import React from 'react';
-import { createClient } from '@/lib/supabase/server';
-import Link from 'next/link';
+import React from "react";
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -24,7 +24,7 @@ export default async function VerifyEmailPage({
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({
-      type: 'email',
+      type: "email",
       token_hash: token,
     });
 
@@ -44,7 +44,8 @@ export default async function VerifyEmailPage({
       </div>
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Verification failed';
+    const message =
+      error instanceof Error ? error.message : "Verification failed";
     return (
       <div className="max-w-md mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Email Verification</h1>

@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 /**
  * An interactive flashcard component for spaced repetition study.
@@ -11,29 +11,34 @@ import { Button } from "@/components/ui/button"
  * @returns {React.ReactElement} A flipable card with study controls.
  */
 interface FlashcardProps {
-  frontContent: string
-  backContent: string
-  context?: string
+  frontContent: string;
+  backContent: string;
+  context?: string;
 }
 
-export function Flashcard({ frontContent, backContent, context }: FlashcardProps) {
-  const [isFlipped, setIsFlipped] = useState(false)
+export function Flashcard({
+  frontContent,
+  backContent,
+  context,
+}: FlashcardProps) {
+  const [isFlipped, setIsFlipped] = useState(false);
 
   return (
     <Card className="p-6 space-y-6 bg-gradient-to-br from-background to-muted/20">
       {!isFlipped ? (
         <div className="space-y-4">
-          <div className="text-lg font-medium text-center p-4 border-b">{frontContent}</div>
-          <Button 
-            onClick={() => setIsFlipped(true)}
-            className="w-full"
-          >
+          <div className="text-lg font-medium text-center p-4 border-b">
+            {frontContent}
+          </div>
+          <Button onClick={() => setIsFlipped(true)} className="w-full">
             Flip Card
           </Button>
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-lg font-medium text-center p-4 border-b bg-accent/20">{backContent}</div>
+          <div className="text-lg font-medium text-center p-4 border-b bg-accent/20">
+            {backContent}
+          </div>
           {context && <div className="text-sm text-gray-600">{context}</div>}
           <div className="flex gap-2">
             <Button
@@ -61,5 +66,5 @@ export function Flashcard({ frontContent, backContent, context }: FlashcardProps
         </div>
       )}
     </Card>
-  )
+  );
 }

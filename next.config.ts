@@ -15,8 +15,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**', // This will allow all hostnames. Use with caution.
+        protocol: "https",
+        hostname: "**", // This will allow all hostnames. Use with caution.
       },
     ],
   },

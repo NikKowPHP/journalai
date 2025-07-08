@@ -44,9 +44,7 @@ export interface QuestionGenerationService {
    * @param context Object containing role, difficulty, and count
    * @returns Promise resolving to generated questions
    */
-  generateQuestions(
-    context: GenerationContext
-  ): Promise<GeneratedQuestion[]>;
+  generateQuestions(context: GenerationContext): Promise<GeneratedQuestion[]>;
 
   /**
    * Refines a role name and provides suggestions with descriptions.
@@ -67,7 +65,9 @@ export interface QuestionGenerationService {
    * @param context Object containing question, ideal summary, and audio data.
    * @returns Promise resolving to a structured evaluation including the transcription.
    */
-  evaluateAudioAnswer?(context: AudioEvaluationContext): Promise<EvaluationResult & { transcription: string }>;
+  evaluateAudioAnswer?(
+    context: AudioEvaluationContext,
+  ): Promise<EvaluationResult & { transcription: string }>;
 }
 
 /**

@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export function PricingTable() {
   const tiers = [
@@ -12,9 +12,9 @@ export function PricingTable() {
         "Basic journaling",
         "3 AI analyses per month",
         "Community support",
-        "Basic flashcards"
+        "Basic flashcards",
       ],
-      cta: "Get Started"
+      cta: "Get Started",
     },
     {
       name: "Pro",
@@ -24,9 +24,9 @@ export function PricingTable() {
         "10 AI analyses per day",
         "Priority support",
         "Advanced flashcards",
-        "Progress tracking"
+        "Progress tracking",
       ],
-      cta: "Upgrade to Pro"
+      cta: "Upgrade to Pro",
     },
     {
       name: "Expert",
@@ -36,11 +36,11 @@ export function PricingTable() {
         "Unlimited AI analyses",
         "24/7 premium support",
         "Personalized coaching",
-        "Early access to features"
+        "Early access to features",
       ],
-      cta: "Upgrade to Expert"
-    }
-  ]
+      cta: "Upgrade to Expert",
+    },
+  ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-4">
@@ -55,11 +55,9 @@ export function PricingTable() {
               </li>
             ))}
           </ul>
-          <Button className="w-full">
-            {tier.cta}
-          </Button>
+          <Button className="w-full">{tier.cta}</Button>
         </Card>
       ))}
     </div>
-  )
+  );
 }

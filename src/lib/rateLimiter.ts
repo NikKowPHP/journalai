@@ -17,8 +17,11 @@ export const rateLimiter = (options: RateLimitOptions) => {
     const now = Date.now();
 
     // Get or initialize the rate limit entry
-    const entry = memoryStore[identifier] || { count: 0, resetTime: now + options.windowMs };
-    
+    const entry = memoryStore[identifier] || {
+      count: 0,
+      resetTime: now + options.windowMs,
+    };
+
     // Reset count if window has passed
     if (now > entry.resetTime) {
       entry.count = 0;
@@ -41,5 +44,5 @@ export const rateLimiter = (options: RateLimitOptions) => {
 
 export const authRateLimiter = rateLimiter({
   windowMs: 60 * 1000, // 1 minute
-  max: 5 // 5 requests per minute
+  max: 5, // 5 requests per minute
 });

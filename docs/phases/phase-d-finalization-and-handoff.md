@@ -6,124 +6,132 @@
 
 ### 1. Code Cleanup & Refactoring
 
--   [x] **Task 1.1: Refactor Components to Receive Data via Props.**
-        *   [x] `JournalHistoryList.tsx`
-        *   [x] `AnalysisDisplay.tsx`
-        *   [x] `FeedbackCard.tsx`
-        *   [x] `StudySession.tsx`
-        *   [x] `ProficiencyChart.tsx` & `SubskillScores.tsx`
-        *   [x] `AdminDashboard.tsx`
-    *   **Action:** Go through the key components built in Phase B. Remove any internal mock data and refactor them to be pure components that receive all their data via props. The parent *page* component can still hold the mock data to pass down for now.
-    *   **Checklist of Components to Refactor:**
-        -   `src/components/JournalHistoryList.tsx`: Should accept a `journals` prop (e.g., `journals: { id: string, title: string, snippet: string, date: string }[]`).
-        -   `src/components/AnalysisDisplay.tsx`: Should accept `text` and `highlights` props.
-        -   `src/components/FeedbackCard.tsx`: Should accept `feedback` as a single prop object.
-        -   `src/components/StudySession.tsx`: Should accept a `cards` prop.
-        -   `src/components/ProficiencyChart.tsx` & `src/components/SubskillScores.tsx`: Should accept a `data` prop.
-        -   `src/components/AdminDashboard.tsx`: Should accept a `users` prop.
+- [x] **Task 1.1: Refactor Components to Receive Data via Props.**
+      _ [x] `JournalHistoryList.tsx`
+      _ [x] `AnalysisDisplay.tsx`
+      _ [x] `FeedbackCard.tsx`
+      _ [x] `StudySession.tsx`
+      _ [x] `ProficiencyChart.tsx` & `SubskillScores.tsx`
+      _ [x] `AdminDashboard.tsx`
 
--   [x] **Task 1.2: Remove All Temporary `console.log` Statements.**
-    *   **Action:** Perform a project-wide search for `console.log` and remove any instances used for debugging during development.
-    *   **Verification Command (for human review or advanced AI):**
-        ```bash
-        grep -r "console.log" ./src/
-        ```
+  - **Action:** Go through the key components built in Phase B. Remove any internal mock data and refactor them to be pure components that receive all their data via props. The parent _page_ component can still hold the mock data to pass down for now.
+  - **Checklist of Components to Refactor:**
+    - `src/components/JournalHistoryList.tsx`: Should accept a `journals` prop (e.g., `journals: { id: string, title: string, snippet: string, date: string }[]`).
+    - `src/components/AnalysisDisplay.tsx`: Should accept `text` and `highlights` props.
+    - `src/components/FeedbackCard.tsx`: Should accept `feedback` as a single prop object.
+    - `src/components/StudySession.tsx`: Should accept a `cards` prop.
+    - `src/components/ProficiencyChart.tsx` & `src/components/SubskillScores.tsx`: Should accept a `data` prop.
+    - `src/components/AdminDashboard.tsx`: Should accept a `users` prop.
 
--   [x] **Task 1.3: Run Linter to Remove Unused Imports and Variables.**
-    *   **Action:** Use the linter to automatically clean up any unused code.
+- [x] **Task 1.2: Remove All Temporary `console.log` Statements.**
+
+  - **Action:** Perform a project-wide search for `console.log` and remove any instances used for debugging during development.
+  - **Verification Command (for human review or advanced AI):**
     ```bash
-    npm run lint -- --fix
+    grep -r "console.log" ./src/
     ```
+
+- [x] **Task 1.3: Run Linter to Remove Unused Imports and Variables.**
+  - **Action:** Use the linter to automatically clean up any unused code.
+  ```bash
+  npm run lint -- --fix
+  ```
 
 ### 2. In-Code Documentation
 
--   [x] **Task 2.1: Add JSDoc to All Major Reusable Components.**
-        *   [x] `OnboardingWizard.tsx`
-        *   [x] `JournalEditor.tsx`
-        *   [x] `AnalysisDisplay.tsx`
-        *   [x] `FeedbackCard.tsx`
-        *   [x] `Flashcard.tsx`
-        *   [x] `StudySession.tsx`
-        *   [x] `PricingTable.tsx`
-        *   [x] `ThemeToggle.tsx`
-    *   **Action:** Add comprehensive JSDoc comment blocks to the components created in Phase B. The documentation should explain the component's purpose and define its props.
-    *   **Example JSDoc format:**
-        ```tsx
-        /**
-         * Renders an interactive flashcard for the SRS study session.
-         * @param {object} props - The component props.
-         * @param {object} props.card - The card data to display.
-         * @param {string} props.card.frontContent - The text for the front of the card.
-         * @param {string} props.card.backContent - The text for the back of the card.
-         * @param {function} props.onReview - Callback function when a review button is clicked.
-         */
-        export function Flashcard({ card, onReview }) {
-          // ... component code
-        }
-        ```
-    *   **Checklist of Components to Document:**
-        -   `OnboardingWizard.tsx`
-        -   `JournalEditor.tsx`
-        -   `AnalysisDisplay.tsx`
-        -   `FeedbackCard.tsx`
-        -   `Flashcard.tsx`
-        -   `StudySession.tsx`
-        -   `PricingTable.tsx`
-        -   `ThemeToggle.tsx`
+- [x] **Task 2.1: Add JSDoc to All Major Reusable Components.**
+      _ [x] `OnboardingWizard.tsx`
+      _ [x] `JournalEditor.tsx`
+      _ [x] `AnalysisDisplay.tsx`
+      _ [x] `FeedbackCard.tsx`
+      _ [x] `Flashcard.tsx`
+      _ [x] `StudySession.tsx`
+      _ [x] `PricingTable.tsx`
+      _ [x] `ThemeToggle.tsx`
+  - **Action:** Add comprehensive JSDoc comment blocks to the components created in Phase B. The documentation should explain the component's purpose and define its props.
+  - **Example JSDoc format:**
+    ```tsx
+    /**
+     * Renders an interactive flashcard for the SRS study session.
+     * @param {object} props - The component props.
+     * @param {object} props.card - The card data to display.
+     * @param {string} props.card.frontContent - The text for the front of the card.
+     * @param {string} props.card.backContent - The text for the back of the card.
+     * @param {function} props.onReview - Callback function when a review button is clicked.
+     */
+    export function Flashcard({ card, onReview }) {
+      // ... component code
+    }
+    ```
+  - **Checklist of Components to Document:**
+    - `OnboardingWizard.tsx`
+    - `JournalEditor.tsx`
+    - `AnalysisDisplay.tsx`
+    - `FeedbackCard.tsx`
+    - `Flashcard.tsx`
+    - `StudySession.tsx`
+    - `PricingTable.tsx`
+    - `ThemeToggle.tsx`
 
 ### 3. Project-Level Documentation
 
--   [ ] **Task 3.1: Overwrite the Project `README.md` File.**
-    *   **Action:** Replace the entire content of the root `README.md` file with a new version that accurately describes the LinguaScribe project and its current state.
-    *   **File:** `README.md`
-    *   **New Content:**
-        ````markdown
-        # LinguaScribe - AI Language Learning Platform
+- [x] **Task 3.1: Overwrite the Project `README.md` File.**
 
-        LinguaScribe is a Progressive Web App (PWA) designed to revolutionize language learning by shifting the focus from passive consumption to active creation.
+  - **Action:** Replace the entire content of the root `README.md` file with a new version that accurately describes the LinguaScribe project and its current state.
+  - **File:** `README.md`
+  - **New Content:**
 
-        ## Current Status: UI Complete
+    ````markdown
+    # LinguaScribe - AI Language Learning Platform
 
-        This repository contains the **complete static UI** for the LinguaScribe application. All pages, components, and user flows have been built out visually using placeholder data. The application is fully styled, themeable (light/dark mode), and responsive.
+    LinguaScribe is a Progressive Web App (PWA) designed to revolutionize language learning by shifting the focus from passive consumption to active creation.
 
-        **The codebase is now ready for backend integration.**
+    ## Current Status: UI Complete
 
-        ## Next Steps: Backend Integration
+    This repository contains the **complete static UI** for the LinguaScribe application. All pages, components, and user flows have been built out visually using placeholder data. The application is fully styled, themeable (light/dark mode), and responsive.
 
-        The next phase of development will involve:
-        1.  **Database Setup:** Implementing the Prisma schema and running the initial database migration.
-        2.  **API Route Implementation:** Building the backend logic for all API routes (`/api/journal`, `/api/analyze`, etc.).
-        3.  **Authentication Integration:** Connecting the frontend auth forms to Supabase Auth.
-        4.  **Data Fetching:** Replacing all placeholder data in the UI with live data from the API using a library like React Query.
-        5.  **Stripe Integration:** Implementing the payment and subscription logic.
+    **The codebase is now ready for backend integration.**
 
-        ## Getting Started with the Static UI
+    ## Next Steps: Backend Integration
 
-        To run the static version of the application locally:
+    The next phase of development will involve:
 
-        1.  **Install dependencies:**
-            ```bash
-            npm install
-            ```
+    1.  **Database Setup:** Implementing the Prisma schema and running the initial database migration.
+    2.  **API Route Implementation:** Building the backend logic for all API routes (`/api/journal`, `/api/analyze`, etc.).
+    3.  **Authentication Integration:** Connecting the frontend auth forms to Supabase Auth.
+    4.  **Data Fetching:** Replacing all placeholder data in the UI with live data from the API using a library like React Query.
+    5.  **Stripe Integration:** Implementing the payment and subscription logic.
 
-        2.  **Run the development server:**
-            ```bash
-            npm run dev
-            ```
+    ## Getting Started with the Static UI
 
-        The application will be available at `http://localhost:3000`.
-        ````
+    To run the static version of the application locally:
+
+    1.  **Install dependencies:**
+
+        ```bash
+        npm install
+        ```
+
+    2.  **Run the development server:**
+        ```bash
+        npm run dev
+        ```
+
+    The application will be available at `http://localhost:3000`.
+    ````
 
 ### 4. Final Verification
 
--   [ ] **Task 4.1: Run Final Code Formatting Check.**
-    *   **Action:** Ensure all files in the project adhere to the Prettier formatting rules.
-    ```bash
-    npx prettier --write .
-    ```
+-   [x] **Task 4.1: Run Final Code Formatting Check.**
 
--   [ ] **Task 4.2: Verify `package-lock.json` Integrity.**
-    *   **Action:** Run a final `npm install` to ensure the `package-lock.json` file is consistent and up-to-date with the `package.json`.
-    ```bash
-    npm install
-    ```
+  - **Action:** Ensure all files in the project adhere to the Prettier formatting rules.
+
+  ```bash
+  npx prettier --write .
+  ```
+
+-   [x] **Task 4.2: Verify `package-lock.json` Integrity.**
+  - **Action:** Run a final `npm install` to ensure the `package-lock.json` file is consistent and up-to-date with the `package.json`.
+  ```bash
+  npm install
+  ```

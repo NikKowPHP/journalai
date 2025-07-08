@@ -1,5 +1,5 @@
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 /**
  * Displays a single feedback item with original text, suggestion, and explanation.
@@ -10,32 +10,38 @@ import { Button } from "@/components/ui/button"
  * @returns {React.ReactElement} A card component displaying the feedback.
  */
 interface FeedbackCardProps {
-  original: string
-  suggestion: string
-  explanation: string
+  original: string;
+  suggestion: string;
+  explanation: string;
 }
 
-export function FeedbackCard({ original, suggestion, explanation }: FeedbackCardProps) {
+export function FeedbackCard({
+  original,
+  suggestion,
+  explanation,
+}: FeedbackCardProps) {
   return (
     <Card className="p-6 space-y-6">
       <div className="space-y-2">
         <h3 className="text-base font-medium">Original Text</h3>
         <p className="text-sm line-through text-muted-foreground">{original}</p>
       </div>
-      
+
       <div className="space-y-2">
         <h3 className="text-base font-medium">Suggested Correction</h3>
-        <p className="text-sm text-green-700 dark:text-green-400">{suggestion}</p>
+        <p className="text-sm text-green-700 dark:text-green-400">
+          {suggestion}
+        </p>
       </div>
-      
+
       <div className="space-y-2">
         <h3 className="text-base font-medium">Explanation</h3>
         <p className="text-sm text-muted-foreground">{explanation}</p>
       </div>
-      
+
       <Button variant="secondary" className="w-full">
         Add to Study Deck
       </Button>
     </Card>
-  )
+  );
 }

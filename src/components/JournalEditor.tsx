@@ -1,5 +1,5 @@
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
+import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 /**
  * A rich text editor component for journal entries with basic formatting controls.
@@ -13,19 +13,23 @@ interface JournalEditorProps {
   onSubmit: () => void;
 }
 
-export function JournalEditor({ initialContent = "Start writing your thoughts in your target language...", onSubmit }: JournalEditorProps) {
+export function JournalEditor({
+  initialContent = "Start writing your thoughts in your target language...",
+  onSubmit,
+}: JournalEditorProps) {
   const editor = useEditor({
     extensions: [StarterKit],
     content: initialContent,
     editorProps: {
       attributes: {
-        class: "prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 bg-background text-foreground",
+        class:
+          "prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 bg-background text-foreground",
       },
     },
-  })
+  });
 
   if (!editor) {
-    return null
+    return null;
   }
 
   return (
@@ -62,5 +66,5 @@ export function JournalEditor({ initialContent = "Start writing your thoughts in
         </button>
       </div>
     </div>
-  )
+  );
 }

@@ -16,54 +16,52 @@ export async function middleware(request: NextRequest) {
     // Log an error or redirect to an error page if environment variables are missing
     console.error("Supabase environment variables are missing!");
     // Redirect to an error page or simply return the response without Supabase client
-    return NextResponse.redirect(new URL("/error?message=Supabase configuration missing", request.url));
+    return NextResponse.redirect(
+      new URL("/error?message=Supabase configuration missing", request.url),
+    );
   }
 
-  const supabase = createServerClient(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-        },
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      get(name: string) {
+        return request.cookies.get(name)?.value;
+      },
+      set(name: string, value: string, options: CookieOptions) {
+        request.cookies.set({
+          name,
+          value,
+          ...options,
+        });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
+        response.cookies.set({
+          name,
+          value,
+          ...options,
+        });
+      },
+      remove(name: string, options: CookieOptions) {
+        request.cookies.set({
+          name,
+          value: "",
+          ...options,
+        });
+        response = NextResponse.next({
+          request: {
+            headers: request.headers,
+          },
+        });
+        response.cookies.set({
+          name,
+          value: "",
+          ...options,
+        });
       },
     },
-  );
+  });
 
   // Refresh session if expired - important to keep user logged in
   // Get user info
@@ -91,10 +89,7 @@ export async function middleware(request: NextRequest) {
   // If user is not logged in and trying to access a protected route, redirect to login
   if (!user && protectedRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(
-      new URL(
-        "/login?error=Please log in to access this page.",
-        request.url,
-      ),
+      new URL("/login?error=Please log in to access this page.", request.url),
     );
   }
 

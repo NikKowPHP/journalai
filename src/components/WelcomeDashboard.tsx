@@ -1,5 +1,5 @@
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
 const WelcomeDashboard: React.FC = () => {
   return (
@@ -9,7 +9,8 @@ const WelcomeDashboard: React.FC = () => {
       </h1>
       <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-2xl">
         It looks like you&apos;re new here. To get started, create your first
-        learning objective. This will help PrepAI tailor your learning experience.
+        learning objective. This will help PrepAI tailor your learning
+        experience.
       </p>
       <Link href="/generate" passHref>
         <button className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">

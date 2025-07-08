@@ -11,6 +11,7 @@ This repository contains the **complete static UI** for the LinguaScribe applica
 ## Next Steps: Backend Integration
 
 The next phase of development will involve:
+
 1.  **Database Setup:** Implementing the Prisma schema and running the initial database migration.
 2.  **API Route Implementation:** Building the backend logic for all API routes (`/api/journal`, `/api/analyze`, etc.).
 3.  **Authentication Integration:** Connecting the frontend auth forms to Supabase Auth.
@@ -22,6 +23,7 @@ The next phase of development will involve:
 To run the static version of the application locally:
 
 1.  **Install dependencies:**
+
     ```bash
     npm install
     ```

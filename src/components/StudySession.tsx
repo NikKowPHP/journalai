@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Flashcard } from "@/components/Flashcard"
+import { useState } from "react";
+import { Flashcard } from "@/components/Flashcard";
 
 /**
  * Manages a study session with a deck of flashcards, tracking progress through the deck.
@@ -11,24 +11,24 @@ import { Flashcard } from "@/components/Flashcard"
  * @returns {React.ReactElement} A study session interface with progress tracking.
  */
 interface StudyCard {
-  front: string
-  back: string
-  context: string
+  front: string;
+  back: string;
+  context: string;
 }
 
 interface StudySessionProps {
-  cards: StudyCard[]
+  cards: StudyCard[];
 }
 
 export function StudySession({ cards }: StudySessionProps) {
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
-  const currentCard = cards[currentCardIndex]
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const currentCard = cards[currentCardIndex];
 
   const handleNextCard = () => {
     if (currentCardIndex < cards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1)
+      setCurrentCardIndex(currentCardIndex + 1);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -46,9 +46,11 @@ export function StudySession({ cards }: StudySessionProps) {
       ) : (
         <div className="text-center p-6 border rounded-lg bg-muted/20">
           <h2 className="text-xl font-semibold mb-2">Session Complete!</h2>
-          <p className="text-gray-600">You've reviewed all cards in this deck.</p>
+          <p className="text-gray-600">
+            You've reviewed all cards in this deck.
+          </p>
         </div>
       )}
     </div>
-  )
+  );
 }

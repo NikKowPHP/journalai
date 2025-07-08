@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
-import AuthErrorDisplay from '@/components/AuthErrorDisplay';
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
+import AuthErrorDisplay from "@/components/AuthErrorDisplay";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -9,10 +9,10 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event) => {
-      if (event === 'SIGNED_IN') {
-        router.push('/dashboard');
-      } else if (event === 'SIGNED_OUT') {
-        setError('Authentication failed. Please try again.');
+      if (event === "SIGNED_IN") {
+        router.push("/dashboard");
+      } else if (event === "SIGNED_OUT") {
+        setError("Authentication failed. Please try again.");
       }
     });
   }, [router]);
@@ -25,7 +25,7 @@ export default function AuthCallbackPage() {
             <h1 className="text-2xl font-bold">Authentication Error</h1>
             <AuthErrorDisplay error={error} />
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push("/login")}
               className="w-full px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
             >
               Return to Login

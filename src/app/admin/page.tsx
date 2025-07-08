@@ -1,10 +1,10 @@
-import { AdminDashboard } from "@/components/AdminDashboard"
+import { AdminDashboard } from "@/components/AdminDashboard";
 
 const mockUsers = [
   { email: "user1@example.com", tier: "Pro", status: "Active" },
   { email: "user2@example.com", tier: "Free", status: "Inactive" },
   { email: "user3@example.com", tier: "Expert", status: "Active" },
-]
+];
 
 export default function AdminPage() {
   return (
@@ -14,5 +14,5 @@ export default function AdminPage() {
         <AdminDashboard users={mockUsers} />
       </div>
     </div>
-  )
+  );
 }

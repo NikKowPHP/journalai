@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/lib/auth-context';
-import { Line, Bar } from 'react-chartjs-2';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { Line, Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,7 +13,7 @@ import {
   Tooltip,
   Legend,
   BarElement,
-} from 'chart.js';
+} from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -23,7 +23,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarElement
+  BarElement,
 );
 
 interface ChartData {
@@ -41,10 +41,10 @@ const AnalyticsCharts: React.FC = () => {
   const { user } = useAuth();
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [topicChartData, setTopicChartData] = useState<ChartData | null>(null);
-  const [selectedDateRange, setSelectedDateRange] = useState('30_days');
-  const [selectedQuestionType, setSelectedQuestionType] = useState('all');
+  const [selectedDateRange, setSelectedDateRange] = useState("30_days");
+  const [selectedQuestionType, setSelectedQuestionType] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -52,9 +52,9 @@ const AnalyticsCharts: React.FC = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/api/progress');
+        const response = await fetch("/api/progress");
         if (!response.ok) {
-          throw new Error('Failed to load analytics data');
+          throw new Error("Failed to load analytics data");
         }
         const data = await response.json();
         const metrics = data.metrics;
@@ -63,13 +63,13 @@ const AnalyticsCharts: React.FC = () => {
         // Generate sample data for demonstration based on selected filters
         let days: number;
         switch (selectedDateRange) {
-          case '7_days':
+          case "7_days":
             days = 7;
             break;
-          case '14_days':
+          case "14_days":
             days = 14;
             break;
-          case '30_days':
+          case "30_days":
             days = 30;
             break;
           default:
@@ -86,12 +86,12 @@ const AnalyticsCharts: React.FC = () => {
         });
 
         setChartData({
-          labels: accuracyData.map(d => d.date),
+          labels: accuracyData.map((d) => d.date),
           datasets: [
             {
-              label: `Accuracy Over Time (${selectedQuestionType === 'all' ? 'All Types' : selectedQuestionType})`,
-              data: accuracyData.map(d => d.accuracy * 100),
-              borderColor: 'rgba(75, 192, 192, 1)',
+              label: `Accuracy Over Time (${selectedQuestionType === "all" ? "All Types" : selectedQuestionType})`,
+              data: accuracyData.map((d) => d.accuracy * 100),
+              borderColor: "rgba(75, 192, 192, 1)",
               fill: false,
             },
           ],
@@ -104,16 +104,22 @@ const AnalyticsCharts: React.FC = () => {
 
         if (topicMetrics?.topicMastery?.length) {
           setTopicChartData({
-            labels: topicMetrics.topicMastery.map((t: TopicMasteryData) => t.topic_id),
-            datasets: [{
-              label: 'Mastery by Topic',
-              data: topicMetrics.topicMastery.map((t: TopicMasteryData) => t.mastery_level),
-              backgroundColor: 'rgba(54, 162, 235, 0.6)',
-            }]
+            labels: topicMetrics.topicMastery.map(
+              (t: TopicMasteryData) => t.topic_id,
+            ),
+            datasets: [
+              {
+                label: "Mastery by Topic",
+                data: topicMetrics.topicMastery.map(
+                  (t: TopicMasteryData) => t.mastery_level,
+                ),
+                backgroundColor: "rgba(54, 162, 235, 0.6)",
+              },
+            ],
           });
         }
       } catch (err) {
-        setError('Failed to load analytics data');
+        setError("Failed to load analytics data");
         console.error(err);
       } finally {
         setLoading(false);
@@ -179,7 +185,9 @@ const AnalyticsCharts: React.FC = () => {
         </div>
         {topicChartData && (
           <div className="p-4 bg-gray-100 rounded-md">
-            <h3 className="font-semibold mb-2">Strengths & Weaknesses by Topic</h3>
+            <h3 className="font-semibold mb-2">
+              Strengths & Weaknesses by Topic
+            </h3>
             <Bar data={topicChartData} />
           </div>
         )}

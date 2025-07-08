@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface TopicFilterProps {
   onTopicsChange: (topics: string[]) => void;
@@ -6,31 +6,31 @@ interface TopicFilterProps {
 
 const TopicFilter: React.FC<TopicFilterProps> = ({ onTopicsChange }) => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Temporary topics - will be replaced with API data later
   const allTopics = [
-    'Data Structures',
-    'Algorithms',
-    'System Design',
-    'Behavioral',
-    'JavaScript',
-    'TypeScript',
-    'React',
-    'Node.js',
-    'Database Design',
-    'REST APIs'
+    "Data Structures",
+    "Algorithms",
+    "System Design",
+    "Behavioral",
+    "JavaScript",
+    "TypeScript",
+    "React",
+    "Node.js",
+    "Database Design",
+    "REST APIs",
   ];
 
-  const filteredTopics = allTopics.filter(topic =>
-    topic.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTopics = allTopics.filter((topic) =>
+    topic.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleTopicChange = (topic: string) => {
     const newSelected = selectedTopics.includes(topic)
-      ? selectedTopics.filter(t => t !== topic)
+      ? selectedTopics.filter((t) => t !== topic)
       : [...selectedTopics, topic];
-    
+
     setSelectedTopics(newSelected);
     onTopicsChange(newSelected);
   };
@@ -38,7 +38,10 @@ const TopicFilter: React.FC<TopicFilterProps> = ({ onTopicsChange }) => {
   return (
     <div className="space-y-2">
       <div>
-        <label htmlFor="topicSearch" className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor="topicSearch"
+          className="block text-sm font-medium text-gray-700"
+        >
           Filter Topics
         </label>
         <input
@@ -53,7 +56,10 @@ const TopicFilter: React.FC<TopicFilterProps> = ({ onTopicsChange }) => {
 
       <div className="max-h-48 overflow-y-auto border rounded-md p-2">
         {filteredTopics.map((topic) => (
-          <div key={topic} className="flex items-center space-x-2 p-1 hover:bg-gray-50">
+          <div
+            key={topic}
+            className="flex items-center space-x-2 p-1 hover:bg-gray-50"
+          >
             <input
               type="checkbox"
               id={topic}

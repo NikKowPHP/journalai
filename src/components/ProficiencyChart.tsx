@@ -1,7 +1,16 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface ProficiencyChartProps {
-  data: Array<{ date: string; score: number }>
+  data: Array<{ date: string; score: number }>;
 }
 
 export function ProficiencyChart({ data }: ProficiencyChartProps) {
@@ -13,20 +22,20 @@ export function ProficiencyChart({ data }: ProficiencyChartProps) {
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis 
-            dataKey="date" 
+          <XAxis
+            dataKey="date"
             stroke="hsl(var(--foreground))"
             tick={{ fill: "hsl(var(--foreground))" }}
           />
-          <YAxis 
+          <YAxis
             stroke="hsl(var(--foreground))"
             tick={{ fill: "hsl(var(--foreground))" }}
           />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: "hsl(var(--background))",
               borderColor: "hsl(var(--border))",
-              borderRadius: "var(--radius)"
+              borderRadius: "var(--radius)",
             }}
           />
           <Legend />
@@ -40,5 +49,5 @@ export function ProficiencyChart({ data }: ProficiencyChartProps) {
         </LineChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }

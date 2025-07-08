@@ -46,6 +46,7 @@ graph TD
 ```
 
 **Flow Description:**
+
 1.  **Client (PWA):** The user interacts with the Next.js frontend, rendered server-side for performance. The Supabase client-side library handles authentication directly.
 2.  **Authentication & Storage:** Supabase provides a complete BaaS for user management (Auth) and file storage (Bucket) for potential future features.
 3.  **Application Backend (Next.js API Routes):** Core logic resides here. API routes validate user sessions, perform AI processing by calling the Gemini API, and use Prisma to manage data in the PostgreSQL database.
@@ -54,36 +55,36 @@ graph TD
 
 ## 3. Core Tech Stack
 
-| Component           | Technology                                | Rationale                                                                                                                   |
-| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Framework**       | **Next.js 15+ (App Router)**              | Unified frontend/backend, server components for performance, file-based routing, and a first-class developer experience.        |
-| **Database**        | **PostgreSQL**                            | Robust, reliable, and scalable SQL database with strong support for JSONB to store rich AI results.                         |
-| **ORM**             | **Prisma**                                | Provides ultimate type-safety between the database and application logic, auto-generated clients, and simplified migrations. |
-| **Auth & Storage**  | **Supabase (Auth & Bucket)**              | Offloads complex user management and file storage, providing secure, scalable, and easy-to-use SDKs.                          |
-| **Payments**        | **Stripe**                                | Industry leader for payment processing and subscription management with excellent developer tools and security.               |
-| **AI/LLM**          | **Google Gemini API**                     | Provides the advanced reasoning and language capabilities required for contextual translation, analysis, and autocomplete.     |
-| **Styling**         | **Tailwind CSS + shadcn/ui**              | Utility-first CSS for rapid development. `shadcn/ui` provides unstyled, accessible, and composable components.              |
-| **Deployment**      | **Vercel**                                | Native hosting for Next.js, offering seamless CI/CD, serverless functions, and global CDN.                                  |
+| Component          | Technology                   | Rationale                                                                                                                    |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**      | **Next.js 15+ (App Router)** | Unified frontend/backend, server components for performance, file-based routing, and a first-class developer experience.     |
+| **Database**       | **PostgreSQL**               | Robust, reliable, and scalable SQL database with strong support for JSONB to store rich AI results.                          |
+| **ORM**            | **Prisma**                   | Provides ultimate type-safety between the database and application logic, auto-generated clients, and simplified migrations. |
+| **Auth & Storage** | **Supabase (Auth & Bucket)** | Offloads complex user management and file storage, providing secure, scalable, and easy-to-use SDKs.                         |
+| **Payments**       | **Stripe**                   | Industry leader for payment processing and subscription management with excellent developer tools and security.              |
+| **AI/LLM**         | **Google Gemini API**        | Provides the advanced reasoning and language capabilities required for contextual translation, analysis, and autocomplete.   |
+| **Styling**        | **Tailwind CSS + shadcn/ui** | Utility-first CSS for rapid development. `shadcn/ui` provides unstyled, accessible, and composable components.               |
+| **Deployment**     | **Vercel**                   | Native hosting for Next.js, offering seamless CI/CD, serverless functions, and global CDN.                                   |
 
 ## 4. Key NPM Libraries & Tooling
 
-*   **State Management:** `zustand` (Minimal, fast, and scalable state management)
-*   **Data Fetching & Mutation:** `@tanstack/react-query` (Manages server state, caching, and optimistic updates)
-*   **Forms:** `react-hook-form` (High-performance, flexible form validation)
-*   **Schema Validation:** `zod` (TypeScript-first schema validation for API inputs and forms)
-*   **UI Components:** `shadcn/ui`, `headlessui/react` (Accessible, unstyled component primitives)
-*   **Data Visualization:** `recharts` (Composable charting library for analytics dashboards)
-*   **Utilities:** `date-fns`, `clsx`, `tailwind-merge`, `lucide-react`
+- **State Management:** `zustand` (Minimal, fast, and scalable state management)
+- **Data Fetching & Mutation:** `@tanstack/react-query` (Manages server state, caching, and optimistic updates)
+- **Forms:** `react-hook-form` (High-performance, flexible form validation)
+- **Schema Validation:** `zod` (TypeScript-first schema validation for API inputs and forms)
+- **UI Components:** `shadcn/ui`, `headlessui/react` (Accessible, unstyled component primitives)
+- **Data Visualization:** `recharts` (Composable charting library for analytics dashboards)
+- **Utilities:** `date-fns`, `clsx`, `tailwind-merge`, `lucide-react`
 
 ## 5. Monetization Strategy: Value-Based Freemium
 
 We will use a **Value-Based Freemium** model integrated with Stripe Billing. The core analysis engine is **free and unlimited** to all users to encourage habit formation. Revenue is generated by offering powerful, real-time AI tools and advanced analytics to dedicated learners who want to accelerate their progress. This model directly ties our recurring costs (AI API calls for real-time features) to our revenue.
 
-| Tier | Price | Key Features | Target |
-| :--- | :--- | :--- | :--- |
-| **Free** | $0 | **Unlimited** journal submissions & analyses, standard AI feedback, topic tracking, up to 5 AI Autocompletions/day, limited SRS (**10 card reviews/day**). | New users for acquisition and demonstrating core value. |
-| **Pro** | ~$12-15 / month | All Free features, plus:<br>• **Unlimited** In-Editor Contextual Translator<br>• **Unlimited** AI Autocomplete<br>• Advanced AI feedback (tone, style)<br>• **Unlimited** SRS access<br>• Comprehensive analytics dashboard | Dedicated, individual learners. Our primary offering. |
-| **Expert**| ~$25-30 / month | All Pro features, plus specialized AI models (e.g., "Business English") and priority access to beta features. | Professionals, academics, or highly advanced learners. (Future Scope) |
+| Tier       | Price           | Key Features                                                                                                                                                                                                                | Target                                                                |
+| :--------- | :-------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| **Free**   | $0              | **Unlimited** journal submissions & analyses, standard AI feedback, topic tracking, up to 5 AI Autocompletions/day, limited SRS (**10 card reviews/day**).                                                                  | New users for acquisition and demonstrating core value.               |
+| **Pro**    | ~$12-15 / month | All Free features, plus:<br>• **Unlimited** In-Editor Contextual Translator<br>• **Unlimited** AI Autocomplete<br>• Advanced AI feedback (tone, style)<br>• **Unlimited** SRS access<br>• Comprehensive analytics dashboard | Dedicated, individual learners. Our primary offering.                 |
+| **Expert** | ~$25-30 / month | All Pro features, plus specialized AI models (e.g., "Business English") and priority access to beta features.                                                                                                               | Professionals, academics, or highly advanced learners. (Future Scope) |
 
 ## 6. High-Level Prisma Schema
 
@@ -108,7 +109,7 @@ model User {
   selfAssessedLevel     String
   aiAssessedProficiency Float     @default(2.0)
   proficiencySubScores  Json?
-  
+
   // For soft-deletion and daily limits
   status                String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
   lastUsageReset        DateTime? // Timestamp for resetting daily limits (e.g., autocomplete)
@@ -120,7 +121,7 @@ model User {
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-  
+
   topics         Topic[]
   journalEntries JournalEntry[]
   srsItems       SrsReviewItem[]
@@ -135,7 +136,7 @@ model Topic {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   journalEntries JournalEntry[]
-  
+
   @@unique([userId, title])
 }
 
@@ -198,65 +199,75 @@ model SrsReviewItem {
 ## 7. Development Epics & User Stories
 
 ### **Core System Intelligence**
-*   **LS-SYS-001: Dynamic Proficiency Recalculation:** The system updates a user's `aiAssessedProficiency` score after each analysis.
-*   **LS-SYS-002: Adaptive Feedback Depth:** The AI adjusts the complexity of its explanations based on the user's proficiency score.
-*   **LS-SYS-003: Topic Mastery Evaluation:** The system evaluates entry scores to update a `Topic`'s mastery status. A Topic is marked `isMastered = true` when the user achieves an average overall score of 90% or higher across the last 3 journal entries within that topic.
-*   **LS-SYS-004: Handling Stripe Webhooks:** The backend listens for Stripe events to update a user's subscription status in the database automatically.
+
+- **LS-SYS-001: Dynamic Proficiency Recalculation:** The system updates a user's `aiAssessedProficiency` score after each analysis.
+- **LS-SYS-002: Adaptive Feedback Depth:** The AI adjusts the complexity of its explanations based on the user's proficiency score.
+- **LS-SYS-003: Topic Mastery Evaluation:** The system evaluates entry scores to update a `Topic`'s mastery status. A Topic is marked `isMastered = true` when the user achieves an average overall score of 90% or higher across the last 3 journal entries within that topic.
+- **LS-SYS-004: Handling Stripe Webhooks:** The backend listens for Stripe events to update a user's subscription status in the database automatically.
 
 ### **Epic 1: User Onboarding & Profile Configuration**
-*   **LS-001: Account Creation:** Sign up via email/password or social providers (Google, Apple) later.
-*   **LS-002: Initial Profile Setup:** Wizard to define target language, native language, purpose, and writing style.
-*   **LS-003: Self-Assessed Skill Level:** User selects their approximate CEFR level.
-*   **LS-004: AI-Powered Skill Evaluation:** User writes a short paragraph for the AI to analyze and suggest a starting level.
+
+- **LS-001: Account Creation:** Sign up via email/password or social providers (Google, Apple) later.
+- **LS-002: Initial Profile Setup:** Wizard to define target language, native language, purpose, and writing style.
+- **LS-003: Self-Assessed Skill Level:** User selects their approximate CEFR level.
+- **LS-004: AI-Powered Skill Evaluation:** User writes a short paragraph for the AI to analyze and suggest a starting level.
 
 ### **Epic 2: The Core Writing Experience**
-*   **LS-006: Starting a New Entry:** Choose a suggested topic, generate a new one, or select "Free Write".
-*   **LS-007: In-Editor AI Translator (Pro Feature):** [PRO] As a Pro user, I can highlight text to get an instant, context-aware translation into my native language without leaving the editor.
-*   **LS-008: Proactive AI Autocomplete (Freemium Feature):** As a user, when I pause writing for >10 seconds, the AI suggests a sentence completion. (Free: 5/day, Pro: Unlimited). *Technical Note: Daily limits reset for all users at midnight UTC.*
-*   **LS-022: AI-Generated Titles for Free-Writes:** The system automatically creates a title for free-write entries upon submission.
+
+- **LS-006: Starting a New Entry:** Choose a suggested topic, generate a new one, or select "Free Write".
+- **LS-007: In-Editor AI Translator (Pro Feature):** [PRO] As a Pro user, I can highlight text to get an instant, context-aware translation into my native language without leaving the editor.
+- **LS-008: Proactive AI Autocomplete (Freemium Feature):** As a user, when I pause writing for >10 seconds, the AI suggests a sentence completion. (Free: 5/day, Pro: Unlimited). _Technical Note: Daily limits reset for all users at midnight UTC._
+- **LS-022: AI-Generated Titles for Free-Writes:** The system automatically creates a title for free-write entries upon submission.
 
 ### **Epic 3: AI-Powered Analysis & Feedback**
-*   **LS-010: Viewing Post-Entry Analysis:** See a color-coded breakdown of the submitted entry. *Technical Note: Analysis runs as an asynchronous background job. The user is notified when it's complete and is not blocked from navigating the app.*
-*   **LS-011: Granular Feedback Categories:** Get specific feedback on Grammar, Phrasing, Vocabulary Choice, and Style.
-*   **LS-013: Creating SRS Flashcards:** I can easily add identified mistakes or words/phrases I've translated to my personal study deck. The system automatically creates a card with the appropriate context.
+
+- **LS-010: Viewing Post-Entry Analysis:** See a color-coded breakdown of the submitted entry. _Technical Note: Analysis runs as an asynchronous background job. The user is notified when it's complete and is not blocked from navigating the app._
+- **LS-011: Granular Feedback Categories:** Get specific feedback on Grammar, Phrasing, Vocabulary Choice, and Style.
+- **LS-013: Creating SRS Flashcards:** I can easily add identified mistakes or words/phrases I've translated to my personal study deck. The system automatically creates a card with the appropriate context.
 
 ### **Epic 4: Personalized Spaced Repetition System (SRS) Study**
-*   **LS-014: Daily SRS Review Session:** Dashboard prompts for a daily study session with due cards. *Technical Note: Free users are limited to reviewing 10 cards per day. The limit resets at midnight UTC.*
-*   **LS-015: Interactive Flashcard Review:** Review cards and self-report recall to update the SRS algorithm.
-*   **LS-016: Dynamic Card Content:** Cards show the rule/word, the original incorrect sentence, and the corrected version for full context.
+
+- **LS-014: Daily SRS Review Session:** Dashboard prompts for a daily study session with due cards. _Technical Note: Free users are limited to reviewing 10 cards per day. The limit resets at midnight UTC._
+- **LS-015: Interactive Flashcard Review:** Review cards and self-report recall to update the SRS algorithm.
+- **LS-016: Dynamic Card Content:** Cards show the rule/word, the original incorrect sentence, and the corrected version for full context.
 
 ### **Epic 5: Comprehensive Analytics & Adaptive Progression**
-*   **LS-018: Comprehensive Analytics Dashboard:** [PRO] View interactive charts for proficiency over time, sub-skill scores, common mistakes, and vocabulary growth.
-*   **LS-019: Journal History:** Browse all past entries and revisit their AI analysis.
-*   **LS-020: Adaptive Topic Suggestion:** The engine suggests new topics or topics for review based on the SRS algorithm and the user's current proficiency.
-*   **LS-021: Periodic Progress Reports:** Optional weekly summary reports (email or in-app) to boost motivation.
+
+- **LS-018: Comprehensive Analytics Dashboard:** [PRO] View interactive charts for proficiency over time, sub-skill scores, common mistakes, and vocabulary growth.
+- **LS-019: Journal History:** Browse all past entries and revisit their AI analysis.
+- **LS-020: Adaptive Topic Suggestion:** The engine suggests new topics or topics for review based on the SRS algorithm and the user's current proficiency.
+- **LS-021: Periodic Progress Reports:** Optional weekly summary reports (email or in-app) to boost motivation.
 
 ### **Epic 6: Monetization & Billing**
-*   **LS-023: Viewing Pricing & Tiers:** A clear pricing page comparing features across different tiers.
-*   **LS-024: Upgrading via Stripe Checkout:** A seamless and secure upgrade process handled by Stripe Checkout.
-*   **LS-025: Managing Subscription:** Users can manage billing, view invoices, or cancel via the Stripe Customer Portal.
+
+- **LS-023: Viewing Pricing & Tiers:** A clear pricing page comparing features across different tiers.
+- **LS-024: Upgrading via Stripe Checkout:** A seamless and secure upgrade process handled by Stripe Checkout.
+- **LS-025: Managing Subscription:** Users can manage billing, view invoices, or cancel via the Stripe Customer Portal.
 
 ### **Epic 7: System Resilience & Error Handling**
-*   **LS-SYS-005: AI Analysis Retry Logic:** If an AI analysis call fails, the system will automatically retry with backoff. The entry will be marked "Analysis Pending" in the UI.
-*   **LS-SYS-006: Failed Analysis User Notification:** If analysis fails permanently, the user sees a notification with an option to manually trigger it again.
-*   **LS-SYS-007: Stripe Webhook Idempotency:** The backend handles webhooks idempotently to prevent duplicate processing.
-*   **LS-ADM-004: Manual Webhook Reconciliation:** The Admin Panel will allow manual syncing of a user's subscription with Stripe.
+
+- **LS-SYS-005: AI Analysis Retry Logic:** If an AI analysis call fails, the system will automatically retry with backoff. The entry will be marked "Analysis Pending" in the UI.
+- **LS-SYS-006: Failed Analysis User Notification:** If analysis fails permanently, the user sees a notification with an option to manually trigger it again.
+- **LS-SYS-007: Stripe Webhook Idempotency:** The backend handles webhooks idempotently to prevent duplicate processing.
+- **LS-ADM-004: Manual Webhook Reconciliation:** The Admin Panel will allow manual syncing of a user's subscription with Stripe.
 
 ### **Epic 8: Account Management & Compliance**
-*   **LS-026: User Data Export:** As a user, I can go to my account settings and request a JSON export of all my journal entries and analyses.
-*   **LS-027: Account Deletion:** As a user, I can initiate account deletion. I must confirm by typing my email address. *Technical Note: This initiates a two-stage deletion. The account is marked `status: "DELETION_PENDING"` for a 14-day grace period. A nightly job will permanently erase data for accounts past this grace period.*
+
+- **LS-026: User Data Export:** As a user, I can go to my account settings and request a JSON export of all my journal entries and analyses.
+- **LS-027: Account Deletion:** As a user, I can initiate account deletion. I must confirm by typing my email address. _Technical Note: This initiates a two-stage deletion. The account is marked `status: "DELETION_PENDING"` for a 14-day grace period. A nightly job will permanently erase data for accounts past this grace period._
 
 ### **Epic 9: Admin & Support Tooling**
-*   **LS-ADM-001: User Lookup:** As an admin, I can search for a user by email to view their profile, subscription tier, and Stripe ID.
-*   **LS-ADM-002: View User Entries & Analyses:** As an admin, I can view a user's journal entries and the status of their AI analysis (e.g., completed, pending, failed).
-*   **LS-ADM-003: Manual Subscription Management:** As an admin, I can manually override a user's subscription tier for support purposes.
+
+- **LS-ADM-001: User Lookup:** As an admin, I can search for a user by email to view their profile, subscription tier, and Stripe ID.
+- **LS-ADM-002: View User Entries & Analyses:** As an admin, I can view a user's journal entries and the status of their AI analysis (e.g., completed, pending, failed).
+- **LS-ADM-003: Manual Subscription Management:** As an admin, I can manually override a user's subscription tier for support purposes.
 
 ## 8. Development & Compliance Practices
 
-*   **Code Quality:** `ESLint` and `Prettier` will be enforced via `husky` pre-commit hooks.
-*   **Environment Management:** Secrets (`DATABASE_URL`, `SUPABASE_KEY`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`) will be managed securely through Vercel's environment variables.
-*   **Testing Strategy:** Initial development will rely on rigorous manual testing and local verification. A formal automated testing strategy (e.g., using Vitest for unit tests and Cypress for end-to-end tests) will be defined and implemented post-MVP to ensure long-term stability.
-*   **Modularity:** Logic will be organized into a `services` directory (e.g., `ai.service.ts`, `stripe.service.ts`) to keep API routes thin and business logic reusable and testable.
-*   **Compliance & User Trust:**
-    *   **Cookie Consent:** A GDPR-compliant cookie consent banner will be implemented, allowing users to accept, reject, and customize tracking preferences.
-    *   **Data Privacy:** A clear Privacy Policy will detail how user data is used for AI processing, with strict controls in place. Users will have rights to data export and deletion as defined in the user stories.
+- **Code Quality:** `ESLint` and `Prettier` will be enforced via `husky` pre-commit hooks.
+- **Environment Management:** Secrets (`DATABASE_URL`, `SUPABASE_KEY`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`) will be managed securely through Vercel's environment variables.
+- **Testing Strategy:** Initial development will rely on rigorous manual testing and local verification. A formal automated testing strategy (e.g., using Vitest for unit tests and Cypress for end-to-end tests) will be defined and implemented post-MVP to ensure long-term stability.
+- **Modularity:** Logic will be organized into a `services` directory (e.g., `ai.service.ts`, `stripe.service.ts`) to keep API routes thin and business logic reusable and testable.
+- **Compliance & User Trust:**
+  - **Cookie Consent:** A GDPR-compliant cookie consent banner will be implemented, allowing users to accept, reject, and customize tracking preferences.
+  - **Data Privacy:** A clear Privacy Policy will detail how user data is used for AI processing, with strict controls in place. Users will have rights to data export and deletion as defined in the user stories.

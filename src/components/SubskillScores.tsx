@@ -1,10 +1,19 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface SubskillScoresProps {
   data: Array<{
-    skill: string
-    score: number
-  }>
+    skill: string;
+    score: number;
+  }>;
 }
 
 export function SubskillScores({ data }: SubskillScoresProps) {
@@ -16,29 +25,26 @@ export function SubskillScores({ data }: SubskillScoresProps) {
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis 
-            dataKey="skill" 
+          <XAxis
+            dataKey="skill"
             stroke="hsl(var(--foreground))"
             tick={{ fill: "hsl(var(--foreground))" }}
           />
-          <YAxis 
+          <YAxis
             stroke="hsl(var(--foreground))"
             tick={{ fill: "hsl(var(--foreground))" }}
           />
-          <Tooltip 
+          <Tooltip
             contentStyle={{
               backgroundColor: "hsl(var(--background))",
               borderColor: "hsl(var(--border))",
-              borderRadius: "var(--radius)"
+              borderRadius: "var(--radius)",
             }}
           />
           <Legend />
-          <Bar
-            dataKey="score"
-            fill="hsl(var(--primary))"
-          />
+          <Bar dataKey="score" fill="hsl(var(--primary))" />
         </BarChart>
       </ResponsiveContainer>
     </div>
-  )
+  );
 }
