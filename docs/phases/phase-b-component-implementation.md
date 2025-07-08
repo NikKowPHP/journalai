@@ -129,7 +129,7 @@
         -   `src/app/cookies/page.tsx`: Create a page with the title "Cookie Policy" and lorem ipsum text.
     *   **Integration:** Add links to these new pages in the application footer within `src/app/layout.tsx`.
 
--   [ ] **Task 7.3: Create Cookie Consent Banner Component (`CookieBanner.tsx`)**
+-   [x] **Task 7.3: Create Cookie Consent Banner Component (`CookieBanner.tsx`)**
     *   **File:** `src/components/CookieBanner.tsx`
     *   **Action:** Create a simple, fixed-position banner at the bottom of the screen with a short message about cookies, an "Accept" button, and a "Decline" button.
     *   **Integration:** Add this component to the root `src/app/layout.tsx` so it appears on all pages.

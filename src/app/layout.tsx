@@ -21,6 +21,7 @@ export const metadata: Metadata = {
 };
 
 import { Providers } from '@/providers';
+import { CookieBanner } from '@/components/CookieBanner';
 
 export default function RootLayout({
   children,
@@ -49,6 +50,7 @@ export default function RootLayout({
             </div>
           </nav>
           {children}
+          <CookieBanner />
           <footer className="border-t mt-8 py-4">
             <div className="container mx-auto px-4 text-sm text-muted-foreground flex gap-4">
               <Link href="/privacy" className="hover:text-foreground transition-colors">
