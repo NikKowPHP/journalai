@@ -1,3 +1,13 @@
+/**
+ * Displays analyzed journal text with color-coded highlights for different feedback types.
+ * @param {object} props - The component props.
+ * @param {string} props.content - The original journal text to display.
+ * @param {Array} props.highlights - Array of highlight objects containing:
+ * @param {number} props.highlights[].start - Highlight start index in content.
+ * @param {number} props.highlights[].end - Highlight end index in content.
+ * @param {'grammar'|'phrasing'|'vocabulary'} props.highlights[].type - The type of feedback for styling.
+ * @returns {React.ReactElement} The analysis display component with highlighted feedback.
+ */
 interface AnalysisDisplayProps {
   content: string
   highlights: Array<{

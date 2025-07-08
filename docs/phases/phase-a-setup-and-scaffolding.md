@@ -29,13 +29,13 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
 
 ### 1. Foundation & Dependencies
 
--   [ ] **Task 1.1: Install Existing & New Dependencies:** Run a single command to ensure all existing dependencies are installed and add all new libraries required for LinguaScribe's UI and features.
+-   [x] **Task 1.1: Install Existing & New Dependencies:** Run a single command to ensure all existing dependencies are installed and add all new libraries required for LinguaScribe's UI and features.
     ```bash
     npm install lucide-react clsx tailwind-merge recharts @tiptap/react @tiptap/pm @tiptap/starter-kit @stripe/stripe-js @stripe/react-stripe-js
     ```
     *Note: If this fails due to peer dependency conflicts, re-run with `--legacy-peer-deps`.*
 
--   [ ] **Task 1.2: Initialize `shadcn/ui`:** Use the `shadcn/ui` CLI to initialize and configure the project. When prompted, use the specified values.
+-   [x] **Task 1.2: Initialize `shadcn/ui`:** Use the `shadcn/ui` CLI to initialize and configure the project. When prompted, use the specified values.
     ```bash
     npx shadcn-ui@latest init
     ```
@@ -52,7 +52,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
 
 ### 2. Core Layout & Branding Adaptation
 
--   [ ] **Task 2.1: Update Main Brand and Navigation Links:** Modify `src/app/layout.tsx` to change the branding from "PrepAI" to "LinguaScribe" and update the navigation links to match the new application structure.
+-   [x] **Task 2.1: Update Main Brand and Navigation Links:** Modify `极src/app/layout.tsx` to change the branding from "PrepAI" to "LinguaScribe" and update the navigation links to match the new application structure.
 
     *   **File:** `src/app/layout.tsx`
     *   **Action:** Find the `<nav>` element and replace its contents to match the target code below.
@@ -91,7 +91,7 @@ Now, here is the detailed, single-file set of atomic tasks for the new **Phase A
           </nav>
         ```
 
--   [ ] **Task 2.2: Update Public Landing Page Content:** Modify `src/app/page.tsx` to reflect LinguaScribe's branding and features.
+-   [x] **Task 2.2: Update Public Landing Page Content:** Modify `src/app/page.tsx` to reflect LinguaScribe's branding and features.
     *   **File:** `src/app/page.tsx`
     *   **Action:** Update the headlines, feature descriptions, and footer.
     *   **Find and Replace 1 (Hero Section):**

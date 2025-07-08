@@ -4,6 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+/**
+ * A multi-step onboarding wizard that guides new users through initial setup.
+ * @param {object} props - The component props.
+ * @param {boolean} props.isOpen - Controls the visibility of the wizard.
+ * @param {function} props.onClose - Callback invoked when the wizard is closed.
+ * @param {function} props.onComplete - Callback invoked when onboarding is finished.
+ * @returns {React.ReactElement} The onboarding wizard component.
+ */
 interface OnboardingWizardProps {
   isOpen: boolean;
   onClose: () => void;

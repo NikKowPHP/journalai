@@ -1,6 +1,14 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
+/**
+ * Displays a single feedback item with original text, suggestion, and explanation.
+ * @param {object} props - The component props.
+ * @param {string} props.original - The original user-submitted text.
+ * @param {string} props.suggestion - The suggested improved version.
+ * @param {string} props.explanation - The reasoning behind the suggestion.
+ * @returns {React.ReactElement} A card component displaying the feedback.
+ */
 interface FeedbackCardProps {
   original: string
   suggestion: string

@@ -2,6 +2,14 @@ import { useState } from 'react'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
+/**
+ * An interactive flashcard component for spaced repetition study.
+ * @param {object} props - The component props.
+ * @param {string} props.frontContent - The content displayed on the card's front.
+ * @param {string} props.backContent - The content displayed on the card's back.
+ * @param {string} [props.context] - Optional contextual information shown below back content.
+ * @returns {React.ReactElement} A flipable card with study controls.
+ */
 interface FlashcardProps {
   frontContent: string
   backContent: string
