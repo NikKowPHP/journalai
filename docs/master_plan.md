@@ -60,7 +60,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ---
 
-### `[ ]` Phase H: External Service Integration (Stripe)
+### `[x]` Phase H: External Service Integration (Stripe)
 
 **Goal:** Implement the complete billing and subscription lifecycle by integrating with the Stripe API, including checkout sessions, the customer portal, and webhook handling.
 

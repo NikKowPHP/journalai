@@ -82,14 +82,14 @@
     5.  Provide a `return_url` pointing back to your settings page.
     6.  Return the portal session `url` to the client.
 
-- [ ] **Task H.3.2: Add "Manage Subscription" Button.**
+- [x] **Task H.3.2: Add "Manage Subscription" Button.**
   - **File:** `src/app/settings/page.tsx`
   - **Action:** Add a "Manage Subscription" button that is only visible to subscribed users.
   - **Logic:** Use `useMutation` to call the `/api/billing/portal` endpoint and redirect the user to the returned URL.
 
 ### 4. Implement Stripe Webhook Handler
 
-- [ ] **Task H.4.1: Create Webhook API Route.**
+- [x] **Task H.4.1: Create Webhook API Route.**
 
   - **Action:** Create the public endpoint that will receive events directly from Stripe.
   - **File:** `src/app/api/billing/webhook/route.ts`
@@ -100,7 +100,7 @@
     4.  Use `stripe.webhooks.constructEvent` to verify the event's authenticity using the raw body, signature, and your `STRIPE_WEBHOOK_SECRET`. This is a critical security step.
     5.  Use a `switch` statement on `event.type` to handle different events.
 
-- [ ] **Task H.4.2: Handle `checkout.session.completed` Event.**
+- [x] **Task H.4.2: Handle `checkout.session.completed` Event.**
 
   - **Action:** In the webhook handler, implement the logic for when a user successfully subscribes.
   - **Logic:**
@@ -109,14 +109,14 @@
     3.  Use the `stripeCustomerId` to find the corresponding user in your database.
     4.  Update the user's record: set their `subscriptionTier` to "PRO" (or based on the price ID) and `subscriptionStatus` to "active".
 
-- [ ] **Task H.4.3: Handle Subscription Update/Deletion Events.**
+- [x] **Task H.4.3: Handle Subscription Update/Deletion Events.**
 
   - **Action:** In the webhook handler, add cases for subscription changes.
   - **Events to Handle:**
     - `customer.subscription.updated`: Handle changes like upgrades or downgrades. Update `subscriptionTier` and `subscriptionStatus` accordingly.
     - `customer.subscription.deleted`: Handle cancellations. Set the user's `subscriptionStatus` to "canceled" or `subscriptionTier` back to "FREE".
 
-- [ ] **Task H.4.4: Test Webhooks Locally.**
+- [x] **Task H.4.4: Test Webhooks Locally.**
   - **Action:** Use the Stripe CLI to forward test webhook events to your local development server.
   - **Command (Example):**
     ```bash
