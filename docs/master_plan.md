@@ -28,7 +28,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ---
 
-### `[ ]` Phase D: Finalization & Handoff
+### `[x]` Phase D: Finalization & Handoff
 
 **Goal:** Perform final code cleanup, add developer documentation, and prepare the static codebase for handoff to the backend integration phase.
 
@@ -36,7 +36,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ---
 
-### `[ ]` Phase E: Database & Schema Implementation
+### `[x]` Phase E: Database & Schema Implementation
 
 **Goal:** Establish the application's data layer by creating the database schema, running the initial migration, and seeding it with necessary initial data.
 
@@ -44,7 +44,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ---
 
-### `[ ]` Phase F: API Route & Backend Logic Implementation
+### `[x]` Phase F: API Route & Backend Logic Implementation
 
 **Goal:** Build all the backend API routes as defined in the application epics. This involves creating the logic for CRUD operations, AI interactions, and business rules.
 
@@ -52,7 +52,7 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ---
 
-### `[ ]` Phase G: Frontend Integration with React Query
+### `[x]` Phase G: Frontend Integration with React Query
 
 **Goal:** Replace all mock data in the frontend components with live data from the newly created API. This involves using `@tanstack/react-query` for data fetching, caching, and mutations.
 
