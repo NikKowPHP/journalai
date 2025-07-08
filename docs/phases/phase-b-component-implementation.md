@@ -102,7 +102,7 @@
 ### 6. Epic 6 & 9 - Monetization & Admin Components
 **Associated Pages:** `/settings`, `/admin`
 
--   [ ] **Task 6.1: Create Pricing Page Component (`PricingTable.tsx`)**
+-   [x] **Task 6.1: Create Pricing Page Component (`PricingTable.tsx`)**
     *   **File:** `src/components/PricingTable.tsx`
     *   **Action:** Build a component that displays the three-tiered pricing plan (Free, Pro, Expert) as defined in the v7 documentation. Use `shadcn/ui`'s `Card` and `Button` components. Each tier should list its key features and have a call-to-action button like "Get Started" or "Upgrade to Pro".
     *   **Integration:** Add this component to a new page: `src/app/pricing/page.tsx`. Also, add a link to this page in the user settings page (`/settings`).
