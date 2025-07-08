@@ -29,7 +29,7 @@
         grep -r "console.log" ./src/
         ```
 
--   [ ] **Task 1.3: Run Linter to Remove Unused Imports and Variables.**
+-   [x] **Task 1.3: Run Linter to Remove Unused Imports and Variables.**
     *   **Action:** Use the linter to automatically clean up any unused code.
     ```bash
     npm run lint -- --fix
