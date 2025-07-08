@@ -41,7 +41,7 @@
         -   Add a placeholder text like "Start writing your thoughts in your target language...".
         -   Add a "Submit for Analysis" button below the editor.
 
--   [ ] **Task 2.2: Create Journal History List (`JournalHistoryList.tsx`)**
+-   [x] **Task 2.2: Create Journal History List (`JournalHistoryList.tsx`)**
     *   **File:** `src/components/JournalHistoryList.tsx`
     *   **Action:** Create a component that displays a list of past journal entries. Use mock data. Each list item should show a title, a short content snippet, and the date.
     *   **Integration:** Add `JournalEditor` and `JournalHistoryList` to the `/journal` page. The layout should resemble a two-column design (list on the left, editor on the right) or a stacked design.
