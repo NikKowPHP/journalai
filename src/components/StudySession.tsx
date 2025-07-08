@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { Flashcard } from "@/components/Flashcard";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

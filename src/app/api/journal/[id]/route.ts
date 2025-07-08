@@ -5,8 +5,8 @@ import { z } from "zod";
 
 // GET handler to fetch a single journal with its analysis
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } },
+  request: NextRequest,
+  { params }: { params: { id: string } }
 ) {
   const supabase = await createClient();
   const {
@@ -44,8 +44,9 @@ const updateJournalSchema = z.object({
 // PUT handler to update a journal
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
+  const { params } = context;
   const supabase = await createClient();
   const {
     data: { user },
@@ -77,8 +78,9 @@ export async function PUT(
 // DELETE handler to remove a journal
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: { id: string } },
 ) {
+  const { params } = context;
   const supabase = await createClient();
   const {
     data: { user },
