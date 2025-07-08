@@ -48,14 +48,34 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
           <div className="space-y-4">
             <p>What is your native language?</p>
             <Select>
-              <SelectTrigger>
+              <SelectTrigger className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="english">English</SelectItem>
-                <SelectItem value="spanish">Spanish</SelectItem>
-                <SelectItem value="french">French</SelectItem>
-                <SelectItem value="german">German</SelectItem>
+                <SelectItem
+                  value="english"
+                  className="focus:bg-accent focus:text-accent-foreground"
+                >
+                  English
+                </SelectItem>
+                <SelectItem
+                  value="spanish"
+                  className="focus:bg-accent focus:text-accent-foreground"
+                >
+                  Spanish
+                </SelectItem>
+                <SelectItem
+                  value="french"
+                  className="focus:bg-accent focus:text-accent-foreground"
+                >
+                  French
+                </SelectItem>
+                <SelectItem
+                  value="german"
+                  className="focus:bg-accent focus:text-accent-foreground"
+                >
+                  German
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -116,18 +136,28 @@ export function OnboardingWizard({ isOpen, onClose, onComplete }: OnboardingWiza
           </div>
         )}
 
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-6 gap-4">
           {step > 1 && (
-            <Button variant="outline" onClick={prevStep}>
+            <Button
+              variant="outline"
+              onClick={prevStep}
+              className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            >
               Back
             </Button>
           )}
           {step < 6 ? (
-            <Button onClick={nextStep}>
+            <Button
+              onClick={nextStep}
+              className="hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
+            >
               Next
             </Button>
           ) : (
-            <Button onClick={onComplete}>
+            <Button
+              onClick={onComplete}
+              className="hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
+            >
               Get Started
             </Button>
           )}

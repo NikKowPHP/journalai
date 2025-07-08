@@ -15,13 +15,28 @@ export function ProfileForm() {
       <div className="space-y-2">
         <Label>Native Language</Label>
         <Select>
-          <SelectTrigger>
+          <SelectTrigger className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring">
             <SelectValue placeholder="Select language" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="english">English</SelectItem>
-            <SelectItem value="spanish">Spanish</SelectItem>
-            <SelectItem value="french">French</SelectItem>
+            <SelectItem
+              value="english"
+              className="focus:bg-accent focus:text-accent-foreground"
+            >
+              English
+            </SelectItem>
+            <SelectItem
+              value="spanish"
+              className="focus:bg-accent focus:text-accent-foreground"
+            >
+              Spanish
+            </SelectItem>
+            <SelectItem
+              value="french"
+              className="focus:bg-accent focus:text-accent-foreground"
+            >
+              French
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

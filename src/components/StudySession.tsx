@@ -34,7 +34,7 @@ export function StudySession({ cards }: StudySessionProps) {
     <div className="space-y-6">
       {currentCardIndex < cards.length ? (
         <>
-          <div className="text-xl font-semibold">
+          <div className="text-xl font-semibold text-muted-foreground">
             Card {currentCardIndex + 1} of {cards.length}
           </div>
           <Flashcard
@@ -44,7 +44,7 @@ export function StudySession({ cards }: StudySessionProps) {
           />
         </>
       ) : (
-        <div className="text-center p-6 border rounded-lg">
+        <div className="text-center p-6 border rounded-lg bg-muted/20">
           <h2 className="text-xl font-semibold mb-2">Session Complete!</h2>
           <p className="text-gray-600">You've reviewed all cards in this deck.</p>
         </div>

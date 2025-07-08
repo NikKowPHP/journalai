@@ -8,9 +8,11 @@ const mockUsers = [
 
 export default function AdminPage() {
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-      <AdminDashboard users={mockUsers} />
+    <div className="container mx-auto p-8 space-y-6">
+      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      <div className="p-6 border rounded-lg bg-background">
+        <AdminDashboard users={mockUsers} />
+      </div>
     </div>
   )
 }

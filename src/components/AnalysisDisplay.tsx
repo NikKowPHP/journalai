@@ -33,9 +33,9 @@ export function AnalysisDisplay({ content, highlights }: AnalysisDisplayProps) {
     // Add highlighted text
     const highlightedText = content.slice(highlight.start, highlight.end)
     const bgColor = {
-      grammar: 'bg-red-100',
-      phrasing: 'bg-blue-100',
-      vocabulary: 'bg-yellow-100',
+      grammar: 'bg-red-300/80 dark:bg-red-700/80',
+      phrasing: 'bg-blue-300/80 dark:bg-blue-700/80',
+      vocabulary: 'bg-yellow-300/80 dark:bg-yellow-700/80',
     }[highlight.type]
     
     parts.push(
@@ -53,7 +53,7 @@ export function AnalysisDisplay({ content, highlights }: AnalysisDisplayProps) {
   }
 
   return (
-    <div className="p-4 border rounded-lg bg-white">
+    <div className="p-4 border rounded-lg bg-background">
       <h2 className="text-lg font-semibold mb-4">Your Original Text</h2>
       <div className="prose max-w-none">{parts}</div>
     </div>

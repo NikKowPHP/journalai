@@ -1,30 +1,43 @@
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts'
-
-interface SkillScore {
-  skill: string
-  score: number
-}
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 interface SubskillScoresProps {
-  data: SkillScore[]
+  data: Array<{
+    skill: string
+    score: number
+  }>
 }
 
 export function SubskillScores({ data }: SubskillScoresProps) {
   return (
     <div className="h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="skill" />
-          <PolarRadiusAxis angle={30} domain={[0, 100]} />
-          <Radar
-            name="Skills"
-            dataKey="score"
-            stroke="#2563eb"
-            fill="#2563eb"
-            fillOpacity={0.6}
+        <BarChart
+          data={data}
+          margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+          <XAxis 
+            dataKey="skill" 
+            stroke="hsl(var(--foreground))"
+            tick={{ fill: "hsl(var(--foreground))" }}
           />
-        </RadarChart>
+          <YAxis 
+            stroke="hsl(var(--foreground))"
+            tick={{ fill: "hsl(var(--foreground))" }}
+          />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: "hsl(var(--background))",
+              borderColor: "hsl(var(--border))",
+              borderRadius: "var(--radius)"
+            }}
+          />
+          <Legend />
+          <Bar
+            dataKey="score"
+            fill="hsl(var(--primary))"
+          />
+        </BarChart>
       </ResponsiveContainer>
     </div>
   )

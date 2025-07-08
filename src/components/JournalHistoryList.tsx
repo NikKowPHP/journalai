@@ -19,7 +19,7 @@ export function JournalHistoryList({ journals }: JournalHistoryListProps) {
         <Link
           key={entry.id}
           href={`/journal/${entry.id}`}
-          className="block p-4 border rounded-lg hover:bg-gray-50"
+          className="block p-4 border rounded-lg hover:bg-accent/50 transition-colors"
         >
           <h3 className="font-medium">{entry.title}</h3>
           <p className="text-sm text-gray-600 line-clamp-2">{entry.snippet}</p>

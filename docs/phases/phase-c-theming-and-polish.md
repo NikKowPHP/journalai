@@ -12,7 +12,7 @@
     npm install next-themes
     ```
 
--   [ ] **Task 1.2: Create the Theme Provider Component.**
+-   [x] **Task 1.2: Create the Theme Provider Component.**
     *   **Action:** Create a new client component that wraps the `next-themes` provider. This encapsulates the theme logic.
     *   **File:** `src/components/theme-provider.tsx`
     *   **Content:**
@@ -126,42 +126,42 @@
 
 **Goal:** Review every new page and component to ensure visual consistency in spacing, typography, colors, and interactive states. Apply Tailwind CSS utility classes as needed to correct inconsistencies.
 
--   [ ] **Task 2.1: Review Onboarding and Settings Components.**
+-   [x] **Task 2.1: Review Onboarding and Settings Components.**
     *   **Files:** `src/app/settings/page.tsx`, `src/components/OnboardingWizard.tsx`, `src/components/ProfileForm.tsx`, `src/components/AccountDeletion.tsx`.
     *   **Checklist:**
         -   Consistent spacing between form labels and inputs.
         -   Consistent use of `Button` variants (`primary`, `destructive`).
         -   All interactive elements have clear `:hover` and `:focus-visible` states.
 
--   [ ] **Task 2.2: Review Core Journal Experience.**
+-   [x] **Task 2.2: Review Core Journal Experience.**
     *   **Files:** `src/app/journal/page.tsx`, `src/components/JournalEditor.tsx`, `src/components/JournalHistoryList.tsx`.
     *   **Checklist:**
         -   The Tiptap editor's styling matches the application's theme (background, text color).
         -   The "Submit for Analysis" button is styled as a primary action.
         -   The `JournalHistoryList` items have consistent padding and a clear hover state.
 
--   [ ] **Task 2.3: Review AI Analysis and Feedback UI.**
+-   [x] **Task 2.3: Review AI Analysis and Feedback UI.**
     *   **Files:** `src/app/journal/[id]/page.tsx`, `src/components/AnalysisDisplay.tsx`, `src/components/FeedbackCard.tsx`.
     *   **Checklist:**
         -   Highlighted text in `AnalysisDisplay` is readable and has sufficient contrast in both light and dark modes.
         -   `FeedbackCard` components have consistent internal padding and typographic hierarchy.
         -   The "Add to Study Deck" button has a consistent secondary style.
 
--   [ ] **Task 4.4: Review SRS Study Components.**
+-   [x] **Task 4.4: Review SRS Study Components.**
     *   **Files:** `src/app/study/page.tsx`, `src/components/Flashcard.tsx`, `src/components/StudySession.tsx`.
     *   **Checklist:**
         -   The `Flashcard` has a clear visual distinction between its front and back sides.
         -   The "Forgot/Good/Easy" buttons have distinct, intuitive styling (e.g., red, blue, green).
         -   All buttons have proper disabled states when not applicable.
 
--   [ ] **Task 4.5: Review Analytics Dashboard.**
+-   [x] **Task 4.5: Review Analytics Dashboard.**
     *   **File:** `src/app/analytics/page.tsx`.
     *   **Checklist:**
         -   The `recharts` charts are responsive and legible on smaller screens.
         -   Chart tooltips, labels, and legends are styled to be visible in both light and dark modes.
         -   The dashboard layout is clean, with consistent spacing between chart components.
 
--   [ ] **Task 4.6: Review Monetization and Admin Pages.**
+-   [x] **Task 4.6: Review Monetization and Admin Pages.**
     *   **Files:** `src/app/pricing/page.tsx`, `src/app/admin/page.tsx`.
     *   **Checklist:**
         -   The `PricingTable` component clearly distinguishes between the different tiers. The "Pro" tier should be visually emphasized.

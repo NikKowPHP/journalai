@@ -19,7 +19,7 @@ export function JournalEditor({ initialContent = "Start writing your thoughts in
     content: initialContent,
     editorProps: {
       attributes: {
-        class: "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4",
+        class: "prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 bg-background text-foreground",
       },
     },
   })
@@ -55,7 +55,7 @@ export function JournalEditor({ initialContent = "Start writing your thoughts in
       <EditorContent editor={editor} />
       <div className="p-4 border-t">
         <button
-          className="px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+          className="px-4 py-2 rounded bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
           onClick={onSubmit}
         >
           Submit for Analysis

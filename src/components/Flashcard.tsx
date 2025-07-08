@@ -20,10 +20,10 @@ export function Flashcard({ frontContent, backContent, context }: FlashcardProps
   const [isFlipped, setIsFlipped] = useState(false)
 
   return (
-    <Card className="p-6 space-y-6">
+    <Card className="p-6 space-y-6 bg-gradient-to-br from-background to-muted/20">
       {!isFlipped ? (
         <div className="space-y-4">
-          <div className="text-lg">{frontContent}</div>
+          <div className="text-lg font-medium text-center p-4 border-b">{frontContent}</div>
           <Button 
             onClick={() => setIsFlipped(true)}
             className="w-full"
@@ -33,29 +33,29 @@ export function Flashcard({ frontContent, backContent, context }: FlashcardProps
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="text-lg">{backContent}</div>
+          <div className="text-lg font-medium text-center p-4 border-b bg-accent/20">{backContent}</div>
           {context && <div className="text-sm text-gray-600">{context}</div>}
           <div className="flex gap-2">
-            <Button 
-              variant="destructive" 
-              className="flex-1"
+            <Button
+              variant="destructive"
+              className="flex-1 hover:bg-destructive/90"
               onClick={() => setIsFlipped(false)}
             >
-              Forgot
+              Forgot ❌
             </Button>
-            <Button 
-              variant="default" 
-              className="flex-1"
+            <Button
+              variant="default"
+              className="flex-1 hover:bg-primary/90 bg-blue-600"
               onClick={() => setIsFlipped(false)}
             >
-              Good
+              Good ✔️
             </Button>
-            <Button 
-              variant="secondary" 
-              className="flex-1"
+            <Button
+              variant="secondary"
+              className="flex-1 hover:bg-secondary/90 bg-green-600 text-white"
               onClick={() => setIsFlipped(false)}
             >
-              Easy
+              Easy 💡
             </Button>
           </div>
         </div>

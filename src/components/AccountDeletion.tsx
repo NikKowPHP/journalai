@@ -25,11 +25,14 @@ export function AccountDeletion() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 items-center gap-4 py-2">
             <Label htmlFor="email" className="text-right">
               Email
             </Label>
-            <Input id="email" className="col-span-3" />
+            <Input
+              id="email"
+              className="col-span-3 hover:border-input focus-visible:ring-2 focus-visible:ring-ring"
+            />
           </div>
         </div>
         <DialogFooter>
