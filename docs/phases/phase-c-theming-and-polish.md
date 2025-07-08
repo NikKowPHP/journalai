@@ -53,7 +53,7 @@
         }
         ```
 
--   [ ] **Task 1.4: Create the Theme Toggle Component.**
+-   [x] **Task 1.4: Create the Theme Toggle Component.**
     *   **Action:** Create the UI component (a button with icons) that users will click to switch themes.
     *   **File:** `src/components/ThemeToggle.tsx`
     *   **Content:**
