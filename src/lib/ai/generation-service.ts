@@ -38,6 +38,19 @@ export interface RoleSuggestion {
   description: string;
 }
 
+export interface JournalAnalysisResult {
+  grammarScore: number;
+  phrasingScore: number;
+  vocabularyScore: number;
+  feedback: string;
+  mistakes: Array<{
+    type: string;
+    original: string;
+    corrected: string;
+    explanation: string;
+  }>;
+}
+
 export interface QuestionGenerationService {
   /**
    * Generates questions based on given topics and difficulty
@@ -45,6 +58,17 @@ export interface QuestionGenerationService {
    * @returns Promise resolving to generated questions
    */
   generateQuestions(context: GenerationContext): Promise<GeneratedQuestion[]>;
+
+  /**
+   * Analyzes a journal entry for grammar, phrasing, and vocabulary
+   * @param journalContent The text content of the journal entry
+   * @param targetLanguage The target language for analysis (default: English)
+   * @returns Promise resolving to structured analysis results
+   */
+  analyzeJournalEntry(
+    journalContent: string,
+    targetLanguage?: string
+  ): Promise<JournalAnalysisResult>;
 
   /**
    * Refines a role name and provides suggestions with descriptions.

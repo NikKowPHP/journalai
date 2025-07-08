@@ -6,7 +6,7 @@
 
 ### 1. Setup React Query
 
-- [ ] **Task G.1.1: Install `@tanstack/react-query`.**
+- [x] **Task G.1.1: Install `@tanstack/react-query`.**
 
   - **Action:** Add the library to the project dependencies.
   - **Command:**
@@ -14,7 +14,7 @@
     npm install @tanstack/react-query
     ```
 
-- [ ] **Task G.1.2: Create a React Query Client.**
+- [x] **Task G.1.2: Create a React Query Client.**
 
   - **Action:** It's a best practice to have a single, shared Query Client instance.
   - **File:** `src/lib/query-client.ts`
@@ -33,7 +33,7 @@
     });
     ```
 
-- [ ] **Task G.1.3: Add `QueryClientProvider` to the Application.**
+- [x] **Task G.1.3: Add `QueryClientProvider` to the Application.**
 
   - **Action:** Modify the main `Providers` component to wrap the application with the `QueryClientProvider`.
   - **File:** `src/providers.tsx`
@@ -66,7 +66,7 @@
 
 ### 2. Integrate the Journal Page
 
-- [ ] **Task G.2.1: Fetch Journal History.**
+- [x] **Task G.2.1: Fetch Journal History.**
 
   - **File:** `src/app/journal/page.tsx`
   - **Action:** Use the `useQuery` hook to fetch the list of journal entries. Remove any mock data from `JournalHistoryList.tsx` and pass the fetched data as props.
@@ -90,7 +90,7 @@
     // Pass `journals` to <JournalHistoryList journals={journals} />
     ```
 
-- [ ] **Task G.2.2: Implement Journal Creation and Analysis Mutation.**
+- [x] **Task G.2.2: Implement Journal Creation and Analysis Mutation.**
 
   - **File:** `src/components/JournalEditor.tsx`
   - **Action:** Use the `useMutation` hook to handle the submission of a new journal entry. On success, trigger a refetch of the 'journals' query to update the history list.
@@ -122,7 +122,7 @@
 
 ### 3. Integrate the Study Deck Page
 
-- [ ] **Task G.3.1: Fetch the SRS Study Deck.**
+- [x] **Task G.3.1: Fetch the SRS Study Deck.**
 
   - **File:** `src/app/study/page.tsx`
   - **Action:** In the parent component for the study session, use `useQuery` to fetch the list of due SRS cards from `/api/srs/deck`. Pass this data to the `StudySession` component.
@@ -137,7 +137,7 @@
     // Pass `studyDeck` to <StudySession cards={studyDeck} />
     ```
 
-- [ ] **Task G.3.2: Implement SRS Review Mutation.**
+- [x] **Task G.3.2: Implement SRS Review Mutation.**
 
   - **File:** `src/components/Flashcard.tsx` or `src/components/StudySession.tsx`
   - **Action:** Use `useMutation` to handle the review submission. When a user clicks "Forgot", "Good", or "Easy", this mutation will call the `/api/srs/review` endpoint.
@@ -163,7 +163,7 @@
 
 ### 4. Integrate the Analytics Page
 
-- [ ] **Task G.4.1: Fetch Analytics Data.**
+- [x] **Task G.4.1: Fetch Analytics Data.**
 
   - **File:** `src/app/analytics/page.tsx`
   - **Action:** Use `useQuery` to fetch the aggregated analytics data from `/api/analytics`. Pass the data down to the chart components (`ProficiencyChart`, `SubskillScores`).

@@ -6,6 +6,7 @@ import {
   EvaluationResult,
   AudioEvaluationContext,
   RoleSuggestion,
+  JournalAnalysisResult,
 } from "./generation-service";
 import {
   GoogleGenAI,
@@ -17,14 +18,88 @@ import * as os from "os";
 import * as path from "path";
 import * as crypto from "crypto";
 
-export class GeminiQuestionGenerationService
-  implements QuestionGenerationService
-{
+export class GeminiQuestionGenerationService implements QuestionGenerationService {
   private genAI: GoogleGenAI;
   private model: string = "gemini-2.5-flash";
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenAI({ apiKey });
+  }
+
+  async analyzeJournalEntry(
+    journalContent: string,
+    targetLanguage: string = "English"
+  ): Promise<JournalAnalysisResult> {
+    const prompt = `
+      You are an expert language tutor analyzing a journal entry written in ${targetLanguage}.
+      Provide detailed feedback on grammar, phrasing, style, and vocabulary usage.
+
+      The journal entry content is:
+      "${journalContent}"
+
+      Your response MUST be a single raw JSON object with this exact structure:
+      {
+        "grammarScore": "A score from 0-100 rating the grammatical correctness",
+        "phrasingScore": "A score from 0-100 rating the natural flow and phrasing",
+        "vocabularyScore": "A score from 0-100 rating the vocabulary richness and appropriateness",
+        "feedback": "Overall feedback summarizing the strengths and areas for improvement",
+        "mistakes": [
+          {
+            "type": "grammar|phrasing|vocabulary|style",
+            "original": "The original problematic text",
+            "corrected": "The suggested correction",
+            "explanation": "Explanation of why this is an improvement"
+          }
+        ]
+      }
+
+      Example response:
+      {
+        "grammarScore": 85,
+        "phrasingScore": 75,
+        "vocabularyScore": 90,
+        "feedback": "Overall good writing with strong vocabulary. Watch for run-on sentences and work on making your phrasing more natural.",
+        "mistakes": [
+          {
+            "type": "grammar",
+            "original": "She go to school everyday",
+            "corrected": "She goes to school every day",
+            "explanation": "Subject-verb agreement requires 'goes' for third person singular. 'Everyday' is an adjective meaning commonplace, while 'every day' means each day."
+          }
+        ]
+      }
+
+      Now analyze the provided journal entry.
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const text = result.text || "";
+      if (!text) {
+        throw new Error("Empty response from Gemini API");
+      }
+      const cleanedText = this.cleanJsonString(text);
+      if (!cleanedText) {
+        throw new Error(
+          "Failed to get a valid response from the AI for journal analysis.",
+        );
+      }
+
+      const analysis = JSON.parse(cleanedText) as JournalAnalysisResult;
+      return {
+        grammarScore: Number(analysis.grammarScore) || 0,
+        phrasingScore: Number(analysis.phrasingScore) || 0,
+        vocabularyScore: Number(analysis.vocabularyScore) || 0,
+        feedback: analysis.feedback || "",
+        mistakes: analysis.mistakes || []
+      };
+    } catch (error) {
+      console.error("Error analyzing journal entry with Gemini:", error);
+      throw error;
+    }
   }
 
   /**
@@ -84,12 +159,14 @@ export class GeminiQuestionGenerationService
         );
       }
 
-      const questions = JSON.parse(cleanedText) as any[];
-      return questions.map((q) => ({
-        question: q.question,
-        ideal_answer_summary: q.ideal_answer_summary,
-        topics: q.topics || [],
-      }));
+      const analysis = JSON.parse(cleanedText) as JournalAnalysisResult;
+      return {
+        grammarScore: Number(analysis.grammarScore) || 0,
+        phrasingScore: Number(analysis.phrasingScore) || 0,
+        vocabularyScore: Number(analysis.vocabularyScore) || 0,
+        feedback: analysis.feedback || "",
+        mistakes: analysis.mistakes || []
+      };
     } catch (error) {
       console.error("Error generating questions with Gemini:", error);
       throw error;

@@ -2,8 +2,27 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useMutation } from "@tanstack/react-query";
+import axios, { AxiosResponse } from "axios";
+import { useRouter } from "next/navigation";
+
+interface CheckoutResponse {
+  url: string;
+}
 
 export function PricingTable() {
+  const router = useRouter();
+  
+  const checkoutMutation = useMutation<AxiosResponse<CheckoutResponse>, Error, string>({
+    mutationFn: (priceId: string) =>
+      axios.post('/api/billing/checkout', { priceId }),
+    onSuccess: (response) => {
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    }
+  });
+
   const tiers = [
     {
       name: "Free",
@@ -15,6 +34,7 @@ export function PricingTable() {
         "Basic flashcards",
       ],
       cta: "Get Started",
+      priceId: null, // No price ID for free tier
     },
     {
       name: "Pro",
@@ -27,6 +47,7 @@ export function PricingTable() {
         "Progress tracking",
       ],
       cta: "Upgrade to Pro",
+      priceId: "price_123", // Replace with actual Stripe price ID
     },
     {
       name: "Expert",
@@ -39,6 +60,7 @@ export function PricingTable() {
         "Early access to features",
       ],
       cta: "Upgrade to Expert",
+      priceId: "price_456", // Replace with actual Stripe price ID
     },
   ];
 
@@ -55,7 +77,19 @@ export function PricingTable() {
               </li>
             ))}
           </ul>
-          <Button className="w-full">{tier.cta}</Button>
+          <Button
+            className="w-full"
+            onClick={() => {
+              if (tier.priceId) {
+                checkoutMutation.mutate(tier.priceId);
+              } else {
+                router.push('/signup');
+              }
+            }}
+            disabled={checkoutMutation.isPending}
+          >
+            {checkoutMutation.isPending ? "Processing..." : tier.cta}
+          </Button>
         </Card>
       ))}
     </div>

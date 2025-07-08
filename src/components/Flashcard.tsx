@@ -14,12 +14,14 @@ interface FlashcardProps {
   frontContent: string;
   backContent: string;
   context?: string;
+  onReview?: (quality: number) => void;
 }
 
 export function Flashcard({
   frontContent,
   backContent,
   context,
+  onReview,
 }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -44,21 +46,30 @@ export function Flashcard({
             <Button
               variant="destructive"
               className="flex-1 hover:bg-destructive/90"
-              onClick={() => setIsFlipped(false)}
+              onClick={() => {
+                onReview?.(0);
+                setIsFlipped(false);
+              }}
             >
               Forgot ❌
             </Button>
             <Button
               variant="default"
               className="flex-1 hover:bg-primary/90 bg-blue-600"
-              onClick={() => setIsFlipped(false)}
+              onClick={() => {
+                onReview?.(3);
+                setIsFlipped(false);
+              }}
             >
               Good ✔️
             </Button>
             <Button
               variant="secondary"
               className="flex-1 hover:bg-secondary/90 bg-green-600 text-white"
-              onClick={() => setIsFlipped(false)}
+              onClick={() => {
+                onReview?.(5);
+                setIsFlipped(false);
+              }}
             >
               Easy 💡
             </Button>

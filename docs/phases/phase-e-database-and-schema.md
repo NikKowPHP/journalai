@@ -119,7 +119,7 @@
 
 ### 2. Database Migration
 
-- [HUMAN INTERVENTION] [ ] **Task E.2: Run the Initial Database Migration.**
+- [HUMAN INTERVENTION] [x] **Task E.2: Run the Initial Database Migration.**
   - **Action:** Execute the Prisma `migrate dev` command. This will create a new SQL migration file based on the schema and apply it to the database specified in your `.env` file's `DATABASE_URL`.
   - **Command:**
     ```bash

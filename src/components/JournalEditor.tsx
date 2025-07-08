@@ -1,22 +1,62 @@
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 /**
  * A rich text editor component for journal entries with basic formatting controls.
  * @param {object} props - The component props.
  * @param {string} props.initialContent - The initial text content for the editor.
- * @param {function} props.onSubmit - Callback invoked when the submit button is clicked.
+ * @param {string} props.topicId - The ID of the topic this journal belongs to.
  * @returns {React.ReactElement} The journal editor component.
  */
 interface JournalEditorProps {
   initialContent?: string;
-  onSubmit: () => void;
+  topicId: string;
 }
 
 export function JournalEditor({
   initialContent = "Start writing your thoughts in your target language...",
-  onSubmit,
+  topicId,
 }: JournalEditorProps) {
+  const queryClient = useQueryClient();
+
+  const createJournalMutation = useMutation({
+    mutationFn: (content: string) =>
+      fetch("/api/journal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content, topicId }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["journals"] });
+    },
+  });
+
+  const analyzeJournalMutation = useMutation({
+    mutationFn: (journalId: string) =>
+      fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ journalId }),
+      }),
+  });
+
+  const handleSubmit = async () => {
+    if (!editor) return;
+    const content = editor.getText();
+    
+    try {
+      const response = await createJournalMutation.mutateAsync(content);
+      const journal = await response.json();
+      analyzeJournalMutation.mutate(journal.id);
+    } catch (error) {
+      console.error("Journal submission failed:", error);
+    }
+  };
   const editor = useEditor({
     extensions: [StarterKit],
     content: initialContent,
@@ -60,7 +100,8 @@ export function JournalEditor({
       <div className="p-4 border-t">
         <button
           className="px-4 py-2 rounded bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={onSubmit}
+          onClick={handleSubmit}
+          disabled={createJournalMutation.isPending || analyzeJournalMutation.isPending}
         >
           Submit for Analysis
         </button>

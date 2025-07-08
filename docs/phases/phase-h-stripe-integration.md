@@ -6,7 +6,7 @@
 
 ### 1. Setup and Configuration
 
-- [ ] **Task H.1.1: Install Stripe Server-Side Library.**
+- [x] **Task H.1.1: Install Stripe Server-Side Library.**
 
   - **Action:** Install the official Stripe Node.js library for backend operations.
   - **Command:**
@@ -14,7 +14,7 @@
     npm install stripe
     ```
 
-- [ ] **Task H.1.2: Configure Stripe Environment Variables.**
+- [x] **Task H.1.2: Configure Stripe Environment Variables.**
 
   - **Action:** Add the necessary Stripe keys to your environment files. Get these from your Stripe Dashboard (you can use test keys for development).
   - **File:** `.env.example`
@@ -26,7 +26,7 @@
     ```
   - **Also add these to your local `.env` file with your actual test values.**
 
-- [ ] **Task H.1.3: Create Stripe Service Module.**
+- [x] **Task H.1.3: Create Stripe Service Module.**
 
   - **Action:** Create a centralized module to initialize the Stripe client and contain any reusable Stripe-related functions.
   - **File:** `src/lib/services/stripe.service.ts`
@@ -47,7 +47,7 @@
 
 ### 2. Implement Stripe Checkout Flow
 
-- [ ] **Task H.2.1: Create Stripe Checkout API Route.**
+- [x] **Task H.2.1: Create Stripe Checkout API Route.**
 
   - **Action:** Implement the backend endpoint that creates a Stripe Checkout Session.
   - **File:** `src/app/api/billing/checkout/route.ts`
@@ -60,7 +60,7 @@
     6.  Pass the user's `stripeCustomerId` to the session.
     7.  Return the `sessionId` or the full session `url` to the client.
 
-- [ ] **Task H.2.2: Connect Frontend to Checkout.**
+- [x] **Task H.2.2: Connect Frontend to Checkout.**
   - **File:** `src/components/PricingTable.tsx`
   - **Action:** Use `useMutation` to connect the "Upgrade" button to the `/api/billing/checkout` endpoint.
   - **Logic:**
@@ -70,7 +70,7 @@
 
 ### 3. Implement Subscription Management
 
-- [ ] **Task H.3.1: Create Customer Portal API Route.**
+- [x] **Task H.3.1: Create Customer Portal API Route.**
 
   - **Action:** Create an endpoint to redirect users to the Stripe Customer Portal, where they can manage their subscription (update card, cancel, etc.).
   - **File:** `src/app/api/billing/portal/route.ts`

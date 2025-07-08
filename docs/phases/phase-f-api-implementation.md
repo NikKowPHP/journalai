@@ -32,18 +32,18 @@
     npx prisma generate
     ```
 
-- [ ] **Task F.1.2: Update `ensureUserInDb` Logic.**
+- [x] **Task F.1.2: Update `ensureUserInDb` Logic.**
 
   - **File:** `src/lib/user.ts`
   - **Action:** Modify the `ensureUserInDb` function to use the Supabase `user.id` as the primary key for your `User` table, simplifying the logic.
 
-- [ ] **Task F.1.3: Enhance Registration API.**
+- [x] **Task F.1.3: Enhance Registration API.**
   - **File:** `src/app/api/auth/register/route.ts` (or equivalent auth helper `src/lib/auth.ts`).
   - **Action:** Ensure that after a successful Supabase sign-up, the `ensureUserInDb` function is called to create the corresponding user profile in your public `User` table. _This might already be in place from the PrepAI codebase, so this is a verification and refinement step._
 
 ### 2. Journal API Routes
 
-- [ ] **Task F.2.1: Implement `GET` and `POST` for `/api/journal`.**
+- [x] **Task F.2.1: Implement `GET` and `POST` for `/api/journal`.**
 
   - **File:** `src/app/api/journal/route.ts`
   - **Action:** Create the file and implement the list and create functionalities.
@@ -109,7 +109,7 @@
     }
     ```
 
-- [ ] **Task F.2.2: Implement `GET`, `PUT`, `DELETE` for `/api/journal/[id]`.**
+- [x] **Task F.2.2: Implement `GET`, `PUT`, `DELETE` for `/api/journal/[id]`.**
 
   - **File:** `src/app/api/journal/[id]/route.ts`
   - **Action:** Create the file for single-journal operations.
@@ -147,12 +147,12 @@
 
 ### 3. AI Analysis API Route
 
-- [ ] **Task F.3.1: Update AI Service Prompts.**
+- [x] **Task F.3.1: Update AI Service Prompts.**
 
   - **File:** `src/lib/ai/gemini-service.ts`
   - **Action:** Refactor the service. Rename `generateQuestions` to a more suitable name like `analyzeJournalEntry`. Replace the old prompt for generating interview questions with a new, detailed prompt for analyzing a journal entry for grammatical mistakes, phrasing, style, and vocabulary, returning a structured JSON object.
 
-- [ ] **Task F.3.2: Implement `POST /api/analyze`.**
+- [x] **Task F.3.2: Implement `POST /api/analyze`.**
 
   - **File:** `src/app/api/analyze/route.ts`
   - **Action:** Create the file to handle analysis requests.
@@ -210,13 +210,13 @@
 
 ### 4. Spaced Repetition System (SRS) API Routes
 
-- [ ] **Task F.4.1: Implement `GET /api/srs/deck`.**
+- [x] **Task F.4.1: Implement `GET /api/srs/deck`.**
 
   - **File:** `src/app/api/srs/deck/route.ts`
   - **Action:** Create the file to fetch the user's study deck.
   - **Logic:** Implement a `GET` handler that retrieves all `SrsReviewItem` records for the logged-in user where `nextReviewAt` is in the past. Apply SRS sorting logic here if needed.
 
-- [ ] **Task F.4.2: Implement `POST /api/srs/review`.**
+- [x] **Task F.4.2: Implement `POST /api/srs/review`.**
   - **File:** `src/app/api/srs/review/route.ts`
   - **Action:** Create the file to handle a card review submission.
   - **Logic:**
@@ -227,7 +227,7 @@
 
 ### 5. Analytics API Route
 
-- [ ] **Task F.5.1: Implement `GET /api/analytics`.**
+- [x] **Task F.5.1: Implement `GET /api/analytics`.**
   - **File:** `src/app/api/analytics/route.ts`
   - **Action:** Create the file to serve data for the dashboard.
   - **Logic:**
