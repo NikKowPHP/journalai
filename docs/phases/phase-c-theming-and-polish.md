@@ -28,7 +28,7 @@
         }
         ```
 
--   [ ] **Task 1.3: Integrate Theme Provider into the Application.**
+-   [x] **Task 1.3: Integrate Theme Provider into the Application.**
     *   **Action:** Modify `src/providers.tsx` to wrap the existing `AuthProvider` with the new `ThemeProvider`.
     *   **File:** `src/providers.tsx`
     *   **Content:**
