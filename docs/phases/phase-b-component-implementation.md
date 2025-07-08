@@ -118,7 +118,7 @@
 ### 7. Epic 8 & Compliance Components
 **Associated Pages:** `/settings`, new `/privacy` and `/cookies` pages
 
--   [ ] **Task 7.1: Add "Export Data" Button to Profile Form**
+-   [x] **Task 7.1: Add "Export Data" Button to Profile Form**
     *   **File:** `src/components/ProfileForm.tsx`
     *   **Action:** Add a new button to the form with the text "Export My Data". It will be non-functional.
 

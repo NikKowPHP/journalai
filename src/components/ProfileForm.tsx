@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export function ProfileForm() {
@@ -42,6 +43,13 @@ export function ProfileForm() {
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" type="email" placeholder="Enter your email" />
+      </div>
+
+      <div className="pt-4 border-t">
+        <h3 className="text-lg font-medium mb-2">Data Management</h3>
+        <Button variant="outline">
+          Export My Data
+        </Button>
       </div>
     </Card>
   )
