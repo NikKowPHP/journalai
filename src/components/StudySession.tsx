@@ -1,40 +1,32 @@
 import { useState } from 'react'
 import { Flashcard } from "@/components/Flashcard"
 
-const mockDeck = [
-  {
-    front: "Bonjour",
-    back: "Hello",
-    context: "French greeting"
-  },
-  {
-    front: "Merci",
-    back: "Thank you",
-    context: "French expression of gratitude"
-  },
-  {
-    front: "Au revoir",
-    back: "Goodbye",
-    context: "French farewell"
-  }
-]
+interface StudyCard {
+  front: string
+  back: string
+  context: string
+}
 
-export function StudySession() {
+interface StudySessionProps {
+  cards: StudyCard[]
+}
+
+export function StudySession({ cards }: StudySessionProps) {
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
-  const currentCard = mockDeck[currentCardIndex]
+  const currentCard = cards[currentCardIndex]
 
   const handleNextCard = () => {
-    if (currentCardIndex < mockDeck.length - 1) {
+    if (currentCardIndex < cards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1)
     }
   }
 
   return (
     <div className="space-y-6">
-      {currentCardIndex < mockDeck.length ? (
+      {currentCardIndex < cards.length ? (
         <>
           <div className="text-xl font-semibold">
-            Card {currentCardIndex + 1} of {mockDeck.length}
+            Card {currentCardIndex + 1} of {cards.length}
           </div>
           <Flashcard
             frontContent={currentCard.front}

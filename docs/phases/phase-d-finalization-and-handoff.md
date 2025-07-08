@@ -10,7 +10,7 @@
         *   [x] `JournalHistoryList.tsx`
         *   [x] `AnalysisDisplay.tsx`
         *   [x] `FeedbackCard.tsx`
-        *   [ ] `StudySession.tsx`
+        *   [x] `StudySession.tsx`
         *   [ ] `ProficiencyChart.tsx` & `SubskillScores.tsx`
         *   [ ] `AdminDashboard.tsx`
     *   **Action:** Go through the key components built in Phase B. Remove any internal mock data and refactor them to be pure components that receive all their data via props. The parent *page* component can still hold the mock data to pass down for now.
