@@ -24,7 +24,7 @@
     *   **Action:** Create a form for updating the user's profile information (native language, target language, etc.). Use `shadcn/ui`'s `Card`, `Label`, `Input`, `Select`.
     *   **Integration:** Add this component to the `/settings` page.
 
--   [ ] **Task 1.3: Create Account Deletion Component (`AccountDeletion.tsx`)**
+-   [x] **Task 1.3: Create Account Deletion Component (`AccountDeletion.tsx`)**
     *   **File:** `src/components/AccountDeletion.tsx`
     *   **Action:** Create a section with a "Delete Account" button that opens a confirmation dialog. The dialog must contain an input field where the user types their email to confirm.
     *   **Integration:** Add this component to the `/settings` page.
