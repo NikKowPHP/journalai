@@ -45,7 +45,7 @@
         *   [x] `Flashcard.tsx`
         *   [x] `StudySession.tsx`
         *   [x] `PricingTable.tsx`
-        *   [ ] `ThemeToggle.tsx`
+        *   [x] `ThemeToggle.tsx`
     *   **Action:** Add comprehensive JSDoc comment blocks to the components created in Phase B. The documentation should explain the component's purpose and define its props.
     *   **Example JSDoc format:**
         ```tsx
