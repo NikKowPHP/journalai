@@ -119,7 +119,7 @@
 
 ### 2. Database Migration
 
-- [ ] **Task E.2: Run the Initial Database Migration.**
+- [HUMAN INTERVENTION] [ ] **Task E.2: Run the Initial Database Migration.**
   - **Action:** Execute the Prisma `migrate dev` command. This will create a new SQL migration file based on the schema and apply it to the database specified in your `.env` file's `DATABASE_URL`.
   - **Command:**
     ```bash
@@ -129,7 +129,7 @@
 
 ### 3. Prisma Client Generation
 
-- [ ] **Task E.3: Generate the Type-Safe Prisma Client.**
+- [x] **Task E.3: Generate the Type-Safe Prisma Client.**
   - **Action:** After the migration is successful, run the `prisma generate` command. This updates the `@prisma/client` package in `node_modules` to include all the new models and types, enabling type-safe database queries in your application code.
   - **Command:**
     ```bash
@@ -138,7 +138,7 @@
 
 ### 4. Database Seeding Setup
 
-- [ ] **Task E.4: Install Seeding Dependencies.**
+- [x] **Task E.4: Install Seeding Dependencies.**
 
   - **Action:** Install `ts-node` as a development dependency. This allows you to run TypeScript files (like the seed script) directly from the command line without pre-compiling them.
   - **Command:**
@@ -146,7 +146,7 @@
     npm install -D ts-node
     ```
 
-- [ ] **Task E.5: Create the Database Seeding Script.**
+- [x] **Task E.5: Create the Database Seeding Script.**
 
   - **Action:** Create a script that can be used to populate the database with initial data for testing. For now, it will be a placeholder structure.
   - **File:** `prisma/seed.ts`
@@ -188,7 +188,7 @@
       });
     ```
 
-- [ ] **Task E.6: Configure the Seed Command in `package.json`.**
+- [x] **Task E.6: Configure the Seed Command in `package.json`.**
 
   - **Action:** Add a new script to `package.json` to make running the seed script easy. This also requires adding a `prisma` key to the `package.json` file to tell Prisma where to find the seed script.
   - **File:** `package.json`
