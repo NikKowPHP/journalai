@@ -57,5 +57,31 @@ export async function POST(req: NextRequest) {
     }
   });
 
+  // Calculate new average proficiency score
+  const userAnalyses = await prisma.analysis.findMany({
+    where: {
+      entry: {
+        authorId: user.id
+      }
+    },
+    select: {
+      grammarScore: true,
+      phrasingScore: true,
+      vocabScore: true
+    }
+  });
+
+  const totalScores = userAnalyses.reduce((acc, analysis) => {
+    return acc + analysis.grammarScore + analysis.phrasingScore + analysis.vocabScore;
+  }, 0);
+
+  const averageScore = totalScores / (userAnalyses.length * 3);
+
+  // Update user's proficiency score
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { aiAssessedProficiency: averageScore }
+  });
+
   return NextResponse.json(newAnalysis);
 }
