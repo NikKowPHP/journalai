@@ -27,7 +27,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
 ### **P1 - Implementation of Missing Features**
 *Tasks to build documented features that are currently missing from the codebase.*
 
-- [ ] **CREATE**: API endpoint for AI-powered skill evaluation
+- [x] **CREATE**: API endpoint for AI-powered skill evaluation
     - **File**: `src/app/api/user/evaluate-skill/route.ts`
     - **Action**: Create a new `POST` API route that accepts `{ text: string }`. This route should call the `analyzeJournalEntry` method from the AI service. Instead of saving the full analysis, it should calculate an average score from the result and return it to the client.
     - **Reason**: To provide a backend for the missing AI-powered skill evaluation step in onboarding (`LS-004`).
