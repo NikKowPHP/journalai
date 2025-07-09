@@ -1,4 +1,6 @@
 import React from "react";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -23,21 +25,53 @@ import {
  * @param {function} props.onComplete - Callback invoked when onboarding is finished.
  * @returns {React.ReactElement} The onboarding wizard component.
  */
+interface OnboardingData {
+  nativeLanguage: string;
+  targetLanguage: string;
+  writingStyle: string;
+  writingPurpose: string;
+  selfAssessedLevel: string;
+}
+
 interface OnboardingWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
+  onError?: (error: string) => void;
 }
 
 export function OnboardingWizard({
   isOpen,
   onClose,
   onComplete,
+  onError,
 }: OnboardingWizardProps) {
   const [step, setStep] = React.useState(1);
+  const [formData, setFormData] = React.useState<OnboardingData>({
+    nativeLanguage: "",
+    targetLanguage: "",
+    writingStyle: "",
+    writingPurpose: "",
+    selfAssessedLevel: ""
+  });
+
+  const { mutate: submitOnboarding, isPending } = useMutation({
+    mutationFn: (data: OnboardingData) =>
+      axios.post("/api/user/onboard", data),
+    onSuccess: onComplete,
+    onError: (error) => onError?.(error.message)
+  });
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+
+  const handleChange = (field: keyof OnboardingData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleComplete = () => {
+    submitOnboarding(formData);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -62,7 +96,10 @@ export function OnboardingWizard({
         {step === 2 && (
           <div className="space-y-4">
             <p>What is your native language?</p>
-            <Select>
+            <Select
+              onValueChange={(value) => handleChange("nativeLanguage", value)}
+              value={formData.nativeLanguage}
+            >
               <SelectTrigger className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
@@ -99,7 +136,10 @@ export function OnboardingWizard({
         {step === 3 && (
           <div className="space-y-4">
             <p>What language do you want to master?</p>
-            <Select>
+            <Select
+              onValueChange={(value) => handleChange("targetLanguage", value)}
+              value={formData.targetLanguage}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
@@ -116,7 +156,10 @@ export function OnboardingWizard({
         {step === 4 && (
           <div className="space-y-4">
             <p>What is your main writing purpose?</p>
-            <Select>
+            <Select
+              onValueChange={(value) => handleChange("writingPurpose", value)}
+              value={formData.writingPurpose}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select purpose" />
               </SelectTrigger>

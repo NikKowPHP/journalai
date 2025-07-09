@@ -27,12 +27,19 @@ export async function ensureUserInDb(
     data: {
       id: supabaseUser.id,
       email: supabaseUser.email!,
-      name:
-        supabaseUser.user_metadata?.full_name ||
-        supabaseUser.user_metadata?.name ||
-        null,
     },
   });
 
   return newUser;
+}
+
+/**
+ * Gets a user's profile from the database
+ * @param userId The user's ID
+ * @returns The user's profile data
+ */
+export async function getUserProfile(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+  });
 }

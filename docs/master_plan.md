@@ -68,6 +68,14 @@ This document outlines the high-level plan for building the static UI for Lingua
 
 ---
 
+### `[x]` Phase K: Audit Fixes & Improvements
+
+**Goal:** Address all issues identified in the audit report, implementing critical fixes and missing features.
+
+- [Detailed Steps](./docs/phases/phase-k-fix.md)
+
+---
+
 ### `[ ]` Phase I: Final Testing & Deployment Preparation
 
 **Goal:** Conduct end-to-end testing of the fully integrated application, configure production environment variables, and prepare the project for its first deployment.

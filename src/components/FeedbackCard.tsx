@@ -1,5 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 /**
  * Displays a single feedback item with original text, suggestion, and explanation.
@@ -13,12 +15,50 @@ interface FeedbackCardProps {
   original: string;
   suggestion: string;
   explanation: string;
+  mistakeId: string;
+}
+
+function AddToDeckButton({
+  mistakeId,
+  original,
+  suggestion,
+  explanation,
+}: {
+  mistakeId: string;
+  original: string;
+  suggestion: string;
+  explanation: string;
+}) {
+  const { mutate, isPending, isSuccess } = useMutation({
+    mutationFn: () =>
+      axios.post("/api/srs/create-from-mistake", { mistakeId }),
+  });
+
+  if (isSuccess) {
+    return (
+      <Button variant="secondary" className="w-full" disabled>
+        Added to Deck!
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      variant="secondary"
+      className="w-full"
+      onClick={() => mutate()}
+      disabled={isPending}
+    >
+      {isPending ? "Adding..." : "Add to Study Deck"}
+    </Button>
+  );
 }
 
 export function FeedbackCard({
   original,
   suggestion,
   explanation,
+  mistakeId,
 }: FeedbackCardProps) {
   return (
     <Card className="p-6 space-y-6">
@@ -39,9 +79,12 @@ export function FeedbackCard({
         <p className="text-sm text-muted-foreground">{explanation}</p>
       </div>
 
-      <Button variant="secondary" className="w-full">
-        Add to Study Deck
-      </Button>
+      <AddToDeckButton
+        mistakeId={mistakeId}
+        original={original}
+        suggestion={suggestion}
+        explanation={explanation}
+      />
     </Card>
   );
 }

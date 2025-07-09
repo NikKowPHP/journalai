@@ -10,11 +10,11 @@ datasource db {
 model User {
   id                    String    @id
   email                 String    @unique
-  nativeLanguage        String    // Used for contextual translation
-  targetLanguage        String
-  writingStyle          String
-  writingPurpose        String
-  selfAssessedLevel     String
+  nativeLanguage        String?   // Used for contextual translation
+  targetLanguage        String?
+  writingStyle          String?
+  writingPurpose        String?
+  selfAssessedLevel     String?
   aiAssessedProficiency Float     @default(2.0)
   proficiencySubScores  Json?
   status                String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
