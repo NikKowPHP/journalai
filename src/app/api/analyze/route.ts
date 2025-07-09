@@ -33,9 +33,20 @@ export async function POST(req: NextRequest) {
       { status: 404 },
     );
 
-  // 2. Call the AI service
+  // 2. Get user's current proficiency score
+  const userData = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { aiAssessedProficiency: true }
+  });
+  const proficiencyScore = userData?.aiAssessedProficiency || 2.0;
+
+  // 3. Call the AI service with proficiency context
   const aiService = getQuestionGenerationService();
-  const analysisResult = await aiService.analyzeJournalEntry(journal.content);
+  const analysisResult = await aiService.analyzeJournalEntry(
+    journal.content,
+    undefined, // targetLanguage
+    proficiencyScore
+  );
 
   // 3. Save the results to the Analysis and Mistake tables
   const newAnalysis = await prisma.analysis.create({

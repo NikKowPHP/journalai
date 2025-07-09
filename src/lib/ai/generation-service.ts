@@ -67,7 +67,8 @@ export interface QuestionGenerationService {
    */
   analyzeJournalEntry(
     journalContent: string,
-    targetLanguage?: string
+    targetLanguage?: string,
+    proficiencyScore?: number
   ): Promise<JournalAnalysisResult>;
 
   /**

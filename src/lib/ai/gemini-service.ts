@@ -159,14 +159,8 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
         );
       }
 
-      const analysis = JSON.parse(cleanedText) as JournalAnalysisResult;
-      return {
-        grammarScore: Number(analysis.grammarScore) || 0,
-        phrasingScore: Number(analysis.phrasingScore) || 0,
-        vocabularyScore: Number(analysis.vocabularyScore) || 0,
-        feedback: analysis.feedback || "",
-        mistakes: analysis.mistakes || []
-      };
+      const questions = JSON.parse(cleanedText) as GeneratedQuestion[];
+      return questions;
     } catch (error) {
       console.error("Error generating questions with Gemini:", error);
       throw error;
@@ -318,6 +312,61 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
           unlinkError,
         );
       }
+    }
+  }
+
+  async translateText(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string
+  ): Promise<string> {
+    const prompt = `
+      You are an expert language translator. Translate the following text from ${sourceLanguage} to ${targetLanguage}.
+      Your response should ONLY contain the translated text, without any additional commentary or formatting.
+
+      Text to translate:
+      "${text}"
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const translatedText = result.text || "";
+      if (!translatedText) {
+        throw new Error("Empty response from Gemini API");
+      }
+      return translatedText.trim();
+    } catch (error) {
+      console.error("Error translating text with Gemini:", error);
+      throw error;
+    }
+  }
+
+  async getSentenceCompletion(text: string): Promise<string> {
+    const prompt = `
+      You are an expert language tutor helping a student write in their target language.
+      Complete the following sentence fragment naturally and idiomatically.
+      Your response should ONLY contain the completed sentence, without any additional commentary or formatting.
+
+      Sentence fragment to complete:
+      "${text}"
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const completedText = result.text || "";
+      if (!completedText) {
+        throw new Error("Empty response from Gemini API");
+      }
+      return completedText.trim();
+    } catch (error) {
+      console.error("Error getting sentence completion with Gemini:", error);
+      throw error;
     }
   }
 

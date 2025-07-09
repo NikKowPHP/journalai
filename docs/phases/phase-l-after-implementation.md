@@ -42,7 +42,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: After saving a new analysis, fetch the last 3 `Analysis` records for the same `topicId`. If they all have an average score >= 90, update the associated `Topic` record's `isMastered` field to `true`.
     - **Reason**: Audit finding: "Core System Intelligence: `LS-SYS-003: Topic Mastery Evaluation`... There is no logic... to check past entry scores... and update the `isMastered` flag."
 
-- [ ] **UPDATE**: Implement Adaptive AI Feedback
+- [x] **UPDATE**: Implement Adaptive AI Feedback
     - **File**: `src/app/api/analyze/route.ts` and `src/lib/ai/gemini-service.ts`
     - **Action**: In `api/analyze/route.ts`, fetch the user's `aiAssessedProficiency` score. Pass this score to the `analyzeJournalEntry` method. In `gemini-service.ts`, update the method signature and modify the AI prompt to include the user's proficiency score, instructing the AI to "adjust the complexity of explanations" based on this score.
     - **Reason**: Audit finding: "Core System Intelligence: `LS-SYS-002: Adaptive Feedback Depth`... The call to `aiService.analyzeJournalEntry`... does not pass the user's current proficiency score."
