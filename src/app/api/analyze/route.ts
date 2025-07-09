@@ -83,5 +83,37 @@ export async function POST(req: NextRequest) {
     data: { aiAssessedProficiency: averageScore }
   });
 
+  // Check for topic mastery
+  const lastThreeAnalyses = await prisma.analysis.findMany({
+    where: {
+      entry: {
+        topicId: journal.topicId,
+        authorId: user.id
+      },
+      id: { not: newAnalysis.id } // Exclude current analysis
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 3,
+    select: {
+      grammarScore: true,
+      phrasingScore: true,
+      vocabScore: true
+    }
+  });
+
+  if (lastThreeAnalyses.length >= 3) {
+    const allScoresAboveThreshold = lastThreeAnalyses.every(analysis => {
+      const avg = (analysis.grammarScore + analysis.phrasingScore + analysis.vocabScore) / 3;
+      return avg >= 90;
+    });
+
+    if (allScoresAboveThreshold) {
+      await prisma.topic.update({
+        where: { id: journal.topicId },
+        data: { isMastered: true }
+      });
+    }
+  }
+
   return NextResponse.json(newAnalysis);
 }

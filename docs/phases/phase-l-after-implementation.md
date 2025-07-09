@@ -37,7 +37,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: Add a new step to the wizard before the "self-assessed level" step. This new step should contain a `textarea` for the user to write a short paragraph. On "Next", use `useMutation` to call the new `/api/user/evaluate-skill` endpoint and display the suggested skill level to the user on the next step.
     - **Reason**: Audit finding: "User Story: `LS-004: AI-Powered Skill Evaluation`... The `OnboardingWizard.tsx` component... completely lacks the text input and AI analysis step."
 
-- [ ] **UPDATE**: Implement Topic Mastery evaluation
+- [x] **UPDATE**: Implement Topic Mastery evaluation
     - **File**: `src/app/api/analyze/route.ts`
     - **Action**: After saving a new analysis, fetch the last 3 `Analysis` records for the same `topicId`. If they all have an average score >= 90, update the associated `Topic` record's `isMastered` field to `true`.
     - **Reason**: Audit finding: "Core System Intelligence: `LS-SYS-003: Topic Mastery Evaluation`... There is no logic... to check past entry scores... and update the `isMastered` flag."
