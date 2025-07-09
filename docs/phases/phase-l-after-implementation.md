@@ -52,7 +52,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: Create a new `PUT` API route. It should be admin-protected. It will accept a body with `{ subscriptionTier, subscriptionStatus }` and update the specified user's record in the database.
     - **Reason**: Audit finding: "User Story: `LS-ADM-003: Manual Subscription Management`... No... API endpoint to allow an admin to change a user's `subscriptionTier`."
 
-- [ ] **UPDATE**: Add subscription management UI to the admin user detail page
+- [x] **UPDATE**: Add subscription management UI to the admin user detail page
     - **File**: `src/app/admin/users/[id]/page.tsx`
     - **Action**: Add a new section to the page that displays the user's current subscription tier and status. Include form elements (`Select` for tier, `Select` for status) and a "Save" button. Wire the button to a `useMutation` hook that calls the new `PUT /api/admin/users/[id]/subscription` endpoint.
     - **Reason**: Audit finding: "User Story: `LS-ADM-003: Manual Subscription Management`... The admin detail page... is read-only."

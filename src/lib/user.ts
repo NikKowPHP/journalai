@@ -43,3 +43,16 @@ export async function getUserProfile(userId: string) {
     where: { id: userId },
   });
 }
+
+export async function getUserById(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      subscriptionTier: true,
+      subscriptionStatus: true,
+      createdAt: true
+    }
+  });
+}
