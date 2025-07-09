@@ -12,7 +12,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: After successfully creating the `newAnalysis`, calculate the user's new average proficiency score from all their `Analysis` records. Update the `aiAssessedProficiency` field on the corresponding `User` record in the database with this new score.
     - **Reason**: Audit finding: "Core System Intelligence: `LS-SYS-001: Dynamic Proficiency Recalculation`... The `POST /api/analyze` endpoint... contains no logic to... update the `aiAssessedProficiency` field on the associated `User` record."
 
-- [ ] **FIX**: Implement tiered rate-limiting for AI features
+- [x] **FIX**: Implement tiered rate-limiting for AI features
     - **File**: `src/lib/rateLimiter.ts` (and API routes)
     - **Action**: Refactor the `rateLimiter` module to check a user's `subscriptionTier` from the database. In the AI API routes (`/api/ai/translate`, `/api/ai/autocomplete`), replace the placeholder rate limiter with the new tier-aware logic that enforces the limits specified in the documentation (e.g., 5/day for Free, unlimited for Pro).
     - **Reason**: Audit finding: "The AI feature routes... have placeholder rate limiting that is not tied to the user's subscription tier, failing to enforce the Freemium model rules."

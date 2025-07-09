@@ -3,6 +3,11 @@ interface RateLimitOptions {
   max: number;
 }
 
+interface RateLimitConfig {
+  FREE: RateLimitOptions;
+  PRO: RateLimitOptions;
+}
+
 interface RateLimitStore {
   [key: string]: {
     count: number;
@@ -12,37 +17,49 @@ interface RateLimitStore {
 
 const memoryStore: RateLimitStore = {};
 
-export const rateLimiter = (options: RateLimitOptions) => {
-  return (identifier: string) => {
-    const now = Date.now();
-
-    // Get or initialize the rate limit entry
-    const entry = memoryStore[identifier] || {
-      count: 0,
-      resetTime: now + options.windowMs,
-    };
-
-    // Reset count if window has passed
-    if (now > entry.resetTime) {
-      entry.count = 0;
-      entry.resetTime = now + options.windowMs;
-    }
-
-    // Check if limit exceeded
-    if (entry.count >= options.max) {
-      const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
-      return { allowed: false, retryAfter };
-    }
-
-    // Increment count and save
-    entry.count++;
-    memoryStore[identifier] = entry;
-
-    return { allowed: true, remaining: options.max - entry.count };
-  };
+const DEFAULT_LIMITS: RateLimitConfig = {
+  FREE: {
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: 5, // 5 requests per day
+  },
+  PRO: {
+    windowMs: 24 * 60 * 60 * 1000, // 24 hours
+    max: Number.MAX_SAFE_INTEGER, // Unlimited
+  }
 };
 
-export const authRateLimiter = rateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  max: 5, // 5 requests per minute
-});
+export const tieredRateLimiter = (userId: string, tier: string = 'FREE') => {
+  const options = DEFAULT_LIMITS[tier as keyof RateLimitConfig] || DEFAULT_LIMITS.FREE;
+  const identifier = `user:${userId}`;
+  
+  const now = Date.now();
+
+  // Get or initialize the rate limit entry
+  const entry = memoryStore[identifier] || {
+    count: 0,
+    resetTime: now + options.windowMs,
+  };
+
+  // Reset count if window has passed
+  if (now > entry.resetTime) {
+    entry.count = 0;
+    entry.resetTime = now + options.windowMs;
+  }
+
+  // Pro users bypass rate limiting
+  if (tier === 'PRO') {
+    return { allowed: true, remaining: Number.MAX_SAFE_INTEGER };
+  }
+
+  // Check if limit exceeded
+  if (entry.count >= options.max) {
+    const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
+    return { allowed: false, retryAfter };
+  }
+
+  // Increment count and save
+  entry.count++;
+  memoryStore[identifier] = entry;
+
+  return { allowed: true, remaining: options.max - entry.count };
+};
