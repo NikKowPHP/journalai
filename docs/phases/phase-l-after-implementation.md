@@ -32,7 +32,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: Create a new `POST` API route that accepts `{ text: string }`. This route should call the `analyzeJournalEntry` method from the AI service. Instead of saving the full analysis, it should calculate an average score from the result and return it to the client.
     - **Reason**: To provide a backend for the missing AI-powered skill evaluation step in onboarding (`LS-004`).
 
-- [ ] **UPDATE**: Add AI skill evaluation step to onboarding wizard
+- [x] **UPDATE**: Add AI skill evaluation step to onboarding wizard
     - **File**: `src/components/OnboardingWizard.tsx`
     - **Action**: Add a new step to the wizard before the "self-assessed level" step. This new step should contain a `textarea` for the user to write a short paragraph. On "Next", use `useMutation` to call the new `/api/user/evaluate-skill` endpoint and display the suggested skill level to the user on the next step.
     - **Reason**: Audit finding: "User Story: `LS-004: AI-Powered Skill Evaluation`... The `OnboardingWizard.tsx` component... completely lacks the text input and AI analysis step."

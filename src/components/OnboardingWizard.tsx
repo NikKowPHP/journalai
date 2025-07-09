@@ -31,6 +31,8 @@ interface OnboardingData {
   writingStyle: string;
   writingPurpose: string;
   selfAssessedLevel: string;
+  evaluationText?: string;
+  aiSuggestedLevel?: string;
 }
 
 interface OnboardingWizardProps {
@@ -47,12 +49,31 @@ export function OnboardingWizard({
   onError,
 }: OnboardingWizardProps) {
   const [step, setStep] = React.useState(1);
+  const [isEvaluating, setIsEvaluating] = React.useState(false);
   const [formData, setFormData] = React.useState<OnboardingData>({
     nativeLanguage: "",
     targetLanguage: "",
     writingStyle: "",
     writingPurpose: "",
     selfAssessedLevel: ""
+  });
+
+  const { mutate: evaluateSkill } = useMutation({
+    mutationFn: (text: string) =>
+      axios.post("/api/user/evaluate-skill", { text }),
+    onSuccess: (data) => {
+      setFormData(prev => ({
+        ...prev,
+        aiSuggestedLevel: data.data.score > 80 ? "advanced" :
+                         data.data.score > 50 ? "intermediate" : "beginner"
+      }));
+      setIsEvaluating(false);
+      nextStep();
+    },
+    onError: () => {
+      setIsEvaluating(false);
+      onError?.("Failed to evaluate skill level");
+    }
   });
 
   const { mutate: submitOnboarding, isPending } = useMutation({
@@ -82,8 +103,9 @@ export function OnboardingWizard({
             {step === 2 && "Native Language"}
             {step === 3 && "Target Language"}
             {step === 4 && "Writing Purpose"}
-            {step === 5 && "Skill Level"}
-            {step === 6 && "Ready to Start!"}
+            {step === 5 && "AI Skill Evaluation"}
+            {step === 6 && "Skill Level"}
+            {step === 7 && "Ready to Start!"}
           </DialogTitle>
         </DialogHeader>
 
@@ -174,7 +196,25 @@ export function OnboardingWizard({
 
         {step === 5 && (
           <div className="space-y-4">
-            <p>What is your self-assessed skill level?</p>
+            <p>Write a short paragraph in your target language so we can evaluate your skill level:</p>
+            <textarea
+              className="w-full min-h-[120px] p-2 border rounded"
+              value={formData.evaluationText || ""}
+              onChange={(e) => handleChange("evaluationText", e.target.value)}
+              disabled={isEvaluating}
+            />
+            {isEvaluating && <p>Analyzing your writing...</p>}
+          </div>
+        )}
+
+        {step === 7 && (
+          <div className="space-y-4">
+            <p>What is your skill level?</p>
+            {formData.aiSuggestedLevel && (
+              <p className="text-sm text-muted-foreground">
+                AI suggestion: {formData.aiSuggestedLevel}
+              </p>
+            )}
             <Select>
               <SelectTrigger>
                 <SelectValue placeholder="Select level" />
@@ -198,7 +238,7 @@ export function OnboardingWizard({
         )}
 
         <div className="flex justify-between mt-6 gap-4">
-          {step > 1 && (
+          {step > 1 && step !== 6 && (
             <Button
               variant="outline"
               onClick={prevStep}
@@ -207,7 +247,19 @@ export function OnboardingWizard({
               Back
             </Button>
           )}
-          {step < 6 ? (
+          {step === 5 ? (
+            <Button
+              onClick={() => {
+                if (formData.evaluationText) {
+                  setIsEvaluating(true);
+                  evaluateSkill(formData.evaluationText);
+                }
+              }}
+              disabled={!formData.evaluationText || isEvaluating}
+            >
+              Evaluate
+            </Button>
+          ) : step < 7 ? (
             <Button
               onClick={nextStep}
               className="hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
