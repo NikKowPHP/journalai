@@ -67,7 +67,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: Modify the `handleSubmit` function. Instead of `await`ing the `analyzeJournalMutation`, simply trigger it. Add `onSuccess` and `onError` handlers to the `useMutation` hook to show the user a toast/notification indicating that the analysis has started or has failed. The UI should no longer block while analysis is in progress.
     - **Reason**: Audit finding: "Technical Specification: `LS-010`... The analysis is currently synchronous... This blocks the UI and does not match the specified asynchronous 'background job' architecture."
 
-- [ ] **UPDATE**: Add Idempotency Key check to Stripe Webhook Handler
+- [x] **UPDATE**: Add Idempotency Key check to Stripe Webhook Handler
     - **File**: `src/app/api/billing/webhook/route.ts`
     - **Action**: Before the `switch` statement, use the `event.id` from the Stripe event object as an idempotency key. Check a cache (or a new database table `ProcessedWebhook`) to see if this event ID has been processed before. If it has, return a `200 OK` response immediately. If not, process the event and then store the `event.id` before returning.
     - **Reason**: Audit finding: "User Story: `LS-SYS-007: Stripe Webhook Idempotency`... The backend does not check for or store processed Stripe Event IDs."

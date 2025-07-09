@@ -28,6 +28,14 @@ export async function POST(req: Request) {
     );
   }
 
+  // Check if we've already processed this event
+  const existingEvent = await prisma.processedWebhook.findUnique({
+    where: { eventId: event.id }
+  });
+  if (existingEvent) {
+    return NextResponse.json({ received: true });
+  }
+
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -94,6 +102,13 @@ export async function POST(req: Request) {
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
+
+  // Store the processed event ID
+  await prisma.processedWebhook.create({
+    data: {
+      eventId: event.id
+    }
+  });
 
   return NextResponse.json({ received: true });
 }
