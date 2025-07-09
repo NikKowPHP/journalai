@@ -47,7 +47,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: In `api/analyze/route.ts`, fetch the user's `aiAssessedProficiency` score. Pass this score to the `analyzeJournalEntry` method. In `gemini-service.ts`, update the method signature and modify the AI prompt to include the user's proficiency score, instructing the AI to "adjust the complexity of explanations" based on this score.
     - **Reason**: Audit finding: "Core System Intelligence: `LS-SYS-002: Adaptive Feedback Depth`... The call to `aiService.analyzeJournalEntry`... does not pass the user's current proficiency score."
 
-- [ ] **CREATE**: API endpoint for admin to update a user's subscription
+- [x] **CREATE**: API endpoint for admin to update a user's subscription
     - **File**: `src/app/api/admin/users/[id]/subscription/route.ts`
     - **Action**: Create a new `PUT` API route. It should be admin-protected. It will accept a body with `{ subscriptionTier, subscriptionStatus }` and update the specified user's record in the database.
     - **Reason**: Audit finding: "User Story: `LS-ADM-003: Manual Subscription Management`... No... API endpoint to allow an admin to change a user's `subscriptionTier`."

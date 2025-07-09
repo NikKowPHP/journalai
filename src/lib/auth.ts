@@ -36,3 +36,24 @@ export async function signIn(email: string, password: string) {
   const supabase = await createClient();
   return supabase.auth.signInWithPassword({ email, password });
 }
+
+export async function authMiddleware(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
+
+  // Check if user is admin
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { subscriptionTier: true }
+  });
+
+  if (dbUser?.subscriptionTier !== 'ADMIN') {
+    throw new Error('Forbidden - Admin access required');
+  }
+
+  return { user };
+}
