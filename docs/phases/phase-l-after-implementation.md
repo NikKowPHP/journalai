@@ -17,7 +17,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
     - **Action**: Refactor the `rateLimiter` module to check a user's `subscriptionTier` from the database. In the AI API routes (`/api/ai/translate`, `/api/ai/autocomplete`), replace the placeholder rate limiter with the new tier-aware logic that enforces the limits specified in the documentation (e.g., 5/day for Free, unlimited for Pro).
     - **Reason**: Audit finding: "The AI feature routes... have placeholder rate limiting that is not tied to the user's subscription tier, failing to enforce the Freemium model rules."
 
-- [ ] **FIX**: Implement two-stage account deletion process
+- [x] **FIX**: Implement two-stage account deletion process
     - **File**: `src/app/api/user/route.ts`
     - **Action**: Modify the `DELETE` handler. Instead of performing a hard delete, change it to an `update` operation that sets the user's `status` to `"DELETION_PENDING"`. Do not delete the user from Supabase Auth at this stage.
     - **Reason**: Audit finding: "The current `DELETE /api/user` route performs an immediate, hard deletion... It does not implement the specified grace period."

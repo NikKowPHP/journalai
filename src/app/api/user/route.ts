@@ -11,14 +11,13 @@ export async function DELETE() {
   }
 
   try {
-    // Delete user data from our database first
-    await prisma.user.delete({
-      where: { email: session.user.email }
+    // Mark user for deletion instead of hard deleting
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: { status: "DELETION_PENDING" }
     });
 
-    // Then delete from Supabase auth
-    await supabase.auth.admin.deleteUser(session.user.id);
-
+    // Skip Supabase auth deletion - will be handled by a separate cleanup process
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
