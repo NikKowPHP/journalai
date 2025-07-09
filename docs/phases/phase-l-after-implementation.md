@@ -62,7 +62,7 @@ This plan details the necessary steps to resolve all outstanding gaps between th
 ### **P2 - System Resilience Improvements**
 *Tasks to implement documented resilience and error-handling patterns.*
 
-- [ ] **REFACTOR**: Make AI analysis asynchronous
+- [x] **REFACTOR**: Make AI analysis asynchronous
     - **File**: `src/components/JournalEditor.tsx`
     - **Action**: Modify the `handleSubmit` function. Instead of `await`ing the `analyzeJournalMutation`, simply trigger it. Add `onSuccess` and `onError` handlers to the `useMutation` hook to show the user a toast/notification indicating that the analysis has started or has failed. The UI should no longer block while analysis is in progress.
     - **Reason**: Audit finding: "Technical Specification: `LS-010`... The analysis is currently synchronous... This blocks the UI and does not match the specified asynchronous 'background job' architecture."
