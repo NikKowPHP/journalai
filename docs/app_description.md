@@ -193,6 +193,13 @@ model SrsReviewItem {
   easeFactor     Float     @default(2.5)
   createdAt      DateTime  @default(now())
 }
+
+model ProcessedWebhook {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  type        String
+  processedAt DateTime @default(now())
+}
 ```
 
 ## 7. Development Epics & User Stories

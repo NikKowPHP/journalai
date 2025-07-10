@@ -37,7 +37,7 @@ This work plan outlines the precise, atomic steps required to bring the LinguaSc
     - **Action**: In "Epic 7: System Resilience & Error Handling", update story `LS-SYS-004` to be more comprehensive. Detail the tiered limits for both AI features (autocomplete) and SRS reviews, referencing the `tieredRateLimiter` and `srsReviewRateLimiter` functions from `lib/rateLimiter.ts`.
     - **Reason**: Audit Finding: "The implementation provides a robust... rate limiting system... that is more comprehensive than the simple auth rate-limiting mentioned in the spec."
 
-- [ ] **DOCS**: Add the `ProcessedWebhook` model to the high-level schema documentation.
+- [x] **DOCS**: Add the `ProcessedWebhook` model to the high-level schema documentation.
     - **File(s)**: `docs/app_description.md`
     - **Action**: At the end of the Prisma schema block in Section 6, add the full model definition for `ProcessedWebhook` as it exists in the `prisma/schema.prisma` file.
     - **Reason**: Audit Finding: "This database model is used to store Stripe `eventId`s...This is a critical implementation detail...Update the high-level schema diagram...to include this model."
