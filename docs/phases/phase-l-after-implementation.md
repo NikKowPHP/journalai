@@ -32,7 +32,7 @@ This work plan outlines the precise, atomic steps required to bring the LinguaSc
     - **Action**: In the "Key NPM Libraries & Tooling" table (Section 4), remove the rows for `zustand` and `react-hook-form`. Add a note that state is managed by a combination of React's native state and `@tanstack/react-query`.
     - **Reason**: Audit Finding: "The `zustand` library is **not** present in `package.json`... The `react-hook-form` library is **not** present in `package.json`."
 
-- [ ] **DOCS**: Document the tiered rate-limiting system.
+- [x] **DOCS**: Document the tiered rate-limiting system.
     - **File(s)**: `docs/app_description.md`
     - **Action**: In "Epic 7: System Resilience & Error Handling", update story `LS-SYS-004` to be more comprehensive. Detail the tiered limits for both AI features (autocomplete) and SRS reviews, referencing the `tieredRateLimiter` and `srsReviewRateLimiter` functions from `lib/rateLimiter.ts`.
     - **Reason**: Audit Finding: "The implementation provides a robust... rate limiting system... that is more comprehensive than the simple auth rate-limiting mentioned in the spec."

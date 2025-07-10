@@ -245,7 +245,15 @@ model SrsReviewItem {
 
 ### **Epic 7: System Resilience & Error Handling**
 
-- **LS-SYS-004: Authentication Rate Limiting:** The system implements rate limiting on authentication endpoints (login, registration) to prevent brute force attacks. The `src/lib/rateLimiter.ts` module enforces limits of 5 requests per minute per IP address for sensitive endpoints.
+- **LS-SYS-004: Tiered Rate Limiting System:** The system implements multiple rate limiting strategies:
+  - **Authentication:** 5 requests per minute per IP for login/registration endpoints (`rateLimiter` in `src/lib/rateLimiter.ts`)
+  - **AI Features:**
+    - Free users: 5 AI autocompletions per day (`tieredRateLimiter`)
+    - Pro users: Unlimited
+  - **SRS Reviews:**
+    - Free users: 10 card reviews per day (`srsReviewRateLimiter`)
+    - Pro users: Unlimited
+  All daily limits reset at midnight UTC. Rate limits are enforced via dedicated functions in `src/lib/rateLimiter.ts`.
 - **LS-SYS-005: AI Analysis Retry Logic:** If an AI analysis call fails, the system will automatically retry with backoff. The entry will be marked "Analysis Pending" in the UI.
 - **LS-SYS-006: Failed Analysis User Notification:** If analysis fails permanently, the user sees a notification with an option to manually trigger it again.
 - **LS-SYS-007: Stripe Webhook Idempotency:** The backend handles webhooks idempotently to prevent duplicate processing.
