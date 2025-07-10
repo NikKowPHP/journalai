@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { srsReviewRateLimiter } from "@/lib/rateLimiter";
 
 const reviewSchema = z.object({
   srsItemId: z.string(),
@@ -15,6 +16,20 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Apply rate limiting
+  const limit = srsReviewRateLimiter(user.id, user.subscriptionTier);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Daily review limit exceeded", code: "REVIEW_LIMIT_EXCEEDED" },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": limit.retryAfter!.toString(),
+        },
+      },
+    );
+  }
 
   const body = await req.json();
   const parsed = reviewSchema.safeParse(body);

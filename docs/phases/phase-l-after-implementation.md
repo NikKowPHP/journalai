@@ -17,7 +17,7 @@ The plan is prioritized into four tiers, addressing critical fixes first, then i
 
 ### **P1 - Missing Feature Implementation**
 
-- [ ] **CREATE**: [LS-014]: Implement usage tracking for SRS reviews.
+- [x] **CREATE**: [LS-014]: Implement usage tracking for SRS reviews.
     - **File(s)**: `src/lib/rateLimiter.ts`
     - **Action**: In `rateLimiter.ts`, create a new exported function `srsReviewRateLimiter(userId: string, tier: string)` similar to the existing `tieredRateLimiter`. Configure it with a limit of 10 for the "FREE" tier and a daily reset window.
     - **Reason**: Audit Finding: "[❌ Unverified] LS-014: [Freemium] Daily SRS Review Session Limit. No rate-limiting logic was found for SRS reviews."
