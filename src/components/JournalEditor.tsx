@@ -1,4 +1,3 @@
-'use client'
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,12 +6,12 @@ import { useState, useEffect, useRef } from "react";
 
 interface JournalEditorProps {
   initialContent?: string;
-  topicId: string;
+  topicTitle?: string;
 }
 
 export function JournalEditor({
   initialContent = "Start writing your thoughts in your target language...",
-  topicId,
+  topicTitle = "Free Write",
 }: JournalEditorProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -89,7 +88,7 @@ export function JournalEditor({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ content, topicId }),
+        body: JSON.stringify({ content, topicTitle }),
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["journals"] });

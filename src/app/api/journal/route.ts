@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
 const journalSchema = z.object({
   content: z.string().min(1),
-  topicId: z.string(),
+  topicTitle: z.string().optional().default("Free Write"),
 });
 
 export async function POST(req: NextRequest) {
@@ -43,12 +43,27 @@ export async function POST(req: NextRequest) {
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-  const { content, topicId } = parsed.data;
+  const { content, topicTitle } = parsed.data;
+
+  // Find or create the topic for the user
+  const topic = await prisma.topic.upsert({
+    where: {
+      userId_title: {
+        userId: user.id,
+        title: topicTitle,
+      },
+    },
+    update: {},
+    create: {
+      userId: user.id,
+      title: topicTitle,
+    },
+  });
 
   const newJournal = await prisma.journalEntry.create({
     data: {
       content,
-      topicId,
+      topicId: topic.id,
       authorId: user.id,
     },
   });
