@@ -1,3 +1,4 @@
+"use client";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { Button } from "@/components/ui/button";

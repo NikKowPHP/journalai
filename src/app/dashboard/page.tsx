@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { SuggestedTopics } from "@/components/SuggestedTopics";

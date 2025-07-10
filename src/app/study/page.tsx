@@ -1,3 +1,4 @@
+"use client";
 import { StudySession } from "@/components/StudySession";
 import { useQuery } from "@tanstack/react-query";
 
@@ -12,7 +13,7 @@ export default function StudyPage() {
   });
 
   if (isLoading) return <div>Loading study deck...</div>;
-  if (error) return <div>Error loading study deck: {error.message}</div>;
+  if (error) return <div>Error loading study deck: {(error as Error).message}</div>;
 
   return (
     <div className="container mx-auto p-4 space-y-6">

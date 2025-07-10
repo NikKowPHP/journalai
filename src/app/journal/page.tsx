@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { JournalEditor } from "@/components/JournalEditor";
 import { JournalHistoryList } from "@/components/JournalHistoryList";
@@ -18,7 +19,7 @@ export default function JournalPage() {
   });
 
   if (isLoading) return <div>Loading journals...</div>;
-  if (error) return <div>Error loading journals: {error.message}</div>;
+  if (error) return <div>Error loading journals: {(error as Error).message}</div>;
 
   return (
     <div className="container mx-auto p-4 space-y-6">
