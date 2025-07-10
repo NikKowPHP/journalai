@@ -1,6 +1,6 @@
 import { prisma } from "./db";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
-import { User as PrismaUser } from "@prisma/client";
+import { User as PrismaUser, Prisma } from "@prisma/client";
 
 /**
  * Ensures a user from Supabase Auth exists in the public User table.
@@ -39,21 +39,17 @@ export async function ensureUserInDb(
  * @param userId The user's ID
  * @returns The user's profile data
  */
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string | undefined) {
+  if (!userId) {
+    return null;
+  }
   return prisma.user.findUnique({
     where: { id: userId },
   });
 }
 
-export async function getUserById(id: string) {
-  return prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      email: true,
-      subscriptionTier: true,
-      subscriptionStatus: true,
-      createdAt: true
-    }
-  });
+export async function getUserById<T extends Prisma.UserFindUniqueArgs>(
+  args: T
+) {
+  return prisma.user.findUnique(args);
 }

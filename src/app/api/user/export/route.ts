@@ -1,22 +1,27 @@
-import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
 
-export const GET = auth(async (req) => {
-  if (!req.auth?.user?.id) {
+export const GET = async (req: NextRequest) => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const userId = req.auth.user.id;
+  const userId = user.id;
 
   const [journalEntries, analyses] = await Promise.all([
-    db.journalEntry.findMany({
-      where: { userId },
+    prisma.journalEntry.findMany({
+      where: { authorId: userId },
       orderBy: { createdAt: "desc" },
     }),
-    db.analysis.findMany({
-      where: { journalEntry: { userId } },
-      include: { journalEntry: true },
+    prisma.analysis.findMany({
+      where: { entry: { authorId: userId } },
+      include: { entry: true },
     }),
   ]);
 
@@ -31,4 +36,4 @@ export const GET = auth(async (req) => {
       "Content-Disposition": 'attachment; filename="linguascribe_export.json"',
     },
   });
-});
+};

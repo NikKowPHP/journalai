@@ -1,3 +1,4 @@
+'use client'
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -166,7 +167,7 @@ export function JournalEditor({
       editor.off('update', handleUpdate);
       clearInterval(interval);
     };
-  }, [editor, lastTyped, suggestion]);
+  }, [editor, lastTyped, suggestion, autocompleteMutation]);
 
   if (!editor) {
     return null;
@@ -176,7 +177,7 @@ export function JournalEditor({
     <div className="border rounded-lg overflow-hidden">
       {editor && (
         <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <div className="flex gap-1 p极1 bg-white border rounded shadow">
+          <div className="flex gap-1 p-1 bg-white border rounded shadow">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
               className={`p-1 rounded ${
@@ -207,16 +208,6 @@ export function JournalEditor({
               >
                 {translateMutation.isPending ? "Translating..." : "Translate"}
               </button>
-              {statusMessage && (
-                <div className="mt-2 text-sm text-muted-foreground">
-                  {statusMessage}
-                </div>
-              )}
-              {statusMessage && (
-                <div className="mt-2 text-sm text-muted-foreground">
-                  {statusMessage}
-                </div>
-              )}
             )}
           </div>
         </BubbleMenu>

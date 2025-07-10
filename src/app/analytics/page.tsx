@@ -1,20 +1,21 @@
+"use client";
 import { ProficiencyChart } from "@/components/ProficiencyChart";
 import { SubskillScores } from "@/components/SubskillScores";
 import { PricingTable } from "@/components/PricingTable";
 import { useQuery } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/lib/auth-context";
 
 export default function AnalyticsPage() {
-  const { data: session } = useSession();
+  const { user: authUser } = useAuth();
 
   const { data: userData, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ["user", session?.user?.email],
+    queryKey: ["user", authUser?.email],
     queryFn: async () => {
-      const res = await fetch("/api/user");
+      const res = await fetch("/api/user/profile");
       if (!res.ok) throw new Error("Failed to fetch user profile");
       return res.json();
     },
-    enabled: !!session?.user?.email
+    enabled: !!authUser?.email
   });
 
   const { data, isLoading, error } = useQuery({

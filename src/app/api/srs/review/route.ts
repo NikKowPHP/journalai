@@ -17,8 +17,13 @@ export async function POST(req: NextRequest) {
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { subscriptionTier: true },
+  });
+
   // Apply rate limiting
-  const limit = srsReviewRateLimiter(user.id, user.subscriptionTier);
+  const limit = srsReviewRateLimiter(user.id, dbUser?.subscriptionTier || "FREE");
   if (!limit.allowed) {
     return NextResponse.json(
       { error: "Daily review limit exceeded", code: "REVIEW_LIMIT_EXCEEDED" },

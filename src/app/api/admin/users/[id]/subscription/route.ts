@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authMiddleware } from "@/lib/auth";
 import { z } from "zod";
@@ -8,7 +8,7 @@ const subscriptionSchema = z.object({
   subscriptionStatus: z.enum(["ACTIVE", "CANCELED", "PAUSED"]).optional()
 });
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Authenticate and authorize
     const { user } = await authMiddleware(req);

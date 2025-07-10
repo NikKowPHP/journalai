@@ -15,12 +15,13 @@ export default async function UserDetailPage({
 }: {
   params: { id: string };
 }) {
-  const user = await getUserById(params.id, {
+  const user = await getUserById({
+    where: { id: params.id },
     include: {
       journalEntries: {
         include: {
           topic: true,
-          analyses: true,
+          analysis: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -85,7 +86,7 @@ export default async function UserDetailPage({
                     </TableCell>
                     <TableCell>{entry.topic?.title || "Free Write"}</TableCell>
                     <TableCell>
-                      {entry.analyses?.length ? (
+                      {entry.analysis ? (
                         <Link
                           href={`/journal/${entry.id}`}
                           className="text-primary hover:underline"

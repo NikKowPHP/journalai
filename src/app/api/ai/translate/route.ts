@@ -1,35 +1,46 @@
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/db";
 import { GeminiQuestionGenerationService } from "@/lib/ai/gemini-service";
-import { NextResponse } from "next/server";
-import { rateLimiter } from "@/lib/rateLimiter";
+import { tieredRateLimiter } from "@/lib/rateLimiter";
 
 const geminiService = new GeminiQuestionGenerationService(
   process.env.GEMINI_API_KEY!
 );
 
-export const POST = auth(async (req) => {
-  if (!req.auth?.user?.id) {
+export const POST = async (req: NextRequest) => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { subscriptionTier: true },
+  });
+
   // Rate limit based on user's subscription tier
   const rateLimitResult = tieredRateLimiter(
-    req.auth.user.id,
-    req.auth.user.subscriptionTier || "FREE"
+    user.id,
+    dbUser?.subscriptionTier || "FREE"
   );
-  
+
   if (!rateLimitResult.allowed) {
     return new NextResponse("Rate limit exceeded", {
       status: 429,
       headers: {
-        "Retry-After": rateLimitResult.retryAfter?.toString() || "86400" // 24 hours
-      }
+        "Retry-After": rateLimitResult.retryAfter?.toString() || "86400", // 24 hours
+      },
     });
   }
 
   try {
     const { text, sourceLanguage, targetLanguage } = await req.json();
-    
+
     if (!text || !sourceLanguage || !targetLanguage) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
@@ -45,4 +56,4 @@ export const POST = auth(async (req) => {
     console.error("Error in translation API:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-});
+};

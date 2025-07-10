@@ -26,12 +26,18 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    
+    const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { stripeCustomerId: true, email: true }
+    });
+
 
     // Get or create customer in Stripe
-    let customerId = user.stripeCustomerId;
+    let customerId = dbUser?.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
-        email: user.email,
+        email: user.email!,
         metadata: {
           userId: user.id,
         },

@@ -2,6 +2,7 @@ import { createClient } from "./supabase/server";
 import { prisma } from "./db";
 import type { AuthResponse, AuthError } from "@supabase/supabase-js";
 import { ensureUserInDb } from "./user";
+import type { NextRequest } from "next/server";
 
 export async function signUp(
   email: string,

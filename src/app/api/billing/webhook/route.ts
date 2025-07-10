@@ -60,7 +60,7 @@ export async function POST(req: Request) {
           where: { stripeCustomerId: customerId },
           data: {
             subscriptionTier: tier,
-            subscriptionStatus: "active",
+            subscriptionStatus: "ACTIVE",
           },
         });
       } catch (err) {
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
           where: { stripeCustomerId: customerId },
           data: {
             subscriptionTier: tier,
-            subscriptionStatus: subscription.status,
+            subscriptionStatus: subscription.status.toUpperCase(),
           },
         });
       } catch (err) {
@@ -96,9 +96,26 @@ export async function POST(req: Request) {
       }
       break;
     }
-    case "customer.subscription.deleted":
-      // Handle subscription cancellation
+    case "customer.subscription.deleted": {
+      const subscription = event.data.object as Stripe.Subscription;
+       if (!subscription.customer) {
+        console.warn("Missing customer in subscription delete");
+        break;
+      }
+      try {
+        const customerId = subscription.customer as string;
+        await prisma.user.update({
+          where: { stripeCustomerId: customerId },
+          data: {
+            subscriptionTier: 'FREE',
+            subscriptionStatus: 'CANCELED',
+          },
+        });
+      } catch (err) {
+        console.error("Error handling customer.subscription.deleted:", err);
+      }
       break;
+    }
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
