@@ -1,8 +1,22 @@
 import { ProficiencyChart } from "@/components/ProficiencyChart";
 import { SubskillScores } from "@/components/SubskillScores";
+import { PricingTable } from "@/components/PricingTable";
 import { useQuery } from "@tanstack/react-query";
+import { useSession } from "next-auth/react";
 
 export default function AnalyticsPage() {
+  const { data: session } = useSession();
+
+  const { data: userData, isLoading: userLoading, error: userError } = useQuery({
+    queryKey: ["user", session?.user?.email],
+    queryFn: async () => {
+      const res = await fetch("/api/user");
+      if (!res.ok) throw new Error("Failed to fetch user profile");
+      return res.json();
+    },
+    enabled: !!session?.user?.email
+  });
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["analytics"],
     queryFn: async () => {
@@ -12,8 +26,20 @@ export default function AnalyticsPage() {
     },
   });
 
-  if (isLoading) return <div>Loading analytics...</div>;
-  if (error) return <div>Error loading analytics: {error.message}</div>;
+  if (userLoading || isLoading) return <div>Loading...</div>;
+  if (userError || error) return <div>Error: {userError?.message || error?.message}</div>;
+
+  if (userData.subscriptionTier !== "PRO") {
+    return (
+      <div className="container mx-auto p-6 space-y-8">
+        <h1 className="text-3xl font-bold">Analytics (Pro Feature)</h1>
+        <div className="p-6 border rounded-lg bg-background">
+          <h2 className="text-xl font-semibold mb-4">Upgrade to Pro to access advanced analytics</h2>
+          <PricingTable />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-8">
