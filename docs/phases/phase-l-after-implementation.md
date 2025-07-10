@@ -27,7 +27,7 @@ This work plan outlines the precise, atomic steps required to bring the LinguaSc
 
 ### **P3 - Documentation Updates**
 
-- [ ] **DOCS**: Update the tech stack to reflect the implemented libraries for state management and forms.
+- [x] **DOCS**: Update the tech stack to reflect the implemented libraries for state management and forms.
     - **File(s)**: `docs/app_description.md`
     - **Action**: In the "Key NPM Libraries & Tooling" table (Section 4), remove the rows for `zustand` and `react-hook-form`. Add a note that state is managed by a combination of React's native state and `@tanstack/react-query`.
     - **Reason**: Audit Finding: "The `zustand` library is **not** present in `package.json`... The `react-hook-form` library is **not** present in `package.json`."
