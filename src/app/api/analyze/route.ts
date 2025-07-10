@@ -26,12 +26,17 @@ export async function POST(req: NextRequest) {
   // 1. Fetch the journal entry to ensure user owns it
   const journal = await prisma.journalEntry.findFirst({
     where: { id: journalId, authorId: user.id },
+    include: {
+      topic: true,
+    },
   });
-  if (!journal)
+  // No change needed here, the journalWithTopic handles the topic access.
+  if (!journal) {
     return NextResponse.json(
       { error: "Journal not found" },
-      { status: 404 },
+      { status: 404 }
     );
+  }
 
   // 2. Get user's current proficiency score
   const userData = await prisma.user.findUnique({
@@ -47,6 +52,17 @@ export async function POST(req: NextRequest) {
     undefined, // targetLanguage
     proficiencyScore
   );
+
+  // 3.5 Generate title if this is a free write entry
+  // To access the topic title, we need to include the topic in the journal entry fetch.
+
+  if (journal.topic?.title === "Free Write") {
+    const generatedTitle = await aiService.generateTitleForEntry(journal.content);
+    await prisma.topic.update({
+      where: { id: journal.topicId },
+      data: { title: generatedTitle }
+    });
+  }
 
   // 3. Save the results to the Analysis and Mistake tables
   const newAnalysis = await prisma.analysis.create({

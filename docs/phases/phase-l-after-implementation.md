@@ -33,32 +33,32 @@ Each task is atomic, traceable to a specific audit finding, and provides clear, 
     - **Action**: Create a new React component that accepts an array of topic strings as a prop. The component should render a list of these topics, with each item being a link to start a new journal entry for that topic.
     - **Reason**: Audit Finding: "[❌ Unverified] LS-020: Adaptive Topic Suggestion." This creates the UI element for the feature.
 
-- [ ] **UPDATE**: [LS-020]: Display adaptive topic suggestions on the dashboard.
+- [x] **UPDATE**: [LS-020]: Display adaptive topic suggestions on the dashboard.
     - **File(s)**: `src/app/dashboard/page.tsx`
     - **Action**: In the `DashboardPage` component, use `useQuery` to fetch data from the new `/api/user/suggested-topics` endpoint. Pass the resulting data to the new `SuggestedTopics` component to render it on the dashboard.
     - **Reason**: Audit Finding: "[❌ Unverified] LS-020: Adaptive Topic Suggestion." This integrates the feature into the user-facing dashboard.
 
-- [ ] **SETUP**: [LS-021]: Install a dependency for sending emails.
+- [x] **SETUP**: [LS-021]: Install a dependency for sending emails.
     - **File(s)**: `package.json`
     - **Action**: Run `npm install resend`. This will add the Resend SDK for sending transactional emails for progress reports.
     - **Reason**: Audit Finding: "[❌ Unverified] LS-021: Periodic Progress Reports." The project lacks an email sending capability, which is a prerequisite.
 
-- [ ] **CREATE**: [LS-021]: Implement a service for sending progress report emails.
+- [x] **CREATE**: [LS-021]: Implement a service for sending progress report emails.
     - **File(s)**: `src/lib/services/email.service.ts`
     - **Action**: Create a new file and implement a function `sendProgressReport(userId: string)`. This function should fetch the user's analytics data for the past week, render a simple HTML email body summarizing the progress, and use the Resend SDK to send the email.
     - **Reason**: Audit Finding: "[❌ Unverified] LS-021: Periodic Progress Reports." This creates the core logic for the feature.
 
-- [ ] **CREATE**: [LS-021]: Configure a cron job for weekly progress reports.
+- [x] **CREATE**: [LS-021]: Configure a cron job for weekly progress reports.
     - **File(s)**: `vercel.json`
     - **Action**: Create a `vercel.json` file in the root directory. Add a `crons` configuration to trigger a new API route (e.g., `/api/cron/weekly-report`) once a week. Example: `{"path": "/api/cron/weekly-report", "schedule": "0 0 * * 0"}`. Then, create the corresponding API route that will fetch all users and queue the `sendProgressReport` for each.
     - **Reason**: Audit Finding: "[❌ Unverified] LS-021: Periodic Progress Reports." This task sets up the automated, scheduled execution of the feature.
 
-- [ ] **UPDATE**: [LS-ADM-002]: Make user rows in admin dashboard link to detail page.
+- [x] **UPDATE**: [LS-ADM-002]: Make user rows in admin dashboard link to detail page.
     - **File(s)**: `src/components/AdminDashboard.tsx`
     - **Action**: Wrap the `TableRow` component in a router Link or add an `onClick` handler that navigates to `/admin/users/[id]`, passing the user's ID. You will need to fetch the user ID in `api/admin/users/route.ts` and pass it to the component.
     - **Reason**: Audit Finding: "[🟡 Partial] LS-ADM-002: View User Entries & Analyses." Admins cannot navigate to the user detail view.
 
-- [ ] **UPDATE**: [LS-ADM-002]: Enhance user detail page to show journal entries.
+- [x] **UPDATE**: [LS-ADM-002]: Enhance user detail page to show journal entries.
     - **File(s)**: `src/app/admin/users/[id]/page.tsx`
     - **Action**: In the `UserDetailPage`, fetch the user's journal entries from a new admin-only API endpoint. Display these entries in a simple table, showing the entry date, topic, and a link to view the full analysis.
     - **Reason**: Audit Finding: "[🟡 Partial] LS-ADM-002: View User Entries & Analyses." The detail page currently only shows subscription data.

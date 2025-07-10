@@ -55,6 +55,13 @@ export default function SettingsPage() {
         <Button
           asChild
           variant="outline"
+          className="mr-2 hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Link href="/api/user/export">Export My Data</Link>
+        </Button>
+        <Button
+          asChild
+          variant="outline"
           className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <Link href="/pricing">View Pricing Plans</Link>

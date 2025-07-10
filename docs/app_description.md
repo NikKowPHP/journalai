@@ -250,12 +250,14 @@ model SrsReviewItem {
 - **LS-SYS-005: AI Analysis Retry Logic:** If an AI analysis call fails, the system will automatically retry with backoff. The entry will be marked "Analysis Pending" in the UI.
 - **LS-SYS-006: Failed Analysis User Notification:** If analysis fails permanently, the user sees a notification with an option to manually trigger it again.
 - **LS-SYS-007: Stripe Webhook Idempotency:** The backend handles webhooks idempotently to prevent duplicate processing.
+- **LS-SYS-008: Clear Authentication Feedback:** As a user, I see clear, actionable error messages if my login, registration, or password reset fails.
 - **LS-ADM-004: Manual Webhook Reconciliation:** The Admin Panel will allow manual syncing of a user's subscription with Stripe.
 
 ### **Epic 8: Account Management & Compliance**
 
 - **LS-026: User Data Export:** As a user, I can go to my account settings and request a JSON export of all my journal entries and analyses.
 - **LS-027: Account Deletion:** As a user, I can initiate account deletion. I must confirm by typing my email address. _Technical Note: This initiates a two-stage deletion. The account is marked `status: "DELETION_PENDING"` for a 14-day grace period. A nightly job will permanently erase data for accounts past this grace period._
+- **LS-028: Cookie Consent:** As a user, I am presented with a cookie consent banner and can view the site's cookie and privacy policies.
 
 ### **Epic 9: Admin & Support Tooling**
 

@@ -91,8 +91,21 @@ export interface QuestionGenerationService {
    * @returns Promise resolving to a structured evaluation including the transcription.
    */
   evaluateAudioAnswer?(
-    context: AudioEvaluationContext,
+    context: AudioEvaluationContext
   ): Promise<EvaluationResult & { transcription: string }>;
+/**
+   * Generates a concise, relevant title for a journal entry.
+   * @param journalContent The content of the journal entry.
+   * @returns Promise resolving to the generated title.
+   */
+  generateTitleForEntry(journalContent: string): Promise<string>;
+
+  /**
+   * Generates a concise, relevant title for a journal entry.
+   * @param journalContent The content of the journal entry.
+   * @returns Promise resolving to the generated title.
+   */
+  generateTitleForEntry(journalContent: string): Promise<string>;
 }
 
 /**

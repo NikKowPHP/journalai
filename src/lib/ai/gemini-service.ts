@@ -370,6 +370,32 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
     }
   }
 
+  async generateTitleForEntry(journalContent: string): Promise<string> {
+    const prompt = `
+      You are an expert language tutor helping a student with their journal entry.
+      Generate a concise, relevant title (4-6 words) for the following journal entry.
+      Your response should ONLY contain the raw text of the title, without any additional commentary or formatting.
+
+      Journal entry content:
+      "${journalContent}"
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const title = result.text || "";
+      if (!title) {
+        throw new Error("Empty response from Gemini API");
+      }
+      return title.trim();
+    } catch (error) {
+      console.error("Error generating title with Gemini:", error);
+      throw error;
+    }
+  }
+
   async refineRole(role: string): Promise<RoleSuggestion[]> {
     const prompt = `
       You are an expert career coach and technical recruiter. Your task is to take a user-provided job role and refine it into several standardized, professional job titles. For each title, provide a concise, one-paragraph description of the role's primary responsibilities.
