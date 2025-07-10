@@ -18,7 +18,7 @@ This work plan outlines the precise, atomic steps required to bring the LinguaSc
     - **Action**: In the `analyzeJournalEntry` method, modify the prompt to include a sentence that leverages the `proficiencyScore` parameter. For example: `The user's proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your explanations accordingly.`
     - **Reason**: Audit Finding: "[🟡 Partial] [LS-SYS-002]: ...the prompt in `src/lib/ai/gemini-service.ts` does not currently incorporate this score to adapt its feedback..."
 
-- [ ] **UPDATE**: [LS-SYS-005]: Implement retry logic for AI analysis API calls.
+- [x] **UPDATE**: [LS-SYS-005]: Implement retry logic for AI analysis API calls.
     - **File(s)**: `src/components/JournalEditor.tsx`
     - **Action**: Within the `analyzeJournalMutation`'s `onError` handler, implement a simple retry mechanism with exponential backoff. For example, use a state variable to track retry attempts and `setTimeout` to trigger the mutation again after a delay. Limit to 3 retries.
     - **Reason**: Audit Finding: "[❌ Unverified] [LS-SYS-005]: No evidence of automated retry or backoff logic was found... The process is asynchronous, but does not retry on failure."

@@ -43,6 +43,8 @@ export function JournalEditor({
   const [suggestion, setSuggestion] = useState("");
   const [lastTyped, setLastTyped] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
+  const [retryAttempts, setRetryAttempts] = useState(0);
+  const [currentDelay, setCurrentDelay] = useState(1000);
 
   const autocompleteMutation = useMutation({
     mutationFn: (text: string) =>
@@ -115,8 +117,20 @@ export function JournalEditor({
           onSuccess: () => {
             setStatusMessage("Analysis started - your journal is being analyzed in the background");
           },
-          onError: () => {
-            setStatusMessage("Failed to start analysis of your journal");
+          onError: (error) => {
+            if (retryAttempts < 3) {
+              const newDelay = currentDelay * 2;
+              setRetryAttempts(retryAttempts + 1);
+              setCurrentDelay(newDelay);
+              setStatusMessage(`Analysis failed - retrying in ${newDelay/1000} seconds...`);
+              setTimeout(() => {
+                analyzeJournalMutation.mutate(journal.id);
+              }, currentDelay);
+            } else {
+              setStatusMessage("Failed to start analysis after multiple attempts");
+              setRetryAttempts(0);
+              setCurrentDelay(1000);
+            }
           }
         });
       },
