@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                    String    @id
   email                 String    @unique
+  supabaseAuthId        String    @unique
   nativeLanguage        String?   // Used for contextual translation
   targetLanguage        String?
   writingStyle          String?
@@ -101,7 +102,9 @@ model SrsReviewItem {
 }
 
 model ProcessedWebhook {
-  id        String   @id @default(cuid())
-  eventId   String   @unique
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  eventId    String   @unique
+  type       String
+  processedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 }

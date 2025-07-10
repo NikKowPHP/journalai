@@ -27,6 +27,7 @@ export async function ensureUserInDb(
     data: {
       id: supabaseUser.id,
       email: supabaseUser.email!,
+      supabaseAuthId: supabaseUser.id,
     },
   });
 

@@ -106,7 +106,9 @@ export async function POST(req: Request) {
   // Store the processed event ID
   await prisma.processedWebhook.create({
     data: {
-      eventId: event.id
+      eventId: event.id,
+      type: event.type,
+      processedAt: new Date()
     }
   });
 

@@ -51,7 +51,8 @@ graph TD
 2.  **Authentication & Storage:** Supabase provides a complete BaaS for user management (Auth) and file storage (Bucket) for potential future features.
 3.  **Application Backend (Next.js API Routes):** Core logic resides here. API routes validate user sessions, perform AI processing by calling the Gemini API, and use Prisma to manage data in the PostgreSQL database.
 4.  **Database Interaction:** Prisma acts as the type-safe bridge between API logic and the PostgreSQL database.
-5.  **Payment Processing:** Stripe handles all payment and subscription management, with our backend listening to Stripe webhooks to sync subscription states.
+5.  **AI Service Factory:** The `getQuestionGenerationService` factory in `src/lib/ai/index.ts` provides a unified interface to different AI providers, making it easy to switch or combine services while keeping the rest of the application unchanged.
+6.  **Payment Processing:** Stripe handles all payment and subscription management, with our backend listening to Stripe webhooks to sync subscription states.
 
 ## 3. Core Tech Stack
 
@@ -62,7 +63,7 @@ graph TD
 | **ORM**            | **Prisma**                   | Provides ultimate type-safety between the database and application logic, auto-generated clients, and simplified migrations. |
 | **Auth & Storage** | **Supabase (Auth & Bucket)** | Offloads complex user management and file storage, providing secure, scalable, and easy-to-use SDKs.                         |
 | **Payments**       | **Stripe**                   | Industry leader for payment processing and subscription management with excellent developer tools and security.              |
-| **AI/LLM**         | **Google Gemini API**        | Provides the advanced reasoning and language capabilities required for contextual translation, analysis, and autocomplete.   |
+| **AI/LLM**         | **Google Gemini API**        | Provides the advanced reasoning and language capabilities required for contextual translation, analysis, and autocomplete. The `getQuestionGenerationService` factory in `src/lib/ai/index.ts` abstracts the AI provider implementation, enabling easy switching between different LLM providers. |
 | **Styling**        | **Tailwind CSS + shadcn/ui** | Utility-first CSS for rapid development. `shadcn/ui` provides unstyled, accessible, and composable components.               |
 | **Deployment**     | **Vercel**                   | Native hosting for Next.js, offering seamless CI/CD, serverless functions, and global CDN.                                   |
 
