@@ -269,7 +269,8 @@ model SrsReviewItem {
 
 - **Code Quality:** `ESLint` and `Prettier` will be enforced via `husky` pre-commit hooks.
 - **Environment Management:** Secrets (`DATABASE_URL`, `SUPABASE_KEY`, `GEMINI_API_KEY`, `STRIPE_SECRET_KEY`) will be managed securely through Vercel's environment variables.
-- **Testing Strategy:** Initial development will rely on rigorous manual testing and local verification. A formal automated testing strategy (e.g., using Vitest for unit tests and Cypress for end-to-end tests) will be defined and implemented post-MVP to ensure long-term stability.
+- **Local Development Environment:** The project includes a `Dockerfile` and `docker-compose.yml` configuration for running the application and database in a containerized setup. This provides a consistent development environment across machines and simplifies onboarding by handling all dependencies and database setup automatically.
+- **Testing Strategy:** The project is configured with Jest for automated unit and integration testing to ensure long-term stability. A formal end-to-end testing strategy using a framework like Cypress may be defined post-MVP.
 - **Modularity:** Logic will be organized into a `services` directory (e.g., `ai.service.ts`, `stripe.service.ts`) to keep API routes thin and business logic reusable and testable.
 - **Compliance & User Trust:**
   - **Cookie Consent:** A GDPR-compliant cookie consent banner will be implemented, allowing users to accept, reject, and customize tracking preferences.

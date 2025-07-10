@@ -42,6 +42,7 @@ export function JournalEditor({
   const [translation, setTranslation] = useState("");
   const [suggestion, setSuggestion] = useState("");
   const [lastTyped, setLastTyped] = useState(0);
+  const [statusMessage, setStatusMessage] = useState("");
 
   const autocompleteMutation = useMutation({
     mutationFn: (text: string) =>
@@ -112,15 +113,15 @@ export function JournalEditor({
         const journal = await response.json();
         analyzeJournalMutation.mutate(journal.id, {
           onSuccess: () => {
-            alert("Analysis started - your journal is being analyzed in the background");
+            setStatusMessage("Analysis started - your journal is being analyzed in the background");
           },
           onError: () => {
-            alert("Failed to start analysis of your journal");
+            setStatusMessage("Failed to start analysis of your journal");
           }
         });
       },
       onError: () => {
-        alert("Failed to save your journal");
+        setStatusMessage("Failed to save your journal");
       }
     });
   };
@@ -192,6 +193,16 @@ export function JournalEditor({
               >
                 {translateMutation.isPending ? "Translating..." : "Translate"}
               </button>
+              {statusMessage && (
+                <div className="mt-2 text-sm text-muted-foreground">
+                  {statusMessage}
+                </div>
+              )}
+              {statusMessage && (
+                <div className="mt-2 text-sm text-muted-foreground">
+                  {statusMessage}
+                </div>
+              )}
             )}
           </div>
         </BubbleMenu>
@@ -214,6 +225,11 @@ export function JournalEditor({
         >
           Submit for Analysis
         </button>
+        {statusMessage && (
+          <div className="mt-2 text-sm text-muted-foreground">
+            {statusMessage}
+          </div>
+        )}
       </div>
     </div>
   );
