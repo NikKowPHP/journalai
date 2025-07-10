@@ -5,19 +5,17 @@ import { useAuth } from "@/lib/auth-context";
 import React from "react";
 
 export function AuthLinks() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   if (user) {
     return (
       <>
-        <form action="/api/auth/signout" method="POST">
-          <button
-            type="submit"
-            className="hover:underline bg-transparent border-none text-white cursor-pointer"
-          >
-            Logout
-          </button>
-        </form>
+        <button
+          onClick={() => signOut()}
+          className="hover:underline bg-transparent border-none text-white cursor-pointer p-0"
+        >
+          Logout
+        </button>
       </>
     );
   }
