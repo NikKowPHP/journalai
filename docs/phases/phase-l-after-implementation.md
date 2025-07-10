@@ -2,91 +2,65 @@
 
 This document outlines the implementation plan to bring the LinguaScribe codebase into 100% compliance with its technical specification (`app_description.md`). The plan is derived directly from the findings of the SpecCheck Audit Report and is structured to be executed by an AI developer agent.
 
-The plan is prioritized into three tiers:
-1.  **P1 - Missing Feature Implementation:** Focuses on creating the features and functionalities that are specified but entirely absent from the code. This includes AI-powered title generation, adaptive topic suggestions, progress reports, and completing the admin dashboard.
-2.  **P2 - Mismatches & Corrections:** Addresses partially implemented or incorrect features. This involves updating existing code to match the specification's requirements, such as refining the AI's feedback depth and improving error handling for analysis jobs.
-3.  **P3 - Documentation Updates:** Ensures the `app_description.md` is updated to reflect the existing, undocumented realities of the codebase, such as the Docker and Jest configurations.
+The plan is prioritized into four tiers, addressing critical fixes first, then implementing missing features, correcting mismatches, and finally updating documentation to reflect the codebase's reality. Each task is atomic, traceable to a specific audit finding, and provides clear, imperative instructions for the developer agent to follow.
 
-Each task is atomic, traceable to a specific audit finding, and provides clear, imperative instructions for the developer agent.
+---
+
+### **P0 - Critical Fixes & Foundational Setup**
+
+- [x] **FIX**: [LS-SYS-004]: Correct rate limiter to use IP for unauthenticated auth routes.
+    - **File(s)**: `src/app/api/auth/login/route.ts`, `src/app/api/auth/register/route.ts`, `src/app/api/auth/signout/route.ts`
+    - **Action**: In all three auth route handlers, add logic to get the client's IP address from the request headers (e.g., `x-forwarded-for`). Pass this IP address to a new `authRateLimiter` function. Create this new function in `lib/rateLimiter.ts` that specifically uses the IP as the key for rate limiting instead of a user ID.
+    - **Reason**: Audit Finding: "[❌ Unverified] LS-SYS-004: Authentication Rate Limiting. The implementation is user-ID based, which is ineffective for protecting unauthenticated endpoints."
 
 ---
 
 ### **P1 - Missing Feature Implementation**
 
-- [x] **CREATE**: [LS-022]: Add a new function to the Gemini service for title generation.
-    - **File(s)**: `src/lib/ai/gemini-service.ts`
-    - **Action**: In the `GeminiQuestionGenerationService` class, create a new public async function `generateTitleForEntry(journalContent: string): Promise<string>`. The prompt should instruct the AI to generate a concise, relevant title (4-6 words) for the given journal entry and to return only the raw text of the title.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-022: AI-Generated Titles for Free-Writes." This is the first step to implementing the feature.
+- [ ] **CREATE**: [LS-014]: Implement usage tracking for SRS reviews.
+    - **File(s)**: `src/lib/rateLimiter.ts`
+    - **Action**: In `rateLimiter.ts`, create a new exported function `srsReviewRateLimiter(userId: string, tier: string)` similar to the existing `tieredRateLimiter`. Configure it with a limit of 10 for the "FREE" tier and a daily reset window.
+    - **Reason**: Audit Finding: "[❌ Unverified] LS-014: [Freemium] Daily SRS Review Session Limit. No rate-limiting logic was found for SRS reviews."
 
-- [x] **UPDATE**: [LS-022]: Integrate AI title generation for journal entries.
-    - **File(s)**: `src/app/api/analyze/route.ts`
-    - **Action**: In the `POST` handler, after a new `Analysis` is created, check if the associated `JournalEntry`'s topic title is a generic placeholder (like "Free Write"). If so, call the new `aiService.generateTitleForEntry` function and update the `Topic`'s title with the result.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-022: AI-Generated Titles for Free-Writes." This task connects the AI service to the analysis workflow.
-
-- [x] **CREATE**: [LS-020]: Create an API endpoint for suggesting topics.
-    - **File(s)**: `src/app/api/user/suggested-topics/route.ts`
-    - **Action**: Create a new `GET` route handler that retrieves the current user. The handler should fetch the user's proficiency score and SRS items. Based on this data (e.g., topics of items with low easeFactor or proficiency below a certain threshold), it should formulate a list of suggested topics to review. Return a JSON array of topic titles.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-020: Adaptive Topic Suggestion." This task creates the necessary backend API.
-
-- [ ] **CREATE**: [LS-020]: Create a UI component to display suggested topics.
-    - **File(s)**: `src/components/SuggestedTopics.tsx`
-    - **Action**: Create a new React component that accepts an array of topic strings as a prop. The component should render a list of these topics, with each item being a link to start a new journal entry for that topic.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-020: Adaptive Topic Suggestion." This creates the UI element for the feature.
-
-- [x] **UPDATE**: [LS-020]: Display adaptive topic suggestions on the dashboard.
-    - **File(s)**: `src/app/dashboard/page.tsx`
-    - **Action**: In the `DashboardPage` component, use `useQuery` to fetch data from the new `/api/user/suggested-topics` endpoint. Pass the resulting data to the new `SuggestedTopics` component to render it on the dashboard.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-020: Adaptive Topic Suggestion." This integrates the feature into the user-facing dashboard.
-
-- [x] **SETUP**: [LS-021]: Install a dependency for sending emails.
-    - **File(s)**: `package.json`
-    - **Action**: Run `npm install resend`. This will add the Resend SDK for sending transactional emails for progress reports.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-021: Periodic Progress Reports." The project lacks an email sending capability, which is a prerequisite.
-
-- [x] **CREATE**: [LS-021]: Implement a service for sending progress report emails.
-    - **File(s)**: `src/lib/services/email.service.ts`
-    - **Action**: Create a new file and implement a function `sendProgressReport(userId: string)`. This function should fetch the user's analytics data for the past week, render a simple HTML email body summarizing the progress, and use the Resend SDK to send the email.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-021: Periodic Progress Reports." This creates the core logic for the feature.
-
-- [x] **CREATE**: [LS-021]: Configure a cron job for weekly progress reports.
-    - **File(s)**: `vercel.json`
-    - **Action**: Create a `vercel.json` file in the root directory. Add a `crons` configuration to trigger a new API route (e.g., `/api/cron/weekly-report`) once a week. Example: `{"path": "/api/cron/weekly-report", "schedule": "0 0 * * 0"}`. Then, create the corresponding API route that will fetch all users and queue the `sendProgressReport` for each.
-    - **Reason**: Audit Finding: "[❌ Unverified] LS-021: Periodic Progress Reports." This task sets up the automated, scheduled execution of the feature.
-
-- [x] **UPDATE**: [LS-ADM-002]: Make user rows in admin dashboard link to detail page.
-    - **File(s)**: `src/components/AdminDashboard.tsx`
-    - **Action**: Wrap the `TableRow` component in a router Link or add an `onClick` handler that navigates to `/admin/users/[id]`, passing the user's ID. You will need to fetch the user ID in `api/admin/users/route.ts` and pass it to the component.
-    - **Reason**: Audit Finding: "[🟡 Partial] LS-ADM-002: View User Entries & Analyses." Admins cannot navigate to the user detail view.
-
-- [x] **UPDATE**: [LS-ADM-002]: Enhance user detail page to show journal entries.
-    - **File(s)**: `src/app/admin/users/[id]/page.tsx`
-    - **Action**: In the `UserDetailPage`, fetch the user's journal entries from a new admin-only API endpoint. Display these entries in a simple table, showing the entry date, topic, and a link to view the full analysis.
-    - **Reason**: Audit Finding: "[🟡 Partial] LS-ADM-002: View User Entries & Analyses." The detail page currently only shows subscription data.
+- [ ] **UPDATE**: [LS-014]: Apply SRS review limit to the API endpoint.
+    - **File(s)**: `src/app/api/srs/review/route.ts`
+    - **Action**: In the `POST` handler, fetch the user's `subscriptionTier`. Call the new `srsReviewRateLimiter` with the user's ID and tier. If the request is not allowed, return a 429 "Too Many Requests" error.
+    - **Reason**: Audit Finding: "[❌ Unverified] LS-014: [Freemium] Daily SRS Review Session Limit. The API does not enforce the specified usage cap for free users."
 
 ---
 
 ### **P2 - Mismatches & Corrections**
 
-- [ ] **UPDATE**: [LS-SYS-002]: Refine AI prompt to provide adaptive feedback.
-    - **File(s)**: `src/lib/ai/gemini-service.ts`
-    - **Action**: In the `analyzeJournalEntry` function, modify the prompt string. Add a sentence that incorporates the `proficiencyScore` variable. For example: "The user's current proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your 'explanation' for each mistake to this level. For lower scores, provide simpler explanations; for higher scores, provide more nuanced and advanced feedback."
-    - **Reason**: Audit Finding: "[🟡 Partial] LS-SYS-002: Adaptive Feedback Depth." The AI prompt does not currently use the proficiency score to adjust its feedback.
+- [ ] **SETUP**: [P2 Setup]: Add Zod as a dependency for schema validation.
+    - **File(s)**: `package.json`
+    - **Action**: Run `npm install zod`.
+    - **Reason**: Audit Finding: "Schema Validation: Zod is specified but not a dependency." This is a prerequisite for the following tasks.
 
-- [ ] **UPDATE**: [LS-SYS-005]: Improve analysis submission UI feedback.
+- [ ] **UPDATE**: [LS-SYS-006]: Refactor journal submission feedback to use UI state.
     - **File(s)**: `src/components/JournalEditor.tsx`
-    - **Action**: Remove the `alert()` calls in the `handleSubmit` function. Add a new state variable, `[analysisStatus, setAnalysisStatus]`, to track the submission status ('idle', 'pending', 'success', 'error'). Display a message to the user within the component based on this state instead of using `alert()`.
-    - **Reason**: Audit Finding: "[🟡 Partial] LS-SYS-005 & LS-SYS-006." The current user notification for analysis status is a blocking `alert`, which is poor UX.
+    - **Action**: In the `JournalEditor` component, remove all `alert()` calls within the `handleSubmit` function and its mutation callbacks. Introduce a new state variable, `const [statusMessage, setStatusMessage] = useState('')`. Update this state in the `onSuccess` and `onError` callbacks of the mutations to reflect the analysis status (e.g., "Analysis started...", "Failed to save journal."). Render this `statusMessage` in a non-blocking element within the component's JSX.
+    - **Reason**: Audit Finding: "[🟡 Partial] LS-SYS-006: Failed Analysis User Notification. The current implementation uses blocking `alert()` calls, which is a poor user experience."
+
+- [ ] **UPDATE**: [API Validation]: Introduce Zod validation to the `analyze` route.
+    - **File(s)**: `src/app/api/analyze/route.ts`
+    - **Action**: Import `z`. Define a `const analyzeSchema = z.object({ journalId: z.string() });`. In the `POST` handler, replace the manual body parsing with `analyzeSchema.safeParse(body)`. If parsing fails, return a 400 error with the parsing error details. Use the parsed data for the rest of the function.
+    - **Reason**: Audit Finding: "[🟡 Partial] Schema Validation: Zod is specified but not used for API route validation."
+
+- [ ] **UPDATE**: [API Validation]: Introduce Zod validation to the `subscription` route.
+    - **File(s)**: `src/app/api/admin/users/[id]/subscription/route.ts`
+    - **Action**: Import `z`. Define a `const subscriptionSchema = z.object({ subscriptionTier: z.enum(["FREE", "PRO"]), subscriptionStatus: z.enum(["ACTIVE", "CANCELED", "PAUSED"]).optional() });`. In the `PUT` handler, replace the manual body parsing with `subscriptionSchema.safeParse(body)`. If parsing fails, return a 400 error. Use the parsed data for the database update.
+    - **Reason**: Audit Finding: "[🟡 Partial] Schema Validation: Zod is specified but not used for API route validation."
 
 ---
 
 ### **P3 - Documentation Updates**
 
-- [ ] **DOCS**: Document the Dockerized development environment.
+- [ ] **DOCS**: Document the Dockerized development environment in the specification.
     - **File(s)**: `docs/app_description.md`
-    - **Action**: Add a new sub-section to "8. Development & Compliance Practices" titled "Local Development Environment". Briefly describe the provided `Dockerfile` and `docker-compose.yml` and explain that they can be used to run the application and database in a containerized environment.
-    - **Reason**: Audit Finding: A Docker setup exists in the codebase but is not mentioned in the specification.
+    - **Action**: In Section 8, "Development & Compliance Practices," add a new sub-section titled "Local Development Environment". Briefly describe that the project includes a `Dockerfile` and `docker-compose.yml` for running the application and database in a containerized setup, simplifying developer onboarding.
+    - **Reason**: Audit Finding: "Undocumented Functionality: Containerized Development Environment. The repository includes a Docker setup that is not mentioned in the spec."
 
-- [ ] **DOCS**: Update the specification to reflect the existing testing framework.
+- [ ] **DOCS**: Update the specification to reflect the existing Jest testing framework.
     - **File(s)**: `docs/app_description.md`
-    - **Action**: In section "8. Development & Compliance Practices", find the "Testing Strategy" bullet point. Change the text from "Initial development will rely on rigorous manual testing... will be defined and implemented post-MVP" to "The project is configured with Jest for automated unit and integration testing to ensure long-term stability. A formal end-to-end testing strategy using a framework like Cypress may be defined post-MVP."
-    - **Reason**: Audit Finding: A Jest testing framework is already configured, which contradicts the current documentation.
+    - **Action**: In Section 8, locate the "Testing Strategy" bullet point. Replace the existing text with: "The project is configured with Jest for automated unit and integration testing to ensure long-term stability. A formal end-to-end testing strategy using a framework like Cypress may be defined post-MVP."
+    - **Reason**: Audit Finding: "Undocumented Functionality: Automated Testing Framework. The spec incorrectly states that testing will be defined post-MVP, but a Jest setup already exists."
