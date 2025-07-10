@@ -28,10 +28,12 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
 
   async analyzeJournalEntry(
     journalContent: string,
-    targetLanguage: string = "English"
+    targetLanguage: string = "English",
+    proficiencyScore: number
   ): Promise<JournalAnalysisResult> {
     const prompt = `
       You are an expert language tutor analyzing a journal entry written in ${targetLanguage}.
+      The user's proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your explanations accordingly.
       Provide detailed feedback on grammar, phrasing, style, and vocabulary usage.
 
       The journal entry content is:

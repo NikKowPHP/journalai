@@ -13,7 +13,7 @@ This work plan outlines the precise, atomic steps required to bring the LinguaSc
     - **Action**: Fetch the user's profile/session data. If the user's `subscriptionTier` is not "PRO", display a component prompting them to upgrade instead of rendering the analytics charts.
     - **Reason**: Audit Finding: "[🟡 Partial] [LS-018]: ...no feature gating was found in the UI or API to restrict this page to Pro users."
 
-- [ ] **UPDATE**: [LS-SYS-002]: Update AI analysis prompt to be adaptive based on user proficiency.
+- [x] **UPDATE**: [LS-SYS-002]: Update AI analysis prompt to be adaptive based on user proficiency.
     - **File(s)**: `src/lib/ai/gemini-service.ts`
     - **Action**: In the `analyzeJournalEntry` method, modify the prompt to include a sentence that leverages the `proficiencyScore` parameter. For example: `The user's proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your explanations accordingly.`
     - **Reason**: Audit Finding: "[🟡 Partial] [LS-SYS-002]: ...the prompt in `src/lib/ai/gemini-service.ts` does not currently incorporate this score to adapt its feedback..."
