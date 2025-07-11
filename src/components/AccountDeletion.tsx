@@ -38,7 +38,7 @@ export function AccountDeletion() {
   const { data: userData } = useQuery({
     queryKey: ['currentUser'],
     queryFn: async () => {
-      const response = await fetch('/api/user');
+      const response = await fetch('/api/user/profile');
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
       }
@@ -61,7 +61,12 @@ export function AccountDeletion() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="destructive">Delete Account</Button>
+        <Button
+          variant="ghost"
+          className="w-full justify-between h-14 px-4 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-none md:rounded-md"
+        >
+          <span>Delete Account</span>
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit}>

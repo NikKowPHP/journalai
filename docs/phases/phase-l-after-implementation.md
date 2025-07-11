@@ -66,27 +66,27 @@ This phase focuses on restyling the base-level, reusable components for both mob
 
 This phase re-imagines the application structure to align with platform-specific navigation patterns, **including the mobile bottom tab bar**.
 
-- [ ] **3.1. Create Bottom Tab Bar Component:**
-    - [ ] Create a new component `src/components/layout/BottomTabBar.tsx`.
-    - [ ] Style the bar with a translucent, blurry background (backdrop-filter).
-    - [ ] Add icons and labels for primary navigation links (Dashboard, Journal, Study, Analytics, Settings).
-    - [ ] Use the `usePathname` hook from `next/navigation` to apply an "active" style to the current route's tab.
+- [x] **3.1. Create Bottom Tab Bar Component:**
+    - [x] Create a new component `src/components/layout/BottomTabBar.tsx`.
+    - [x] Style the bar with a translucent, blurry background (backdrop-filter).
+    - [x] Add icons and labels for primary navigation links (Dashboard, Journal, Study, Analytics, Settings).
+    - [x] Use the `usePathname` hook from `next/navigation` to apply an "active" style to the current route's tab.
 
-- [ ] **3.2. Main Layout (`src/app/layout.tsx`):**
-    - [ ] **Conditional Rendering Logic:**
-        - [ ] Hide the existing top `<nav>` on mobile viewports.
-        - [ ] Render the new `<BottomTabBar />` component only on mobile viewports.
-        - [ ] Implement a desktop-only **Sidebar** for navigation, which will be hidden on mobile.
-    - [ ] The main page content should have appropriate padding (`padding-bottom`) on mobile to avoid being obscured by the bottom tab bar.
+- [x] **3.2. Main Layout (`src/app/layout.tsx`):**
+    - [x] **Conditional Rendering Logic:**
+        - [x] Hide the existing top `<nav>` on mobile viewports.
+        - [x] Render the new `<BottomTabBar />` component only on mobile viewports.
+        - [x] Implement a desktop-only **Sidebar** for navigation, which will be hidden on mobile.
+    - [x] The main page content should have appropriate padding (`padding-bottom`) on mobile to avoid being obscured by the bottom tab bar.
 
-- [ ] **3.3. Update Public & Auth Pages (`/`, `/login`, `/signup`, etc.):**
-    - [ ] Restyle landing page (`/page.tsx`) and auth forms (`SignInForm.tsx`, `SignUpForm.tsx`) to match the new Apple aesthetic.
-    - [ ] Ensure form elements use the newly styled `Input` and `Button` components.
+- [x] **3.3. Update Public & Auth Pages (`/`, `/login`, `/signup`, etc.):**
+    - [x] Restyle landing page (`/page.tsx`) and auth forms (`SignInForm.tsx`, `SignUpForm.tsx`) to match the new Apple aesthetic.
+    - [x] Ensure form elements use the newly styled `Input` and `Button` components.
 
-- [ ] **3.4. Update Authenticated Pages (`/dashboard`, `/journal`, `/settings`, etc.):**
-    - [ ] **Dashboard (`/dashboard`):** Use a `UITableView`-style list for `SuggestedTopics` on mobile.
-    - [ ] **Journal (`/journal`):** Redesign `JournalHistoryList` to use the new card-based list on mobile.
-    - [ ] **Settings (`/settings`):** Structure the page like the iOS Settings app, using grouped, inset lists.
+- [x] **3.4. Update Authenticated Pages (`/dashboard`, `/journal`, `/settings`, etc.):**
+    - [x] **Dashboard (`/dashboard`):** Use a `UITableView`-style list for `SuggestedTopics` on mobile.
+    - [x] **Journal (`/journal`):** Redesign `JournalHistoryList` to use the new card-based list on mobile.
+    - [x] **Settings (`/settings`):** Structure the page like the iOS Settings app, using grouped, inset lists.
 
 ---
 

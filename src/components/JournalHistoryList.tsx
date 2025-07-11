@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Card, CardContent } from "./ui/card";
 
 interface JournalEntry {
   id: string;
@@ -15,17 +16,21 @@ export function JournalHistoryList({ journals }: JournalHistoryListProps) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Previous Entries</h2>
-      {journals.map((entry) => (
-        <Link
-          key={entry.id}
-          href={`/journal/${entry.id}`}
-          className="block p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-        >
-          <h3 className="font-medium">{entry.title}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">{entry.snippet}</p>
-          <time className="text-xs text-gray-500">{entry.date}</time>
-        </Link>
-      ))}
+      <div className="space-y-2 md:space-y-4">
+        {journals.map((entry, index) => (
+          <Link key={entry.id} href={`/journal/${entry.id}`} passHref>
+            <Card className="hover:bg-accent/50 transition-colors cursor-pointer first:rounded-t-lg last:rounded-b-lg md:rounded-xl">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-baseline">
+                  <h3 className="font-medium line-clamp-1">{entry.title}</h3>
+                  <time className="text-xs text-muted-foreground whitespace-nowrap">{entry.date}</time>
+                </div>
+                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{entry.snippet}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

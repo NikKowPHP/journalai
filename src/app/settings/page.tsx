@@ -7,6 +7,8 @@ import { useAuth } from "@/lib/auth-context";
 import { ProfileForm } from "@/components/ProfileForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowUpRight, ChevronsRight } from "lucide-react";
 
 interface PortalResponse {
   url: string;
@@ -32,43 +34,78 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
-      <ProfileForm
-        email={profile?.email}
-        nativeLanguage={profile?.nativeLanguage}
-        targetLanguage={profile?.targetLanguage}
-        writingStyle={profile?.writingStyle}
-        writingPurpose={profile?.writingPurpose}
-        selfAssessedLevel={profile?.selfAssessedLevel}
-      />
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Subscription</h2>
-        {profile?.subscriptionTier !== "FREE" && (
-          <Button
-            onClick={() => portalMutation.mutate()}
-            disabled={portalMutation.isPending}
-            className="mr-2"
-          >
-            {portalMutation.isPending ? "Loading..." : "Manage Subscription"}
-          </Button>
-        )}
-        <Button
-          asChild
-          variant="outline"
-          className="mr-2 hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Link href="/api/user/export">Export My Data</Link>
-        </Button>
-        <Button
-          asChild
-          variant="outline"
-          className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Link href="/pricing">View Pricing Plans</Link>
-        </Button>
+    <div className="container max-w-2xl mx-auto p-4 md:p-8 space-y-8">
+      <h1 className="text-title-1">Settings</h1>
+      
+      <div className="space-y-8">
+        <section>
+          <h2 className="text-subhead px-4 mb-2 text-muted-foreground uppercase">Profile</h2>
+          <ProfileForm
+            email={profile?.email}
+            nativeLanguage={profile?.nativeLanguage}
+            targetLanguage={profile?.targetLanguage}
+            writingStyle={profile?.writingStyle}
+            writingPurpose={profile?.writingPurpose}
+            selfAssessedLevel={profile?.selfAssessedLevel}
+          />
+        </section>
+
+        <section>
+          <h2 className="text-subhead px-4 mb-2 text-muted-foreground uppercase">Subscription</h2>
+          <Card>
+            <CardContent className="p-0 md:p-2 divide-y">
+              {profile?.subscriptionTier !== "FREE" && (
+                <Button
+                  variant="ghost"
+                  onClick={() => portalMutation.mutate()}
+                  disabled={portalMutation.isPending}
+                  className="w-full justify-between h-14 px-4 rounded-none md:rounded-md"
+                >
+                  <span>{portalMutation.isPending ? "Loading..." : "Manage Subscription"}</span>
+                  <ChevronsRight className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              )}
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-between h-14 px-4 rounded-none md:rounded-md"
+              >
+                <Link href="/pricing">
+                    <span>View Pricing Plans</span>
+                    <ChevronsRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+        
+        <section>
+          <h2 className="text-subhead px-4 mb-2 text-muted-foreground uppercase">Data</h2>
+           <Card>
+            <CardContent className="p-0 md:p-2 divide-y">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-between h-14 px-4 rounded-none md:rounded-md"
+              >
+                <Link href="/api/user/export">
+                  <span>Export My Data</span>
+                  <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="text-subhead px-4 mb-2 text-muted-foreground uppercase">Danger Zone</h2>
+          <Card>
+            <CardContent className="p-0 md:p-2">
+              <AccountDeletion />
+            </CardContent>
+          </Card>
+        </section>
       </div>
-      <AccountDeletion />
     </div>
   );
 }

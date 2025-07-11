@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,55 +62,58 @@ export function ProfileForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card className="p-6 space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input 
-            id="email" 
-            type="email" 
-            placeholder="Enter your email" 
-            defaultValue={email}
-            disabled
-          />
-        </div>
+    <Card>
+      <form onSubmit={handleSubmit}>
+        <CardContent className="p-4 space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input 
+              id="email" 
+              type="email" 
+              placeholder="Enter your email" 
+              defaultValue={email}
+              disabled
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label>Native Language</Label>
-          <Select name="nativeLanguage" defaultValue={nativeLanguage}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="english">English</SelectItem>
-              <SelectItem value="spanish">Spanish</SelectItem>
-              <SelectItem value="french">French</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <div className="space-y-2">
+            <Label>Native Language</Label>
+            <Select name="nativeLanguage" defaultValue={nativeLanguage}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="english">English</SelectItem>
+                <SelectItem value="spanish">Spanish</SelectItem>
+                <SelectItem value="french">French</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div className="space-y-2">
-          <Label>Target Language</Label>
-          <Select name="targetLanguage" defaultValue={targetLanguage}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select language" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="english">English</SelectItem>
-              <SelectItem value="spanish">Spanish</SelectItem>
-              <SelectItem value="french">French</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </Card>
-      
-      <Button 
-        type="submit" 
-        disabled={updateProfileMutation.isPending}
-        className="w-full mt-4"
-      >
-        {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
-      </Button>
-    </form>
+          <div className="space-y-2">
+            <Label>Target Language</Label>
+            <Select name="targetLanguage" defaultValue={targetLanguage}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="english">English</SelectItem>
+                <SelectItem value="spanish">Spanish</SelectItem>
+                <SelectItem value="french">French</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        
+          <Button 
+            type="submit" 
+            disabled={updateProfileMutation.isPending}
+            className="w-full"
+            size="lg"
+          >
+            {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </CardContent>
+      </form>
+    </Card>
   );
 }
