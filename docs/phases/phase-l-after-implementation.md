@@ -94,28 +94,28 @@ This phase re-imagines the application structure to align with platform-specific
 
 This phase adds the necessary components to make the site installable and feel like a native application.
 
-- [ ] **4.1. Add PWA Dependency:**
-    - [ ] Install `next-pwa`: `npm install next-pwa`.
+- [x] **4.1. Add PWA Dependency:**
+    - [x] Install `next-pwa`: `npm install next-pwa`.
 
-- [ ] **4.2. Create Web App Manifest:**
-    - [ ] Create a `public/manifest.json` file.
-    - [ ] Populate the manifest with app details: `name`, `short_name`, `description`, `start_url`, `display: 'standalone'`, `background_color`, `theme_color`.
+- [x] **4.2. Create Web App Manifest:**
+    - [x] Create a `public/manifest.json` file.
+    - [x] Populate the manifest with app details: `name`, `short_name`, `description`, `start_url`, `display: 'standalone'`, `background_color`, `theme_color`.
 
-- [ ] **4.3. Generate App Icons:**
-    - [ ] Create a set of app icons in various sizes (e.g., 72x72, 96x96, 128x128, 144x144, 152x152, 192x192, 384x384, 512x512).
-    - [ ] Place the icons in the `public/icons` directory.
-    - [ ] Reference these icons in the `manifest.json` file.
+- [x] **4.3. Generate App Icons:**
+    - [x] Create a set of app icons in various sizes (e.g., 72x72, 96x96, 128x128, 144x144, 152x152, 192x192, 384x384, 512x512).
+    - [x] Place the icons in the `public/icons` directory.
+    - [x] Reference these icons in the `manifest.json` file.
 
-- [ ] **4.4. Configure Service Worker:**
-    - [ ] Modify `next.config.ts` to use the `next-pwa` plugin.
-    - [ ] Configure the PWA options, setting `dest: 'public'` and defining runtime caching strategies for pages, assets, and images. Ensure API calls (`/api/**`) are configured to be network-first.
+- [x] **4.4. Configure Service Worker:**
+    - [x] Modify `next.config.ts` to use the `next-pwa` plugin.
+    - [x] Configure the PWA options, setting `dest: 'public'` and defining runtime caching strategies for pages, assets, and images. Ensure API calls (`/api/**`) are configured to be network-first.
 
-- [ ] **4.5. Update Root Layout for PWA:**
-    - [ ] In `src/app/layout.tsx`, add the necessary `<meta>` tags and `<link>` tags to the document `<head>`.
-    - [ ] Link to the `manifest.json`: `<link rel="manifest" href="/manifest.json" />`.
-    - [ ] Add `theme-color` meta tag.
-    - [ ] Add Apple-specific meta tags for PWA behavior: `<meta name="apple-mobile-web-app-capable" content="yes" />` and `<meta name="apple-mobile-web-app-status-bar-style" content="default">`.
-    - [ ] Add Apple touch icons: `<link rel="apple-touch-icon" href="/icons/icon-192x192.png">`.
+- [x] **4.5. Update Root Layout for PWA:**
+    - [x] In `src/app/layout.tsx`, add the necessary `<meta>` tags and `<link>` tags to the document `<head>`.
+    - [x] Link to the `manifest.json`: `<link rel="manifest" href="/manifest.json" />`.
+    - [x] Add `theme-color` meta tag.
+    - [x] Add Apple-specific meta tags for PWA behavior: `<meta name="apple-mobile-web-app-capable" content="yes" />` and `<meta name="apple-mobile-web-app-status-bar-style" content="default">`.
+    - [x] Add Apple touch icons: `<link rel="apple-touch-icon" href="/icons/icon-192x192.png">`.
 
 ---
 
