@@ -1,5 +1,4 @@
 "use client";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -14,37 +13,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDeleteAccount, useUserProfile } from "@/lib/hooks/data-hooks";
 
 export function AccountDeletion() {
   const router = useRouter();
   const [emailConfirmation, setEmailConfirmation] = useState("");
   const [userEmail, setUserEmail] = useState("");
 
-  const deleteAccountMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch('/api/user', {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete account');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      router.push('/');
-    },
-  });
-
-  const { data: userData } = useQuery({
-    queryKey: ['currentUser'],
-    queryFn: async () => {
-      const response = await fetch('/api/user/profile');
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      return response.json();
-    },
-  });
+  const deleteAccountMutation = useDeleteAccount();
+  const { data: userData } = useUserProfile();
 
   useEffect(() => {
     if (userData?.email) {
@@ -55,7 +32,11 @@ export function AccountDeletion() {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (emailConfirmation !== userEmail) return;
-    deleteAccountMutation.mutate();
+    deleteAccountMutation.mutate(undefined, {
+      onSuccess: () => {
+        router.push("/");
+      },
+    });
   };
 
   return (
@@ -73,7 +54,8 @@ export function AccountDeletion() {
           <DialogHeader>
             <DialogTitle>Confirm Account Deletion</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. Please type your exact email address ("{userEmail}") to confirm.
+              This action cannot be undone. Please type your exact email
+              address ("{userEmail}") to confirm.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -93,9 +75,14 @@ export function AccountDeletion() {
             <Button
               type="submit"
               variant="destructive"
-              disabled={deleteAccountMutation.isPending || emailConfirmation !== userEmail}
+              disabled={
+                deleteAccountMutation.isPending ||
+                emailConfirmation !== userEmail
+              }
             >
-              {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete Account'}
+              {deleteAccountMutation.isPending
+                ? "Deleting..."
+                : "Delete Account"}
             </Button>
           </DialogFooter>
         </form>

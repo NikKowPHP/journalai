@@ -2,10 +2,9 @@
 import React from "react";
 import { JournalEditor } from "@/components/JournalEditor";
 import { JournalHistoryList } from "@/components/JournalHistoryList";
-import { useQuery } from "@tanstack/react-query";
+import { useJournalHistory, useUserProfile } from "@/lib/hooks/data-hooks";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,34 +31,14 @@ function JournalPageSkeleton() {
 export default function JournalPage() {
   const searchParams = useSearchParams();
   const topicFromQuery = searchParams.get("topic");
-  const { user: authUser } = useAuth();
 
   const {
     data: journals,
     isLoading: isJournalsLoading,
     error: journalsError,
-  } = useQuery({
-    queryKey: ["journals"],
-    queryFn: async () => {
-      const res = await fetch("/api/journal");
-      if (!res.ok) throw new Error("Failed to fetch journals");
-      return res.json();
-    },
-  });
+  } = useJournalHistory();
 
-  const { data: userProfile, isLoading: isProfileLoading } = useQuery({
-    queryKey: ["userProfile", authUser?.id],
-    queryFn: async () => {
-      if (!authUser) return null;
-      const res = await fetch("/api/user/profile");
-      if (!res.ok) {
-        if (res.status === 404) return null;
-        throw new Error("Failed to fetch user profile");
-      }
-      return res.json();
-    },
-    enabled: !!authUser,
-  });
+  const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
 
   const isLoading = isJournalsLoading || isProfileLoading;
   const error = journalsError;

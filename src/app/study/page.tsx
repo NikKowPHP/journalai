@@ -1,8 +1,8 @@
 "use client";
 import { StudySession } from "@/components/StudySession";
-import { useQuery } from "@tanstack/react-query";
 import { useOnboarding } from "@/lib/onboarding-context";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useStudyDeck } from "@/lib/hooks/data-hooks";
 
 const GuidedPopover = ({ children, title, description }: { children: React.ReactNode, title: string, description: string }) => (
   <div className="relative">
@@ -20,14 +20,7 @@ export default function StudyPage() {
   const { step, setStep, completeOnboarding } = useOnboarding();
   const isTourActive = step === 'STUDY_INTRO';
 
-  const { data: studyDeck, isLoading, error } = useQuery({
-    queryKey: ["studyDeck"],
-    queryFn: async () => {
-      const res = await fetch("/api/srs/deck");
-      if (!res.ok) throw new Error("Failed to fetch study deck");
-      return res.json();
-    },
-  });
+  const { data: studyDeck, isLoading, error } = useStudyDeck();
 
   const handleFirstReview = () => {
     if(isTourActive) {

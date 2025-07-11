@@ -5,40 +5,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JournalHistoryList } from "@/components/JournalHistoryList";
 import { SuggestedTopics } from "@/components/SuggestedTopics";
-import { useAuth } from "@/lib/auth-context";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUserProfile } from "@/lib/user";
+import {
+  useUserProfile,
+  useAnalyticsData,
+  useGenerateTopics,
+} from "@/lib/hooks/data-hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSummary } from "@/components/DashboardSummary";
 
 export default function DashboardPage() {
-  const { user: authUser } = useAuth();
-  const queryClient = useQueryClient();
   const [generatedTopics, setGeneratedTopics] = useState<string[]>([]);
 
-  const { data: user, isLoading: isUserLoading } = useQuery({
-    queryKey: ["user", authUser?.id],
-    queryFn: () => getUserProfile(authUser?.id),
-    enabled: !!authUser?.id,
-  });
+  const { data: user, isLoading: isUserLoading } = useUserProfile();
+  const { data: analytics, isLoading: isAnalyticsLoading } = useAnalyticsData();
+  const generateTopicsMutation = useGenerateTopics();
 
-  const { data: analytics, isLoading: isAnalyticsLoading } = useQuery({
-    queryKey: ["analytics"],
-    queryFn: () => fetch("/api/analytics").then((res) => res.json()),
-    enabled: !!user && user.onboardingCompleted,
-  });
+  const handleGenerateTopics = () => {
+    generateTopicsMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        if (data.topics) {
+          setGeneratedTopics(data.topics);
+        }
+      },
+    });
+  };
 
-  const generateTopicsMutation = useMutation({
-    mutationFn: () =>
-      fetch("/api/user/generate-topics").then((res) => res.json()),
-    onSuccess: (data) => {
-      if (data.topics) {
-        setGeneratedTopics(data.topics);
-      }
-    },
-  });
-
-  const isLoading = isUserLoading || (user?.onboardingCompleted && isAnalyticsLoading);
+  const isLoading =
+    isUserLoading || (user && user.onboardingCompleted && isAnalyticsLoading);
 
   if (isLoading) {
     return (
@@ -107,7 +100,7 @@ export default function DashboardPage() {
 
       <div className="space-y-4">
         <Button
-          onClick={() => generateTopicsMutation.mutate()}
+          onClick={handleGenerateTopics}
           disabled={generateTopicsMutation.isPending}
         >
           {generateTopicsMutation.isPending

@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUpdateUserSubscription } from "@/lib/hooks/admin-hooks";
 
 interface UpdateSubscriptionFormProps {
   userId: string;
@@ -24,35 +25,27 @@ export function UpdateSubscriptionForm({
 }: UpdateSubscriptionFormProps) {
   const [tier, setTier] = useState(currentTier || "FREE");
   const [status, setStatus] = useState(currentStatus || "ACTIVE");
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { mutate: updateSubscription, isPending: isLoading } =
+    useUpdateUserSubscription();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`/api/admin/users/${userId}/subscription`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+    const payload = {
+      subscriptionTier: tier,
+      subscriptionStatus: status,
+    };
+    updateSubscription(
+      { userId, payload },
+      {
+        onSuccess: () => {
+          router.refresh();
         },
-        body: JSON.stringify({
-          subscriptionTier: tier,
-          subscriptionStatus: status,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update subscription");
-      }
-
-      router.refresh();
-    } catch (error) {
-      console.error("Error updating subscription:", error);
-    } finally {
-      setIsLoading(false);
-    }
+        onError: (error) => {
+          console.error("Error updating subscription:", error);
+        },
+      },
+    );
   };
 
   return (

@@ -10,6 +10,12 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
+import { JournalEntry, Topic, Analysis, Mistake } from "@prisma/client";
+
+type JournalEntryWithRelations = JournalEntry & {
+  topic: Topic | null;
+  analysis: (Analysis & { mistakes: Mistake[] }) | null;
+};
 
 export default async function UserDetailPage({
   params,
@@ -22,7 +28,11 @@ export default async function UserDetailPage({
       journalEntries: {
         include: {
           topic: true,
-          analysis: true,
+          analysis: {
+            include: {
+              mistakes: true,
+            },
+          },
         },
         orderBy: {
           createdAt: "desc",
@@ -77,7 +87,7 @@ export default async function UserDetailPage({
             <>
               {/* Mobile View */}
               <div className="md:hidden space-y-2">
-                {user.journalEntries.map((entry) => (
+                {user.journalEntries.map((entry: JournalEntryWithRelations) => (
                   <Link href={`/journal/${entry.id}`} key={entry.id}>
                     <Card className="hover:bg-accent/50 transition-colors">
                       <CardContent className="p-4">
@@ -108,28 +118,30 @@ export default async function UserDetailPage({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {user.journalEntries.map((entry) => (
-                      <TableRow key={entry.id}>
-                        <TableCell>
-                          {new Date(entry.createdAt).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          {entry.topic?.title || "Free Write"}
-                        </TableCell>
-                        <TableCell>
-                          {entry.analysis ? (
-                            <Link
-                              href={`/journal/${entry.id}`}
-                              className="text-primary hover:underline"
-                            >
-                              View Analysis
-                            </Link>
-                          ) : (
-                            "No analysis"
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {user.journalEntries.map(
+                      (entry: JournalEntryWithRelations) => (
+                        <TableRow key={entry.id}>
+                          <TableCell>
+                            {new Date(entry.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            {entry.topic?.title || "Free Write"}
+                          </TableCell>
+                          <TableCell>
+                            {entry.analysis ? (
+                              <Link
+                                href={`/journal/${entry.id}`}
+                                className="text-primary hover:underline"
+                              >
+                                View Analysis
+                              </Link>
+                            ) : (
+                              "No analysis"
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ),
+                    )}
                   </TableBody>
                 </Table>
               </div>

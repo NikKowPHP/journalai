@@ -2,31 +2,12 @@
 import { ProficiencyChart } from "@/components/ProficiencyChart";
 import { SubskillScores } from "@/components/SubskillScores";
 import { PricingTable } from "@/components/PricingTable";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/auth-context";
+import { useAnalyticsData, useUserProfile } from "@/lib/hooks/data-hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsPage() {
-  const { user: authUser } = useAuth();
-
-  const { data: userData, isLoading: userLoading, error: userError } = useQuery({
-    queryKey: ["user", authUser?.email],
-    queryFn: async () => {
-      const res = await fetch("/api/user/profile");
-      if (!res.ok) throw new Error("Failed to fetch user profile");
-      return res.json();
-    },
-    enabled: !!authUser?.email
-  });
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["analytics"],
-    queryFn: async () => {
-      const res = await fetch("/api/analytics");
-      if (!res.ok) throw new Error("Failed to fetch analytics");
-      return res.json();
-    },
-  });
+  const { data: userData, isLoading: userLoading, error: userError } = useUserProfile();
+  const { data, isLoading, error } = useAnalyticsData();
 
   if (userLoading || isLoading) {
     return (
@@ -61,6 +42,13 @@ export default function AnalyticsPage() {
     );
   }
 
+  // The API returns subskillScores as an object { grammar, phrasing, vocabulary }
+  // SubskillScores component expects an array of { skill, score }
+  const skillBreakdown = data?.subskillScores ? Object.entries(data.subskillScores).map(([skill, score]) => ({
+    skill: skill.charAt(0).toUpperCase() + skill.slice(1),
+    score: score,
+  })) : [];
+
   return (
     <div className="container mx-auto p-6 space-y-8">
       <h1 className="text-3xl font-bold">My Analytics</h1>
@@ -73,7 +61,7 @@ export default function AnalyticsPage() {
 
         <div className="space-y-4 p-6 border rounded-lg bg-background">
           <h2 className="text-xl font-semibold">Skill Breakdown</h2>
-          <SubskillScores data={data.skillBreakdown} />
+          <SubskillScores data={skillBreakdown} />
         </div>
       </div>
     </div>

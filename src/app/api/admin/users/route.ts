@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { authMiddleware } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
   const skip = (page - 1) * limit;
 
   try {
-    const whereClause = search
+    const whereClause: Prisma.UserWhereInput = search
       ? {
           email: {
             contains: search,

@@ -1,10 +1,10 @@
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import { useEditor, EditorContent, BubbleMenu, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/auth-context";
+import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
+import { useSubmitJournal, useAnalyzeJournal } from "@/lib/hooks/data-hooks";
 
 interface JournalEditorProps {
   topicTitle?: string;
@@ -17,9 +17,11 @@ export function JournalEditor({
   isOnboarding = false,
   onOnboardingSubmit,
 }: JournalEditorProps) {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
   const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
+  const [translation, setTranslation] = useState("");
+  const [suggestion, setSuggestion] = useState("");
+  const [lastTyped, setLastTyped] = useState(0);
+  const [statusMessage, setStatusMessage] = useState("");
 
   const editor = useEditor({
     extensions: [
@@ -34,23 +36,32 @@ export function JournalEditor({
         class:
           "prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 bg-background text-foreground",
       },
-      handleKeyDown: (view, event) => {
-        if (event.key === "Tab" && suggestion) {
-          event.preventDefault();
-          editor.chain().focus().insertContent(suggestion).run();
-          setSuggestion("");
-          setIsSuggestionVisible(false);
-          return true;
-        }
-        return false;
-      },
     },
   });
 
-  const [translation, setTranslation] = useState("");
-  const [suggestion, setSuggestion] = useState("");
-  const [lastTyped, setLastTyped] = useState(0);
-  const [statusMessage, setStatusMessage] = useState("");
+  const submitJournalMutation = useSubmitJournal();
+  const analyzeJournalMutation = useAnalyzeJournal();
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    const handleKeyDown = (_view: any, event: KeyboardEvent): boolean => {
+      if (event.key === "Tab" && suggestion) {
+        event.preventDefault();
+        editor.chain().focus().insertContent(suggestion).run();
+        setSuggestion("");
+        setIsSuggestionVisible(false);
+        return true;
+      }
+      return false;
+    };
+    editor.setOptions({
+      editorProps: {
+        handleKeyDown,
+      },
+    });
+  }, [editor, suggestion, setIsSuggestionVisible]);
 
   const autocompleteMutation = useMutation({
     mutationFn: (text: string) =>
@@ -88,40 +99,13 @@ export function JournalEditor({
     },
   });
 
-  const createJournalMutation = useMutation({
-    mutationFn: (content: string) =>
-      fetch("/api/journal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content, topicTitle }),
-      }),
-    onSuccess: () => {
-      if (!isOnboarding) {
-        queryClient.invalidateQueries({ queryKey: ["journals"] });
-      }
-    },
-  });
-
-  const analyzeJournalMutation = useMutation({
-    mutationFn: (journalId: string) =>
-      fetch("/api/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ journalId }),
-      }),
-  });
-
   const handleSubmit = async () => {
     if (!editor) return;
     const content = editor.getText();
+    const payload = { content, topicTitle };
 
-    createJournalMutation.mutate(content, {
-      onSuccess: async (response) => {
-        const journal = await response.json();
+    submitJournalMutation.mutate(payload, {
+      onSuccess: (journal) => {
         if (isOnboarding && onOnboardingSubmit) {
           onOnboardingSubmit(journal.id);
         }
@@ -132,7 +116,7 @@ export function JournalEditor({
                 "Analysis started - your journal is being analyzed in the background",
               );
           },
-          onError: (error) => {
+          onError: () => {
             if (!isOnboarding) setStatusMessage("Failed to start analysis.");
           },
         });
@@ -246,7 +230,7 @@ export function JournalEditor({
         <div>
           <Button
             onClick={handleSubmit}
-            disabled={createJournalMutation.isPending}
+            disabled={submitJournalMutation.isPending}
           >
             Submit for Analysis
           </Button>

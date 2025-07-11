@@ -3,6 +3,7 @@ import { GeminiQuestionGenerationService } from "@/lib/ai/gemini-service";
 import { tieredRateLimiter } from "@/lib/rateLimiter";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 const geminiService = new GeminiQuestionGenerationService(
   process.env.GEMINI_API_KEY!
@@ -17,6 +18,8 @@ export const POST = async (req: NextRequest) => {
   if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  logger.info(`/api/ai/autocomplete - POST - User: ${user.id}`);
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
@@ -49,7 +52,7 @@ export const POST = async (req: NextRequest) => {
 
     return NextResponse.json({ completedText });
   } catch (error) {
-    console.error("Error in autocomplete API:", error);
+    logger.error("Error in autocomplete API:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 };

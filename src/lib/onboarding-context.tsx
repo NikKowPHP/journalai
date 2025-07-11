@@ -2,9 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getUserProfile } from './user';
-import axios from 'axios';
+import { useCompleteOnboarding, useUserProfile } from './hooks/data-hooks';
 
 type OnboardingStep =
   | 'PROFILE_SETUP'
@@ -29,29 +27,22 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const { user: authUser, loading: authLoading } = useAuth();
-  const queryClient = useQueryClient();
   const [step, setStep] = useState<OnboardingStep>('INACTIVE');
   const [onboardingJournalId, setOnboardingJournalId] = useState<string | null>(null);
 
-  const { data: userProfile } = useQuery({
-    queryKey: ['user', authUser?.id],
-    queryFn: () => getUserProfile(authUser?.id),
-    enabled: !!authUser && !authLoading,
-  });
+  const { data: userProfile } = useUserProfile();
+  const completeOnboardingMutation = useCompleteOnboarding();
 
-  const completeOnboardingMutation = useMutation({
-    mutationFn: () => axios.post('/api/user/complete-onboarding'),
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['user', authUser?.id] });
-        setStep('INACTIVE');
-    }
-  });
 
   const completeOnboarding = () => {
     if (step !== 'COMPLETED') {
         setStep('COMPLETED');
     }
-    completeOnboardingMutation.mutate();
+    completeOnboardingMutation.mutate(undefined, {
+        onSuccess: () => {
+            setStep('INACTIVE');
+        }
+    });
   };
 
   useEffect(() => {

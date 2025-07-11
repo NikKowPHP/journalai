@@ -1,37 +1,31 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
 import { useAuth } from "@/lib/auth-context";
 import { ProfileForm } from "@/components/ProfileForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpRight, ChevronsRight, LogOut } from "lucide-react";
-
-interface PortalResponse {
-  url: string;
-}
+import {
+  useCreatePortalSession,
+  useUserProfile,
+} from "@/lib/hooks/data-hooks";
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const res = await fetch("/api/user/profile");
-      if (!res.ok) throw new Error("Failed to fetch profile");
-      return res.json();
-    },
-  });
-  const portalMutation = useMutation<AxiosResponse<PortalResponse>, Error>({
-    mutationFn: () => axios.post("/api/billing/portal"),
-    onSuccess: (response) => {
-      if (response.data.url) {
-        window.location.href = response.data.url;
-      }
-    },
-  });
+  const { data: profile, isLoading } = useUserProfile();
+  const portalMutation = useCreatePortalSession();
+
+  const handleManageSubscription = () => {
+    portalMutation.mutate(undefined, {
+      onSuccess: (response) => {
+        if (response.url) {
+          window.location.href = response.url;
+        }
+      },
+    });
+  };
 
   return (
     <div className="container max-w-2xl mx-auto p-4 md:p-8 space-y-8">
@@ -62,7 +56,7 @@ export default function SettingsPage() {
               {profile?.subscriptionTier !== "FREE" && (
                 <Button
                   variant="ghost"
-                  onClick={() => portalMutation.mutate()}
+                  onClick={handleManageSubscription}
                   disabled={portalMutation.isPending}
                   className="w-full justify-between h-14 px-4 rounded-none md:rounded-md"
                 >

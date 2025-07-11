@@ -2,26 +2,22 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useMutation } from "@tanstack/react-query";
-import axios, { AxiosResponse } from "axios";
 import { useRouter } from "next/navigation";
-
-interface CheckoutResponse {
-  url: string;
-}
+import { useCreateCheckoutSession } from "@/lib/hooks/data-hooks";
 
 export function PricingTable() {
   const router = useRouter();
-  
-  const checkoutMutation = useMutation<AxiosResponse<CheckoutResponse>, Error, string>({
-    mutationFn: (priceId: string) =>
-      axios.post('/api/billing/checkout', { priceId }),
-    onSuccess: (response) => {
-      if (response.data.url) {
-        window.location.href = response.data.url;
-      }
-    }
-  });
+  const checkoutMutation = useCreateCheckoutSession();
+
+  const handleCheckout = (priceId: string) => {
+    checkoutMutation.mutate(priceId, {
+      onSuccess: (response) => {
+        if (response.url) {
+          window.location.href = response.url;
+        }
+      },
+    });
+  };
 
   const tiers = [
     {
@@ -81,9 +77,9 @@ export function PricingTable() {
             className="w-full"
             onClick={() => {
               if (tier.priceId) {
-                checkoutMutation.mutate(tier.priceId);
+                handleCheckout(tier.priceId);
               } else {
-                router.push('/signup');
+                router.push("/signup");
               }
             }}
             disabled={checkoutMutation.isPending}

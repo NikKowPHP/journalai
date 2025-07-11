@@ -1,6 +1,4 @@
 import React from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/lib/auth-context";
-
+import { useOnboardUser } from "@/lib/hooks/data-hooks";
 
 interface OnboardingData {
   nativeLanguage: string;
@@ -40,43 +37,35 @@ export function OnboardingWizard({
   onError,
 }: OnboardingWizardProps) {
   const [step, setStep] = React.useState(1);
-  const { user: authUser } = useAuth();
-  const queryClient = useQueryClient();
-  
   const [formData, setFormData] = React.useState<OnboardingData>({
     nativeLanguage: "",
     targetLanguage: "",
     writingStyle: "Casual",
     writingPurpose: "Personal",
-    selfAssessedLevel: "Beginner"
+    selfAssessedLevel: "Beginner",
   });
 
-  const { mutate: submitOnboarding, isPending } = useMutation({
-    mutationFn: (data: OnboardingData) =>
-      axios.post("/api/user/onboard", data),
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["user", authUser?.id] });
-        onComplete();
-    },
-    onError: (error) => onError?.(error.message)
-  });
+  const { mutate: submitOnboarding, isPending } = useOnboardUser();
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
 
   const handleChange = (field: keyof OnboardingData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleComplete = () => {
-    submitOnboarding(formData);
+    submitOnboarding(formData, {
+      onSuccess: onComplete,
+      onError: (error) => onError?.(error.message),
+    });
   };
 
   const isNextDisabled = () => {
     if (step === 2 && !formData.nativeLanguage) return true;
     if (step === 3 && !formData.targetLanguage) return true;
     return false;
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -137,10 +126,7 @@ export function OnboardingWizard({
 
         <div className="flex justify-between mt-6 gap-4">
           {step > 1 && (
-            <Button
-              variant="outline"
-              onClick={prevStep}
-            >
+            <Button variant="outline" onClick={prevStep}>
               Back
             </Button>
           )}

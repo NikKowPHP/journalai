@@ -49,7 +49,7 @@ export async function getUserProfile(userId: string | undefined) {
 }
 
 export async function getUserById<T extends Prisma.UserFindUniqueArgs>(
-  args: T
-) {
-  return prisma.user.findUnique(args);
+  args: T,
+): Promise<Prisma.UserGetPayload<T> | null> {
+  return await prisma.user.findUnique(args);
 }

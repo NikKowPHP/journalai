@@ -1,7 +1,6 @@
 "use client";
 import { AdminDashboard } from "@/components/AdminDashboard";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useAdminUsers } from "@/lib/hooks/admin-hooks";
 import { useState, useEffect } from "react";
 
 const PAGE_LIMIT = 20;
@@ -22,23 +21,7 @@ export default function AdminPage() {
     };
   }, [searchTerm]);
 
-  const {
-    data,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["admin-users", debouncedSearchTerm, page],
-    queryFn: () =>
-      axios
-        .get("/api/admin/users", {
-          params: {
-            search: debouncedSearchTerm,
-            page: page,
-            limit: PAGE_LIMIT,
-          },
-        })
-        .then((res) => res.data),
-  });
+  const { data, isLoading, error } = useAdminUsers(page, debouncedSearchTerm);
 
   if (error) {
     return (

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useUpdateProfile } from "@/lib/hooks/data-hooks";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -51,37 +51,19 @@ export function ProfileForm({
   selfAssessedLevel,
   isLoading,
 }: ProfileFormProps) {
-  const queryClient = useQueryClient();
-
-  const updateProfileMutation = useMutation({
-    mutationFn: async (data: Partial<ProfileFormProps>) => {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-    },
-  });
+  const { mutate: updateProfile, isPending } = useUpdateProfile();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    updateProfileMutation.mutate({
-      nativeLanguage: formData.get('nativeLanguage') as string,
-      targetLanguage: formData.get('targetLanguage') as string,
-      writingStyle: formData.get('writingStyle') as string,
-      writingPurpose: formData.get('writingPurpose') as string,
-      selfAssessedLevel: formData.get('selfAssessedLevel') as string,
-    });
+    const data = {
+      nativeLanguage: formData.get("nativeLanguage") as string,
+      targetLanguage: formData.get("targetLanguage") as string,
+      writingStyle: formData.get("writingStyle") as string,
+      writingPurpose: formData.get("writingPurpose") as string,
+      selfAssessedLevel: formData.get("selfAssessedLevel") as string,
+    };
+    updateProfile(data);
   };
 
   if (isLoading) {
@@ -94,10 +76,10 @@ export function ProfileForm({
         <CardContent className="p-4 space-y-6">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              placeholder="Enter your email" 
+            <Input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
               defaultValue={email}
               disabled
             />
@@ -130,14 +112,14 @@ export function ProfileForm({
               </SelectContent>
             </Select>
           </div>
-        
-          <Button 
-            type="submit" 
-            disabled={updateProfileMutation.isPending}
+
+          <Button
+            type="submit"
+            disabled={isPending}
             className="w-full"
             size="lg"
           >
-            {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+            {isPending ? "Saving..." : "Save Changes"}
           </Button>
         </CardContent>
       </form>

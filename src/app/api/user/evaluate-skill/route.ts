@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getQuestionGenerationService } from "@/lib/ai";
 import { createClient } from "@/lib/supabase/server";
 import type { NextRequest } from "next/server";
+import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -10,6 +11,8 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
+  logger.info(`Skill evaluation requested by user ${user.id}`);
+
   try {
     const { text } = await req.json();
     
@@ -29,7 +32,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ score: averageScore });
   } catch (error) {
-    console.error("Error in skill evaluation:", error);
+    logger.error("Error in skill evaluation:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }

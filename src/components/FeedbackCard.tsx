@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+import { useCreateSrsFromMistake } from "@/lib/hooks/data-hooks";
 
 /**
  * Displays a single feedback item with original text, suggestion, and explanation.
@@ -21,18 +20,20 @@ interface FeedbackCardProps {
 
 function AddToDeckButton({
   mistakeId,
-  onOnboardingAddToDeck
+  onOnboardingAddToDeck,
 }: {
   mistakeId: string;
   onOnboardingAddToDeck?: () => void;
 }) {
-  const { mutate, isPending, isSuccess } = useMutation({
-    mutationFn: () =>
-      axios.post("/api/srs/create-from-mistake", { mistakeId }),
-    onSuccess: () => {
+  const { mutate, isPending, isSuccess } = useCreateSrsFromMistake();
+
+  const handleCreate = () => {
+    mutate(mistakeId, {
+      onSuccess: () => {
         onOnboardingAddToDeck?.();
-    }
-  });
+      },
+    });
+  };
 
   if (isSuccess) {
     return (
@@ -46,7 +47,7 @@ function AddToDeckButton({
     <Button
       variant="secondary"
       className="w-full"
-      onClick={() => mutate()}
+      onClick={handleCreate}
       disabled={isPending}
     >
       {isPending ? "Adding..." : "Add to Study Deck"}

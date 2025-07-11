@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { getQuestionGenerationService } from "@/lib/ai";
+import { logger } from "@/lib/logger";
 
 export async function POST(
   req: Request,
@@ -14,100 +15,106 @@ export async function POST(
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
+  
   const journalId = params.id;
+  logger.info(`Retry analysis requested for journal ${journalId} by user ${user.id}`);
 
-  // Verify journal ownership
-  const journal = await prisma.journalEntry.findFirst({
-    where: { id: journalId, authorId: user.id },
-    include: {
-      topic: true,
-      analysis: true
+  try {
+    // Verify journal ownership
+    const journal = await prisma.journalEntry.findFirst({
+      where: { id: journalId, authorId: user.id },
+      include: {
+        topic: true,
+        analysis: true
+      }
+    });
+
+    if (!journal) {
+      return NextResponse.json(
+        { error: "Journal not found" },
+        { status: 404 }
+      );
     }
-  });
 
-  if (!journal) {
-    return NextResponse.json(
-      { error: "Journal not found" },
-      { status: 404 }
+    // Delete existing analysis if present
+    if (journal.analysis) {
+      await prisma.analysis.delete({
+        where: { id: journal.analysis.id }
+      });
+    }
+
+    // Get user's current proficiency score
+    const userData = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { aiAssessedProficiency: true }
+    });
+    const proficiencyScore = userData?.aiAssessedProficiency || 2.0;
+
+    // Perform analysis using the AI service
+    const aiService = getQuestionGenerationService();
+    const analysisResult = await aiService.analyzeJournalEntry(
+      journal.content,
+      undefined, // targetLanguage
+      proficiencyScore
     );
-  }
 
-  // Delete existing analysis if present
-  if (journal.analysis) {
-    await prisma.analysis.delete({
-      where: { id: journal.analysis.id }
-    });
-  }
-
-  // Get user's current proficiency score
-  const userData = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { aiAssessedProficiency: true }
-  });
-  const proficiencyScore = userData?.aiAssessedProficiency || 2.0;
-
-  // Perform analysis using the AI service
-  const aiService = getQuestionGenerationService();
-  const analysisResult = await aiService.analyzeJournalEntry(
-    journal.content,
-    undefined, // targetLanguage
-    proficiencyScore
-  );
-
-  // Generate title if this is a free write entry
-  if (journal.topic?.title === "Free Write") {
-    const generatedTitle = await aiService.generateTitleForEntry(journal.content);
-    await prisma.topic.update({
-      where: { id: journal.topicId },
-      data: { title: generatedTitle }
-    });
-  }
-
-  // Save the new analysis results
-  const newAnalysis = await prisma.analysis.create({
-    data: {
-      entryId: journalId,
-      grammarScore: analysisResult.grammarScore,
-      phrasingScore: analysisResult.phrasingScore,
-      vocabScore: analysisResult.vocabularyScore,
-      feedbackJson: analysisResult.feedback,
-      rawAiResponse: JSON.stringify(analysisResult),
-      mistakes: {
-        create: analysisResult.mistakes.map(mistake => ({
-          type: mistake.type,
-          originalText: mistake.original,
-          correctedText: mistake.corrected,
-          explanation: mistake.explanation
-        }))
-      }
+    // Generate title if this is a free write entry
+    if (journal.topic?.title === "Free Write") {
+      const generatedTitle = await aiService.generateTitleForEntry(journal.content);
+      await prisma.topic.update({
+        where: { id: journal.topicId },
+        data: { title: generatedTitle }
+      });
     }
-  });
 
-  // Update user proficiency score (same logic as analyze route)
-  const userAnalyses = await prisma.analysis.findMany({
-    where: {
-      entry: {
-        authorId: user.id
+    // Save the new analysis results
+    const newAnalysis = await prisma.analysis.create({
+      data: {
+        entryId: journalId,
+        grammarScore: analysisResult.grammarScore,
+        phrasingScore: analysisResult.phrasingScore,
+        vocabScore: analysisResult.vocabularyScore,
+        feedbackJson: analysisResult.feedback,
+        rawAiResponse: JSON.stringify(analysisResult),
+        mistakes: {
+          create: analysisResult.mistakes.map(mistake => ({
+            type: mistake.type,
+            originalText: mistake.original,
+            correctedText: mistake.corrected,
+            explanation: mistake.explanation
+          }))
+        }
       }
-    },
-    select: {
-      grammarScore: true,
-      phrasingScore: true,
-      vocabScore: true
-    }
-  });
+    });
 
-  const totalScores = userAnalyses.reduce((acc, analysis) => {
-    return acc + analysis.grammarScore + analysis.phrasingScore + analysis.vocabScore;
-  }, 0);
+    // Update user proficiency score (same logic as analyze route)
+    const userAnalyses = await prisma.analysis.findMany({
+      where: {
+        entry: {
+          authorId: user.id
+        }
+      },
+      select: {
+        grammarScore: true,
+        phrasingScore: true,
+        vocabScore: true
+      }
+    });
 
-  const averageScore = totalScores / (userAnalyses.length * 3);
+    const totalScores = userAnalyses.reduce((acc, analysis) => {
+      return acc + analysis.grammarScore + analysis.phrasingScore + analysis.vocabScore;
+    }, 0);
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { aiAssessedProficiency: averageScore }
-  });
+    const averageScore = totalScores / (userAnalyses.length * 3);
 
-  return NextResponse.json(newAnalysis);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { aiAssessedProficiency: averageScore }
+    });
+
+    return NextResponse.json(newAnalysis);
+  } catch (error) {
+    logger.error(`Error retrying analysis for journal ${journalId}`, error);
+    return NextResponse.json({ error: "Failed to retry analysis" }, { status: 500 });
+  }
 }
