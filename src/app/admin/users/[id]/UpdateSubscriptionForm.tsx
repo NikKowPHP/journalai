@@ -66,6 +66,7 @@ export function UpdateSubscriptionForm({
           <SelectContent>
             <SelectItem value="FREE">Free</SelectItem>
             <SelectItem value="PRO">Pro</SelectItem>
+            <SelectItem value="ADMIN">Admin</SelectItem>
           </SelectContent>
         </Select>
       </div>

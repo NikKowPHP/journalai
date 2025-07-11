@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default async function UserDetailPage({
   params,
@@ -49,13 +50,16 @@ export default async function UserDetailPage({
             <h3 className="text-lg font-medium">Current Subscription</h3>
             <div className="space-y-2">
               <p>
-                <span className="font-medium">Tier:</span> {user.subscriptionTier}
+                <span className="font-medium">Tier:</span>{" "}
+                {user.subscriptionTier}
               </p>
               <p>
-                <span className="font-medium">Status:</span> {user.subscriptionStatus}
+                <span className="font-medium">Status:</span>{" "}
+                {user.subscriptionStatus}
               </p>
               <p>
-                <span className="font-medium">Created:</span> {new Date(user.createdAt).toLocaleDateString()}
+                <span className="font-medium">Created:</span>{" "}
+                {new Date(user.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
@@ -70,37 +74,66 @@ export default async function UserDetailPage({
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Journal Entries</h3>
           {user.journalEntries?.length ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Topic</TableHead>
-                  <TableHead>Analysis</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile View */}
+              <div className="md:hidden space-y-2">
                 {user.journalEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>
-                      {new Date(entry.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{entry.topic?.title || "Free Write"}</TableCell>
-                    <TableCell>
-                      {entry.analysis ? (
-                        <Link
-                          href={`/journal/${entry.id}`}
-                          className="text-primary hover:underline"
-                        >
-                          View Analysis
-                        </Link>
-                      ) : (
-                        "No analysis"
-                      )}
-                    </TableCell>
-                  </TableRow>
+                  <Link href={`/journal/${entry.id}`} key={entry.id}>
+                    <Card className="hover:bg-accent/50 transition-colors">
+                      <CardContent className="p-4">
+                        <p className="font-semibold">
+                          {entry.topic?.title || "Free Write"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(entry.createdAt).toLocaleDateString()}
+                        </p>
+                        <p className="text-sm mt-1">
+                          {entry.analysis
+                            ? "Analysis available"
+                            : "No analysis"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Topic</TableHead>
+                      <TableHead>Analysis</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {user.journalEntries.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell>
+                          {new Date(entry.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          {entry.topic?.title || "Free Write"}
+                        </TableCell>
+                        <TableCell>
+                          {entry.analysis ? (
+                            <Link
+                              href={`/journal/${entry.id}`}
+                              className="text-primary hover:underline"
+                            >
+                              View Analysis
+                            </Link>
+                          ) : (
+                            "No analysis"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           ) : (
             <p className="text-muted-foreground">No journal entries found</p>
           )}

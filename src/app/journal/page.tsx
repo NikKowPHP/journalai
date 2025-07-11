@@ -5,35 +5,39 @@ import { JournalHistoryList } from "@/components/JournalHistoryList";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/lib/auth-context";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 function JournalPageSkeleton() {
   return (
     <div className="container mx-auto p-4 space-y-6">
-        <Skeleton className="h-8 w-1/3" />
-        <div className="grid gap-6 md:grid-cols-2">
-            <div className="space-y-4">
-                <Skeleton className="h-6 w-1/4" />
-                <div className="space-y-2">
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                    <Skeleton className="h-20 w-full" />
-                </div>
-            </div>
-            <Skeleton className="h-96 w-full" />
+      <Skeleton className="h-8 w-1/3" />
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="space-y-4">
+          <Skeleton className="h-6 w-1/4" />
+          <div className="space-y-2">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
         </div>
+        <Skeleton className="h-96 w-full" />
+      </div>
     </div>
   );
 }
 
-
 export default function JournalPage() {
   const searchParams = useSearchParams();
   const topicFromQuery = searchParams.get("topic");
+  const { user: authUser } = useAuth();
 
   const {
     data: journals,
-    isLoading,
-    error,
+    isLoading: isJournalsLoading,
+    error: journalsError,
   } = useQuery({
     queryKey: ["journals"],
     queryFn: async () => {
@@ -43,8 +47,26 @@ export default function JournalPage() {
     },
   });
 
+  const { data: userProfile, isLoading: isProfileLoading } = useQuery({
+    queryKey: ["userProfile", authUser?.id],
+    queryFn: async () => {
+      if (!authUser) return null;
+      const res = await fetch("/api/user/profile");
+      if (!res.ok) {
+        if (res.status === 404) return null;
+        throw new Error("Failed to fetch user profile");
+      }
+      return res.json();
+    },
+    enabled: !!authUser,
+  });
+
+  const isLoading = isJournalsLoading || isProfileLoading;
+  const error = journalsError;
+
   if (isLoading) return <JournalPageSkeleton />;
-  if (error) return <div>Error loading journals: {(error as Error).message}</div>;
+  if (error)
+    return <div>Error loading journals: {(error as Error).message}</div>;
 
   const mappedJournals =
     journals?.map((j: any) => ({
@@ -54,12 +76,37 @@ export default function JournalPage() {
       date: new Date(j.createdAt).toLocaleDateString(),
     })) || [];
 
+  const onboardingCompleted = !!userProfile?.onboardingCompleted;
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-2xl font-bold">My Journal</h1>
       <div className="grid gap-6 md:grid-cols-2">
         <JournalHistoryList journals={mappedJournals} />
-        <JournalEditor topicTitle={topicFromQuery || undefined} />
+        <div className="relative">
+          <div
+            className={!onboardingCompleted ? "blur-sm pointer-events-none" : ""}
+          >
+            <JournalEditor topicTitle={topicFromQuery || undefined} />
+          </div>
+          {!onboardingCompleted && (
+            <div className="absolute inset-0 bg-transparent z-10 flex flex-col items-center justify-center p-4">
+              <Card className="text-center w-full max-w-sm bg-background/95 backdrop-blur-lg">
+                <CardHeader>
+                  <CardTitle>Complete Your Setup</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground">
+                    Please complete your profile setup to begin journaling.
+                  </p>
+                  <Button asChild>
+                    <Link href="/settings">Go to Settings</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

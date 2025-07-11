@@ -143,20 +143,20 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 **Objective:** Implement core adaptive logic and ensure the user flow is correctly gated by onboarding completion.
 
-- [ ] **3.1. Enforce Onboarding Gate for Journaling**
-    - [ ] **File:** `src/app/journal/page.tsx`
-    - [ ] **Action:** Use the `useOnboarding` hook to check if `isActive` is true or if the user's profile indicates `onboardingCompleted` is false.
-    - [ ] **Logic:** If onboarding is not complete, disable the `JournalEditor` component. Show a message overlaying the editor that says "Please complete your profile setup to begin journaling" with a `Link` to `/settings` or by triggering the onboarding wizard.
+- [x] **3.1. Enforce Onboarding Gate for Journaling**
+    - [x] **File:** `src/app/journal/page.tsx`
+    - [x] **Action:** Use the `useOnboarding` hook to check if `isActive` is true or if the user's profile indicates `onboardingCompleted` is false.
+    - [x] **Logic:** If onboarding is not complete, disable the `JournalEditor` component. Show a message overlaying the editor that says "Please complete your profile setup to begin journaling" with a `Link` to `/settings` or by triggering the onboarding wizard.
 
-- [ ] **3.2. Implement Adaptive AI Analysis**
-    - [ ] **File:** `src/lib/ai/gemini-service.ts`
-    - [ ] **Review:** The `analyzeJournalEntry` prompt already includes `The user's proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your explanations accordingly.`. This is correct.
-    - [ ] **Action:** No code change needed, but this confirms the backend logic is in place to support adaptive feedback.
+- [x] **3.2. Implement Adaptive AI Analysis**
+    - [x] **File:** `src/lib/ai/gemini-service.ts`
+    - [x] **Review:** The `analyzeJournalEntry` prompt already includes `The user's proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your explanations accordingly.`. This is correct.
+    - [x] **Action:** No code change needed, but this confirms the backend logic is in place to support adaptive feedback.
 
-- [ ] **3.3. Implement Adaptive Topic Generation**
-    - [ ] **File:** `src/lib/ai/gemini-service.ts`
-    - [ ] **Action:** When implementing task **2.5**, ensure the prompt for `generateTopics` explicitly uses the `proficiency` and `targetLanguage` to create level-appropriate and culturally relevant topics.
-    - [ ] **Prompt Example:** `"Generate ${count} interesting journal topics for a user learning ${targetLanguage} at a proficiency level of ${proficiency}/100."`
+- [x] **3.3. Implement Adaptive Topic Generation**
+    - [x] **File:** `src/lib/ai/gemini-service.ts`
+    - [x] **Action:** When implementing task **2.5**, ensure the prompt for `generateTopics` explicitly uses the `proficiency` and `targetLanguage` to create level-appropriate and culturally relevant topics.
+    - [x] **Prompt Example:** `"Generate ${count} interesting journal topics for a user learning ${targetLanguage} at a proficiency level of ${proficiency}/100."`
 
 ---
 
@@ -164,16 +164,16 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 **Objective:** Empower administrators with full, mobile-first user management capabilities.
 
-- [ ] **4.1. Enable Admin Creation**
-    - [ ] **File:** `prisma/schema.prisma`
-    - [ ] **Action:** Add `"ADMIN"` as a potential value for the `subscriptionTier` field. This is a conceptual change as the field is a `String`.
-    - [ ] **File:** `src/app/admin/users/[id]/UpdateSubscriptionForm.tsx`
-    - [ ] **Action:** Add an `<SelectItem value="ADMIN">Admin</SelectItem>` to the "Subscription Tier" `Select` component.
-    - [ ] **Security:** The `authMiddleware` in `lib/auth.ts` already correctly checks if a user is an admin to grant access to admin routes. This change will allow an existing admin to promote another user.
+- [x] **4.1. Enable Admin Creation**
+    - [x] **File:** `prisma/schema.prisma`
+    - [x] **Action:** Add `"ADMIN"` as a potential value for the `subscriptionTier` field. This is a conceptual change as the field is a `String`.
+    - [x] **File:** `src/app/admin/users/[id]/UpdateSubscriptionForm.tsx`
+    - [x] **Action:** Add an `<SelectItem value="ADMIN">Admin</SelectItem>` to the "Subscription Tier" `Select` component.
+    - [x] **Security:** The `authMiddleware` in `lib/auth.ts` already correctly checks if a user is an admin to grant access to admin routes. This change will allow an existing admin to promote another user.
 
-- [ ] **4.2. Secure All Admin API Routes**
-    - [ ] **File:** `src/app/api/admin/users/route.ts`
-    - [ ] **Action:** Protect the `GET` handler by calling the `authMiddleware` from `lib/auth.ts` at the beginning of the function to ensure only admins can fetch the user list.
+- [x] **4.2. Secure All Admin API Routes**
+    - [x] **File:** `src/app/api/admin/users/route.ts`
+    - [x] **Action:** Protect the `GET` handler by calling the `authMiddleware` from `lib/auth.ts` at the beginning of the function to ensure only admins can fetch the user list.
         ```javascript
         // At the start of the GET function
         try {
@@ -183,17 +183,17 @@ This plan outlines the atomic tasks required to implement logout functionality, 
         }
         ```
 
-- [ ] **4.3. Make Admin Dashboard Mobile-Friendly**
-    - [ ] **File:** `src/components/AdminDashboard.tsx`
-    - [ ] **Analysis:** The `Table` component will not work well on small screens.
-    - [ ] **Action:** On mobile viewports (e.g., `<md:`), transform the table into a list of cards. Each `Card` will represent a user, with their details (`email`, `tier`, `status`) listed vertically. Use `hidden md:table-row` on the `TableRow` and `block md:hidden` on a new `Card`-based layout.
-    - [ ] **File:** `src/app/admin/users/[id]/page.tsx`
-    - [ ] **Action:** Ensure the two-column grid layout (`md:grid-cols-2`) collapses to a single column on mobile. The `UpdateSubscriptionForm` and user details should stack vertically. This seems to be already handled by the existing class. Verify and test.
-    - [ ] **Action:** Ensure the `Table` of journal entries on the user detail page is also responsive, using the same card-per-row strategy for mobile.
+- [x] **4.3. Make Admin Dashboard Mobile-Friendly**
+    - [x] **File:** `src/components/AdminDashboard.tsx`
+    - [x] **Analysis:** The `Table` component will not work well on small screens.
+    - [x] **Action:** On mobile viewports (e.g., `<md:`), transform the table into a list of cards. Each `Card` will represent a user, with their details (`email`, `tier`, `status`) listed vertically. Use `hidden md:table-row` on the `TableRow` and `block md:hidden` on a new `Card`-based layout.
+    - [x] **File:** `src/app/admin/users/[id]/page.tsx`
+    - [x] **Action:** Ensure the two-column grid layout (`md:grid-cols-2`) collapses to a single column on mobile. The `UpdateSubscriptionForm` and user details should stack vertically. This seems to be already handled by the existing class. Verify and test.
+    - [x] **Action:** Ensure the `Table` of journal entries on the user detail page is also responsive, using the same card-per-row strategy for mobile.
 
-- [ ] **4.4. Add User Search and Pagination**
-    - [ ] **File:** `src/app/api/admin/users/route.ts`
-    - [ ] **Action:** Implement pagination in the Prisma query using `take` and `skip` based on URL search parameters (e.g., `?page=1&limit=20`).
-    - [ ] **Action:** Return the `totalUserCount` along with the paginated user list.
-    - [ ] **File:** `src/components/AdminDashboard.tsx`
-    - [ ] **Action:** Add pagination controls (`Button` components for "Previous" and "Next") below the user list. The buttons' `disabled` state should be controlled by the current page and total count. The `onSearchChange` prop should reset the page to 1.
+- [x] **4.4. Add User Search and Pagination**
+    - [x] **File:** `src/app/api/admin/users/route.ts`
+    - [x] **Action:** Implement pagination in the Prisma query using `take` and `skip` based on URL search parameters (e.g., `?page=1&limit=20`).
+    - [x] **Action:** Return the `totalUserCount` along with the paginated user list.
+    - [x] **File:** `src/components/AdminDashboard.tsx`
+    - [x] **Action:** Add pagination controls (`Button` components for "Previous" and "Next") below the user list. The buttons' `disabled` state should be controlled by the current page and total count. The `onSearchChange` prop should reset the page to 1.

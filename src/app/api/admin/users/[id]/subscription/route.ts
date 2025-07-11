@@ -5,7 +5,7 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 
 const subscriptionSchema = z.object({
-  subscriptionTier: z.enum(["FREE", "PRO"]),
+  subscriptionTier: z.enum(["FREE", "PRO", "ADMIN"]),
   subscriptionStatus: z.enum(["ACTIVE", "CANCELED", "PAUSED"]).optional(),
 });
 
