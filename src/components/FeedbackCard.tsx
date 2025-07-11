@@ -30,8 +30,8 @@ function AddToDeckButton({
   const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: () =>
       axios.post("/api/srs/create-from-mistake", { mistakeId }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyDeck"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["studyDeck"] });
       onOnboardingAddToDeck?.();
     },
   });
