@@ -123,17 +123,17 @@ This phase adds the necessary components to make the site installable and feel l
 
 This final phase adds the micro-interactions and details that complete the native experience.
 
-- [ ] **5.1. Animations & Transitions:**
-    - [ ] Add subtle, physics-based transitions for page navigation and modal presentations.
-    - [ ] Animate button presses and list item taps.
+- [x] **5.1. Animations & Transitions:**
+    - [x] Add subtle, physics-based transitions for page navigation and modal presentations.
+    - [x] Animate button presses and list item taps.
 
-- [ ] **5.2. State Refinement & Haptics:**
-    - [ ] Review and refine all `:hover`, `:focus-visible`, and `:active` states for all interactive components.
-    - [ ] Style the `Spinner.tsx` to look like the native iOS/macOS activity indicator.
-    - [ ] (Optional) Implement subtle haptic feedback on button taps for a more native feel on supported mobile devices.
+- [x] **5.2. State Refinement & Haptics:**
+    - [x] Review and refine all `:hover`, `:focus-visible`, and `:active` states for all interactive components.
+    - [x] Style the `Spinner.tsx` to look like the native iOS/macOS activity indicator.
+    - [x] (Optional) Implement subtle haptic feedback on button taps for a more native feel on supported mobile devices.
 
-- [ ] **5.3. Final Review & Cleanup:**
-    - [ ] Do a full visual review of every page on both mobile and desktop.
-    - [ ] Test the PWA installation flow on Android and iOS (via "Add to Home Screen").
-    - [ ] Verify offline functionality for cached pages.
-    - [ ] Remove any unused CSS or component styles from the old design system.
+- [x] **5.3. Final Review & Cleanup:**
+    - [x] Do a full visual review of every page on both mobile and desktop.
+    - [x] Test the PWA installation flow on Android and iOS (via "Add to Home Screen").
+    - [x] Verify offline functionality for cached pages.
+    - [x] Remove any unused CSS or component styles from the old design system.
