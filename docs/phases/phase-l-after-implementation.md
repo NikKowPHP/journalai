@@ -1,113 +1,167 @@
-# Project Plan: Onboarding Overhaul & UI Polish
+# Feature Implementation Plan: LinguaScribe Enhancements
 
-This plan details the implementation of a new, guided user onboarding flow, fixes the dashboard loading bug, and implements Apple-style skeleton loaders for a polished user experience.
+This plan outlines the atomic tasks required to implement logout functionality, a robust dashboard, adaptive learning features, and a fully functional admin panel.
 
----
 
-## Phase 1: Bug Fixes & Foundational Components
+### **Phase 0: Developer Experience & System Observability (New)**
 
-This phase addresses critical bugs and creates the reusable components needed for the subsequent phases.
+**Objective:** Implement foundational, system-wide enhancements for easier debugging and a more stable development environment.
 
-- [x] **1.1. Diagnose and Fix Dashboard Infinite Loading State**
-    - [x] **Analysis:** In `src/app/dashboard/page.tsx`, inspect the `useQuery` for `getUserProfile`. The dependency on `authUser?.id` is correct, but the display logic (`user?.nativeLanguage ? ... : 'Loading...'`) is likely the issue. The component may not be re-rendering correctly after the `OnboardingWizard` completes.
-    - [x] **Action:** In the `OnboardingWizard`'s `onComplete` handler (`src/components/OnboardingWizard.tsx`), ensure it invalidates the `['user', authUser?.id]` query key using `queryClient.invalidateQueries()`.
-    - [x] **Action:** Update the `handleWizardComplete` function in `src/app/dashboard/page.tsx` to correctly trigger a refetch of the user profile.
-    - [x] **Validation:** Confirm that after a new user completes the initial language setup, the dashboard transitions from the loading state to showing its content without a page refresh.
+- [ ] **0.1. Create a Centralized, Environment-Aware Logging Utility**
+    - [ ] **File:** `src/lib/logger.ts` (New File)
+    - [ ] **Action:** Create a simple logger utility. This utility will wrap `console.log`, `console.warn`, and `console.error`.
+    - [ ] **Logic:**
+        - The logger will only output messages if `process.env.NODE_ENV === 'development'`. In production, all calls will be no-ops to avoid performance overhead and log clutter.
+        - Each log message should be prefixed with a timestamp and log level (e.g., `[2023-10-27T10:00:00Z] [INFO]`).
+    - [ ] **Export:** Export a singleton instance of the logger for use across the application.
 
-- [x] **1.2. Create Reusable Skeleton Loader Component**
-    - [x] Create a new file `src/components/ui/skeleton.tsx`.
-    - [x] Implement a simple, reusable skeleton component using `div`s and Tailwind CSS animation classes (`animate-pulse`).
-    - [x] Style the skeleton with a light gray background (`bg-muted`) that respects the app's light/dark theme, consistent with Apple's HIG.
-
-- [x] **1.3. Enhance Global Spinner**
-    - [x] Modify `src/lib/auth-context.tsx` and the `GlobalSpinner` component.
-    - [x] Restyle the spinner to look like the native macOS/iOS activity indicator (a circle of fading dots or a spinning arc) instead of a simple border-based spinner.
-
----
-
-## Phase 2: Backend & State Management for New Onboarding
-
-This phase sets up the necessary database fields and client-side state management for the new guided flow.
-
-- [x] **2.1. Update User Schema for Onboarding Tracking**
-    - [x] In `prisma/schema.prisma`, add a new field to the `User` model: `onboardingCompleted Boolean @default(false)`.
-    - [x] Run `npx prisma migrate dev --name add_onboarding_completed_flag` to apply the change to the database.
-    - [x] Run `npx prisma generate` to update the Prisma Client.
-
-- [x] **2.2. Create an Onboarding Status API Endpoint**
-    - [x] Create a new API route: `src/app/api/user/complete-onboarding/route.ts`.
-    - [x] Implement a `POST` handler in this route that sets the `onboardingCompleted` flag to `true` for the currently authenticated user.
-
-- [x] **2.3. Create Onboarding Context Provider**
-    - [x] Create a new file `src/lib/onboarding-context.tsx`.
-    - [x] Implement an `OnboardingProvider` that wraps the `AppShell`.
-    - [x] The context should track the current onboarding step (e.g., `'LANGUAGE_SELECT'`, `'FIRST_JOURNAL'`, `'AWAITING_ANALYSIS'`, `'VIEW_ANALYSIS'`, `'CREATE_DECK'`, `'STUDY_INTRO'`, `'COMPLETED'`).
-    - [x] The provider will fetch the user's `onboardingCompleted` status and determine if the guided flow should be active.
-
-- [x] **2.4. Integrate Onboarding Provider**
-    - [x] In `src/providers.tsx`, wrap the `AuthProvider`'s children with the new `OnboardingProvider`.
-    - [x] Modify the main application layout (`src/components/layout/AppShell.tsx`) to conditionally render onboarding UI overlays based on the state from `useOnboarding()`.
+- [ ] **0.2. Systematically Integrate Logging into All API Mutation Routes**
+    - [ ] **Objective:** Add logging to every `POST`, `PUT`, and `DELETE` handler in the `src/app/api` directory for comprehensive action tracking during development.
+    - [ ] **Files to Modify:**
+        - `src/app/api/admin/users/[id]/subscription/route.ts`
+        - `src/app/api/analyze/route.ts`
+        - `src/app/api/auth/login/route.ts`
+        - `src/app/api/auth/register/route.ts`
+        - `src/app/api/auth/signout/route.ts`
+        - `src/app/api/billing/checkout/route.ts`
+        - `src/app/api/billing/portal/route.ts`
+        - `src/app/api/billing/webhook/route.ts`
+        - `src/app/api/journal/[id]/route.ts`
+        - `src/app/api/journal/route.ts`
+        - `src/app/api/srs/create-from-mistake/route.ts`
+        - `src/app/api/srs/review/route.ts`
+        - `src/app/api/user/complete-onboarding/route.ts`
+        - `src/app/api/user/onboard/route.ts`
+        - `src/app/api/user/profile/route.ts`
+        - `src/app/api/user/route.ts` (for DELETE)
+    - [ ] **Action (for each file):**
+        - Import the new `logger` from `src/lib/logger.ts`.
+        - Inside each mutation handler (`POST`, `PUT`, `DELETE`), at the top of the `try` block, add an informational log. Include the route path, method, and authenticated user ID (if available).
+          - `logger.info(\`/api/journal - POST - User: \${user.id}\`, { content, topicTitle });`
+        - In every `catch` block, add an error log that includes the error object itself for full stack trace visibility.
+          - `logger.error(\`Error in /api/journal POST for User: \${user.id}\`, error);`
 
 ---
 
-## Phase 3: Implementing the Guided Onboarding Flow
+### **Phase 1: Authentication & Core UX Polish**
 
-This is the core implementation phase, building out each step of the user's journey.
+**Objective:** Solidify the authentication flow and improve the core writing experience.
 
-- [x] **3.1. Step 1: Language & Profile Setup**
-    - [x] Refactor `src/components/OnboardingWizard.tsx`. This component will now *only* handle the initial profile setup (native/target language, etc.).
-    - [x] Upon successful submission, the wizard will call a function from the `OnboardingContext` to advance the state to `'FIRST_JOURNAL'`.
-    - [x] The UI should be a full-screen modal, preventing interaction with the underlying page.
+- [ ] **1.1. Implement User Logout Functionality** (Unchanged)
+- [ ] **1.2. Refactor Journal Editor to Use a Proper Placeholder** (Unchanged)
+- [ ] **1.3. Refine AI Autocomplete Interaction & UI (New)**
+    - [ ] **File:** `src/components/JournalEditor.tsx`
+    - [ ] **Analysis:** The current autocomplete is passive. It needs to be an explicit, user-triggered action to feel intuitive and controlled.
+    - [ ] **Action:** Modify the `autocompleteMutation.onSuccess` handler. Instead of just setting a `suggestion` state, also set a new state variable like `isSuggestionVisible(true)`.
+    - [ ] **Action:** In the `JournalEditor`'s return JSX, conditionally render a small, unobtrusive "Accept Suggestion" `Button` when `isSuggestionVisible` is true. Position this button near the cursor or in a fixed, logical location (e.g., bottom right of the editor).
+    - [ ] **Action:** The `onClick` handler for this new button will:
+        1.  Use `editor.chain().focus().insertContent(suggestion).run()` to apply the text.
+        2.  Reset the suggestion state: `setSuggestion('')` and `setIsSuggestionVisible(false)`.
+    - [ ] **Action:** Keep the `Tab` key functionality as a keyboard shortcut for power users.
+- [ ] **1.4. Re-evaluate and Defer Automatic Flashcard Creation from Autocomplete (New)**
+    - [ ] **Product Decision:** Creating a flashcard from an AI *suggestion* is fundamentally different from creating one from a *correction*. A suggestion is one of many possible ways to continue a sentence, not a fix for a mistake. Automating this would likely clutter the user's study deck with low-value cards.
+    - [ ] **Action:** The "Accept Suggestion" button (from task 1.3) will **not** create a flashcard. Its sole purpose is to insert the suggested text into the editor, reducing writing friction.
+    - [ ] **Justification (for documentation/team alignment):** The core learning loop of LinguaScribe is `Write -> Get Feedback on Mistakes -> Study Mistakes`. Autocomplete is a writing *aid*, not part of the feedback loop. We will preserve the integrity of the study deck by only populating it with explicit corrections from the analysis phase.
+    - [ ] **Future Scope (Optional):** A future enhancement could add a "Learn this phrase" button next to the "Accept" button, allowing users to *optionally* create a vocabulary/phrasing card, but this should be a deliberate user choice.
 
-- [x] **3.2. Step 2: The First Journal Entry**
-    - [x] When the onboarding state is `'FIRST_JOURNAL'`, display a modal or full-screen overlay containing the `JournalEditor`.
-    - [x] The modal should have a clear title like "Your First Entry" and a description explaining the task.
-    - [x] On submission, the `JournalEditor` will advance the onboarding state to `'AWAITING_ANALYSIS'`.
 
-- [x] **3.3. Step 3: Awaiting and Viewing Analysis**
-    - [x] When the state is `'AWAITING_ANALYSIS'`, show a modal with a message like "Analyzing your entry..." and an Apple-style activity indicator.
-    - [x] Implement a polling mechanism (e.g., using `useQuery` with `refetchInterval`) that checks the journal entry's analysis status via the `/api/journal/[id]` endpoint.
-    - [x] Once the analysis is detected, update the onboarding state to `'VIEW_ANALYSIS'` and automatically redirect the user to the journal's detail page (`/journal/[id]`).
 
-- [x] **3.4. Step 4: Guided Tour of the Analysis Page**
-    - [x] On the `/journal/[id]` page, if the onboarding state is `'VIEW_ANALYSIS'`, trigger a guided tour.
-    - [x] Use custom-built, HIG-compliant popovers to highlight key elements:
-        - A popover pointing to the `AnalysisDisplay` explaining the color-coded feedback.
-        - A popover pointing to a `FeedbackCard` and its "Add to Study Deck" button, prompting the user to click it.
-    - [x] When the user clicks "Add to Study Deck" for the first time, advance the onboarding state to `'CREATE_DECK'`.
+### Phase 2: Dashboard Overhaul & Dynamic Content
 
-- [x] **3.5. Step 5: Guided Tour of the Study Page**
-    - [x] When the state is `'CREATE_DECK'`, show a success modal: "Great! You've created your first flashcard. Let's go practice." with a single button "Go to Study Page".
-    - [x] On click, redirect to `/study` and set the state to `'STUDY_INTRO'`.
-    - [x] On the `/study` page, if the state is `'STUDY_INTRO'`, show a simple guided popover explaining how the `Flashcard` component works (Flip, then choose difficulty).
-    - [x] After the user reviews their first card, advance the state to `'ONBOARDING_COMPLETED'`.
+**Objective:** Transform the dashboard from a static page into a dynamic, personalized hub for the user's learning journey.
 
-- [x] **3.6. Step 6: Onboarding Completion**
-    - [x] When the state is `'ONBOARDING_COMPLETED'`, show a final congratulatory modal.
-    - [x] This modal should say "Setup Complete! You're ready to master your new language." and offer two buttons: "Explore Dashboard" and "View My Progress".
-    - [x] In the background, make a `POST` request to the `/api/user/complete-onboarding` endpoint to persist the user's status.
-    - [x] The onboarding context should now be inactive for this user on subsequent visits.
+- [ ] **2.1. Create Dashboard Summary Component**
+    - [ ] **File:** `src/components/DashboardSummary.tsx` (New file)
+    - [ ] **Action:** Create a new component to display key metrics.
+    - [ ] **Props:** It will accept `totalEntries: number`, `averageScore: number`, and `weakestSkill: string`.
+    - [ ] **UI:** Create responsive cards to display each metric (e.g., "Total Entries", "Avg. Proficiency", "Focus Area").
+
+- [ ] **2.2. Enhance Dashboard API and Frontend**
+    - [ ] **File:** `src/app/api/analytics/route.ts`
+    - [ ] **Action:** Modify the `GET` handler to calculate and return `averageScore` and `weakestSkill`.
+        - `averageScore`: Calculate the average of all sub-skill scores across all analyses.
+        - `weakestSkill`: Identify which of `grammar`, `phrasing`, or `vocabulary` has the lowest average score.
+    - [ ] **File:** `src/app/dashboard/page.tsx`
+    - [ ] **Action:** Update the `useQuery` for `analytics` to fetch this new data.
+    - [ ] **Action:** Conditionally render the new `DashboardSummary.tsx` component with the fetched data. If `totalEntries` is 0, do not render the summary.
+
+- [ ] **2.3. Implement "First Entry" Call-to-Action**
+    - [ ] **File:** `src/app/dashboard/page.tsx`
+    - [ ] **Condition:** If the analytics data shows `totalEntries === 0` and onboarding is complete.
+    - [ ] **Action:** Render a prominent `Card` component with a title like "Start Your Journey", a brief explanation, and a large `Button` that links to `/journal`.
+
+- [ ] **2.4. Add Recent Journals to Dashboard**
+    - [ ] **File:** `src/app/dashboard/page.tsx`
+    - [ ] **Condition:** If `totalEntries > 0`.
+    - [ ] **Action:** Fetch the 3 most recent journal entries (this can be a new API endpoint or an expansion of the `/api/analytics` route).
+    - [ ] **Action:** Use the existing `JournalHistoryList.tsx` component to display these recent entries on the dashboard, creating an "at-a-glance" view of recent activity.
+
+- [ ] **2.5. Implement AI Topic Generation**
+    - [ ] **File:** `src/lib/ai/gemini-service.ts`
+    - [ ] **Action:** Add a new method `generateTopics(context: { targetLanguage: string, proficiency: number, count: number }): Promise<string[]>` to the `GeminiQuestionGenerationService`. The prompt should ask for topics suitable for the user's level.
+    - [ ] **File:** `src/app/api/user/generate-topics/route.ts` (New file)
+    - [ ] **Action:** Create a new API route that gets the user's profile (`targetLanguage`, `aiAssessedProficiency`), calls the new AI service method, and returns a list of topic strings.
+    - [ ] **File:** `src/app/dashboard/page.tsx`
+    - [ ] **Action:** Add a "Suggest New Topics" button to the dashboard.
+    - [ ] **Logic:** On click, call the new API endpoint using `useMutation` and display the generated topics, allowing the user to click one to start a new journal entry.
 
 ---
 
-## Phase 4: UI Polish and Skeleton Implementation
+### Phase 3: Adaptive Learning & Onboarding Enforcement
 
-This phase focuses on refining the visual experience during data loading.
+**Objective:** Implement core adaptive logic and ensure the user flow is correctly gated by onboarding completion.
 
-- [x] **4.1. Implement Skeletons in `JournalHistoryList`**
-    - [x] In `src/components/JournalHistoryList.tsx`, when `isLoading` is true, render a list of 3-4 `Skeleton` components matching the layout of a journal card (a line for the title, two for the snippet).
+- [ ] **3.1. Enforce Onboarding Gate for Journaling**
+    - [ ] **File:** `src/app/journal/page.tsx`
+    - [ ] **Action:** Use the `useOnboarding` hook to check if `isActive` is true or if the user's profile indicates `onboardingCompleted` is false.
+    - [ ] **Logic:** If onboarding is not complete, disable the `JournalEditor` component. Show a message overlaying the editor that says "Please complete your profile setup to begin journaling" with a `Link` to `/settings` or by triggering the onboarding wizard.
 
-- [x] **4.2. Implement Skeletons in `AnalyticsPage`**
-    - [x] In `src/app/analytics/page.tsx`, when `isLoading` is true, display a skeleton layout.
-    - [x] The `ProficiencyChart` and `SubskillScores` should be replaced with rectangular `Skeleton` components of the same dimensions.
+- [ ] **3.2. Implement Adaptive AI Analysis**
+    - [ ] **File:** `src/lib/ai/gemini-service.ts`
+    - [ ] **Review:** The `analyzeJournalEntry` prompt already includes `The user's proficiency score is ${proficiencyScore} out of 100. Tailor the depth and complexity of your explanations accordingly.`. This is correct.
+    - [ ] **Action:** No code change needed, but this confirms the backend logic is in place to support adaptive feedback.
 
-- [x] **4.3. Implement Skeletons in `AdminDashboard`**
-    - [x] In `src/components/AdminDashboard.tsx`, if the data is loading, render a skeleton table with a few rows of `Skeleton` cells.
+- [ ] **3.3. Implement Adaptive Topic Generation**
+    - [ ] **File:** `src/lib/ai/gemini-service.ts`
+    - [ ] **Action:** When implementing task **2.5**, ensure the prompt for `generateTopics` explicitly uses the `proficiency` and `targetLanguage` to create level-appropriate and culturally relevant topics.
+    - [ ] **Prompt Example:** `"Generate ${count} interesting journal topics for a user learning ${targetLanguage} at a proficiency level of ${proficiency}/100."`
 
-- [x] **4.4. Implement Skeleton in `ProfileForm`**
-    - [x] In `src/components/ProfileForm.tsx`, when the `useQuery` for the profile is loading, replace the `Input` and `Select` components with corresponding `Skeleton` placeholders.
+---
 
-- [x] **4.5. Refine All Modals and Popups**
-    - [x] Review every `Dialog` and `BubbleMenu` usage.
-    - [x] Ensure they use the newly styled `dialog.tsx` which provides a bottom-sheet on mobile and a macOS-style window on desktop.
-    - [x] Ensure all popups used in the new onboarding flow follow this style for a consistent, high-quality user experience.
+### Phase 4: Fully Functional Admin Dashboard
+
+**Objective:** Empower administrators with full, mobile-first user management capabilities.
+
+- [ ] **4.1. Enable Admin Creation**
+    - [ ] **File:** `prisma/schema.prisma`
+    - [ ] **Action:** Add `"ADMIN"` as a potential value for the `subscriptionTier` field. This is a conceptual change as the field is a `String`.
+    - [ ] **File:** `src/app/admin/users/[id]/UpdateSubscriptionForm.tsx`
+    - [ ] **Action:** Add an `<SelectItem value="ADMIN">Admin</SelectItem>` to the "Subscription Tier" `Select` component.
+    - [ ] **Security:** The `authMiddleware` in `lib/auth.ts` already correctly checks if a user is an admin to grant access to admin routes. This change will allow an existing admin to promote another user.
+
+- [ ] **4.2. Secure All Admin API Routes**
+    - [ ] **File:** `src/app/api/admin/users/route.ts`
+    - [ ] **Action:** Protect the `GET` handler by calling the `authMiddleware` from `lib/auth.ts` at the beginning of the function to ensure only admins can fetch the user list.
+        ```javascript
+        // At the start of the GET function
+        try {
+          await authMiddleware(request);
+        } catch (error) {
+          // Return 401 or 403 based on error type
+        }
+        ```
+
+- [ ] **4.3. Make Admin Dashboard Mobile-Friendly**
+    - [ ] **File:** `src/components/AdminDashboard.tsx`
+    - [ ] **Analysis:** The `Table` component will not work well on small screens.
+    - [ ] **Action:** On mobile viewports (e.g., `<md:`), transform the table into a list of cards. Each `Card` will represent a user, with their details (`email`, `tier`, `status`) listed vertically. Use `hidden md:table-row` on the `TableRow` and `block md:hidden` on a new `Card`-based layout.
+    - [ ] **File:** `src/app/admin/users/[id]/page.tsx`
+    - [ ] **Action:** Ensure the two-column grid layout (`md:grid-cols-2`) collapses to a single column on mobile. The `UpdateSubscriptionForm` and user details should stack vertically. This seems to be already handled by the existing class. Verify and test.
+    - [ ] **Action:** Ensure the `Table` of journal entries on the user detail page is also responsive, using the same card-per-row strategy for mobile.
+
+- [ ] **4.4. Add User Search and Pagination**
+    - [ ] **File:** `src/app/api/admin/users/route.ts`
+    - [ ] **Action:** Implement pagination in the Prisma query using `take` and `skip` based on URL search parameters (e.g., `?page=1&limit=20`).
+    - [ ] **Action:** Return the `totalUserCount` along with the paginated user list.
+    - [ ] **File:** `src/components/AdminDashboard.tsx`
+    - [ ] **Action:** Add pagination controls (`Button` components for "Previous" and "Next") below the user list. The buttons' `disabled` state should be controlled by the current page and total count. The `onSearchChange` prop should reset the page to 1.
