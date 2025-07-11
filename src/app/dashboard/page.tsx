@@ -1,54 +1,57 @@
 "use client";
 import React from "react";
-import { OnboardingWizard } from "@/components/OnboardingWizard";
 import { SuggestedTopics } from "@/components/SuggestedTopics";
 import { useAuth } from "@/lib/auth-context";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getUserProfile } from "@/lib/user";
+import { Skeleton } from "@/components/ui/skeleton";
+
 export default function DashboardPage() {
   const { user: authUser } = useAuth();
-  const [showWizard, setShowWizard] = React.useState(false);
-  const queryClient = useQueryClient();
-  const { data: user } = useQuery({
+
+  const { data: user, isLoading: isUserLoading } = useQuery({
     queryKey: ["user", authUser?.id],
     queryFn: () => getUserProfile(authUser?.id),
     enabled: !!authUser?.id,
   });
-  React.useEffect(() => {
-    if (user && !user.nativeLanguage) {
-      setShowWizard(true);
-    }
-  }, [user]);
-  const handleWizardComplete = () => {
-    setShowWizard(false);
-    queryClient.invalidateQueries({ queryKey: ["user", authUser?.id] });
-  };
-  const { data: suggestedTopics } = useQuery({
+
+  const { data: suggestedTopics, isLoading: areTopicsLoading } = useQuery({
     queryKey: ["suggestedTopics"],
     queryFn: () =>
       fetch("/api/user/suggested-topics").then((res) => res.json()),
-    enabled: !!user?.nativeLanguage,
+    enabled: !!user && user.onboardingCompleted,
   });
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">LinguaScribe Dashboard</h1>
-      {user?.nativeLanguage ? (
-        <>
-          <p>Welcome back! Ready to continue your language journey.</p>
-          {suggestedTopics?.length > 0 && (
-            <SuggestedTopics topics={suggestedTopics} />
-          )}
-        </>
-      ) : (
-        <p>Loading your dashboard...</p>
-      )}
 
-      <OnboardingWizard
-        isOpen={showWizard}
-        onClose={() => setShowWizard(false)}
-        onComplete={handleWizardComplete}
-        onError={(error) => console.error("Onboarding error:", error)}
-      />
+  if (isUserLoading) {
+    return (
+      <div className="container mx-auto p-4 space-y-4">
+        <Skeleton className="h-8 w-1/2" />
+        <Skeleton className="h-6 w-3/4" />
+      </div>
+    );
+  }
+
+  if (user && !user.onboardingCompleted) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold">Welcome to LinguaScribe!</h1>
+        <p>Please complete the setup to continue.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 space-y-4">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <p>Welcome back! Ready to continue your language journey.</p>
+      
+      {areTopicsLoading ? (
+        <Skeleton className="h-40 w-full" />
+      ) : (
+        suggestedTopics?.length > 0 && (
+          <SuggestedTopics topics={suggestedTopics} />
+        )
+      )}
     </div>
   );
 }

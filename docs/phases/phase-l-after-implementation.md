@@ -29,24 +29,24 @@ This phase addresses critical bugs and creates the reusable components needed fo
 
 This phase sets up the necessary database fields and client-side state management for the new guided flow.
 
-- [ ] **2.1. Update User Schema for Onboarding Tracking**
-    - [ ] In `prisma/schema.prisma`, add a new field to the `User` model: `onboardingCompleted Boolean @default(false)`.
-    - [ ] Run `npx prisma migrate dev --name add_onboarding_completed_flag` to apply the change to the database.
-    - [ ] Run `npx prisma generate` to update the Prisma Client.
+- [x] **2.1. Update User Schema for Onboarding Tracking**
+    - [x] In `prisma/schema.prisma`, add a new field to the `User` model: `onboardingCompleted Boolean @default(false)`.
+    - [x] Run `npx prisma migrate dev --name add_onboarding_completed_flag` to apply the change to the database.
+    - [x] Run `npx prisma generate` to update the Prisma Client.
 
-- [ ] **2.2. Create an Onboarding Status API Endpoint**
-    - [ ] Create a new API route: `src/app/api/user/complete-onboarding/route.ts`.
-    - [ ] Implement a `POST` handler in this route that sets the `onboardingCompleted` flag to `true` for the currently authenticated user.
+- [x] **2.2. Create an Onboarding Status API Endpoint**
+    - [x] Create a new API route: `src/app/api/user/complete-onboarding/route.ts`.
+    - [x] Implement a `POST` handler in this route that sets the `onboardingCompleted` flag to `true` for the currently authenticated user.
 
-- [ ] **2.3. Create Onboarding Context Provider**
-    - [ ] Create a new file `src/lib/onboarding-context.tsx`.
-    - [ ] Implement an `OnboardingProvider` that wraps the `AppShell`.
-    - [ ] The context should track the current onboarding step (e.g., `'LANGUAGE_SELECT'`, `'FIRST_JOURNAL'`, `'AWAITING_ANALYSIS'`, `'VIEW_ANALYSIS'`, `'CREATE_DECK'`, `'STUDY_INTRO'`, `'COMPLETED'`).
-    - [ ] The provider will fetch the user's `onboardingCompleted` status and determine if the guided flow should be active.
+- [x] **2.3. Create Onboarding Context Provider**
+    - [x] Create a new file `src/lib/onboarding-context.tsx`.
+    - [x] Implement an `OnboardingProvider` that wraps the `AppShell`.
+    - [x] The context should track the current onboarding step (e.g., `'LANGUAGE_SELECT'`, `'FIRST_JOURNAL'`, `'AWAITING_ANALYSIS'`, `'VIEW_ANALYSIS'`, `'CREATE_DECK'`, `'STUDY_INTRO'`, `'COMPLETED'`).
+    - [x] The provider will fetch the user's `onboardingCompleted` status and determine if the guided flow should be active.
 
-- [ ] **2.4. Integrate Onboarding Provider**
-    - [ ] In `src/providers.tsx`, wrap the `AuthProvider`'s children with the new `OnboardingProvider`.
-    - [ ] Modify the main application layout (`src/components/layout/AppShell.tsx`) to conditionally render onboarding UI overlays based on the state from `useOnboarding()`.
+- [x] **2.4. Integrate Onboarding Provider**
+    - [x] In `src/providers.tsx`, wrap the `AuthProvider`'s children with the new `OnboardingProvider`.
+    - [x] Modify the main application layout (`src/components/layout/AppShell.tsx`) to conditionally render onboarding UI overlays based on the state from `useOnboarding()`.
 
 ---
 

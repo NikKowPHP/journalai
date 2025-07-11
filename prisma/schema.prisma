@@ -20,6 +20,7 @@ model User {
   proficiencySubScores  Json?
   status                String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
   lastUsageReset        DateTime? // Timestamp for resetting daily limits
+  onboardingCompleted   Boolean   @default(false)
 
   // Monetization
   stripeCustomerId   String?   @unique

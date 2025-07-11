@@ -7,6 +7,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AuthLinks } from "@/components/AuthLinks";
 import { DesktopSidebar } from "./DesktopSidebar";
 import { BottomTabBar } from "./BottomTabBar";
+import { useOnboarding } from "@/lib/onboarding-context";
+import { OnboardingWizard } from "../OnboardingWizard";
 
 function AppFooter() {
   return (
@@ -34,6 +36,7 @@ function AppFooter() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { step, setStep, isActive } = useOnboarding();
   const pathname = usePathname();
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/forgot-password') || pathname.startsWith('/reset-password');
@@ -41,6 +44,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (loading) {
     return null; // AuthProvider shows a global spinner
   }
+  
+  const OnboardingOverlay = () => {
+    if (!isActive) return null;
+    
+    // In phase 3, this will have more steps. For now, it just shows the wizard.
+    if (step === 'PROFILE_SETUP') {
+      return (
+        <OnboardingWizard
+          isOpen={true}
+          onClose={() => {
+            // Onboarding is mandatory, can't be closed.
+          }}
+          onComplete={() => {
+            // This is simplified. In the next phase, it will advance the step.
+            // For now, it just completes.
+            setStep('FIRST_JOURNAL');
+          }}
+          onError={(err) => console.error("Onboarding wizard error:", err)}
+        />
+      );
+    }
+
+    // Placeholder for other steps to be built in Phase 3
+    return (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center text-white p-4 text-center">
+            <div>
+                <h2 className="text-2xl font-bold mb-2">Onboarding in Progress</h2>
+                <p>Current Step: {step}</p>
+            </div>
+        </div>
+    );
+  };
+
 
   // If user is authenticated and not on an auth page, show the main app shell
   if (user && !isAuthPage) {
@@ -54,6 +90,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </main>
           <BottomTabBar />
         </div>
+        <OnboardingOverlay />
       </div>
     );
   }
