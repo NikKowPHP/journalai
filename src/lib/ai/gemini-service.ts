@@ -18,7 +18,9 @@ import * as os from "os";
 import * as path from "path";
 import * as crypto from "crypto";
 
-export class GeminiQuestionGenerationService implements QuestionGenerationService {
+export class GeminiQuestionGenerationService
+  implements QuestionGenerationService
+{
   private genAI: GoogleGenAI;
   private model: string = "gemini-2.5-flash";
 
@@ -29,7 +31,7 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
   async analyzeJournalEntry(
     journalContent: string,
     targetLanguage: string = "English",
-    proficiencyScore: number
+    proficiencyScore: number,
   ): Promise<JournalAnalysisResult> {
     const prompt = `
       You are an expert language tutor analyzing a journal entry written in ${targetLanguage}.
@@ -96,7 +98,7 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
         phrasingScore: Number(analysis.phrasingScore) || 0,
         vocabularyScore: Number(analysis.vocabularyScore) || 0,
         feedback: analysis.feedback || "",
-        mistakes: analysis.mistakes || []
+        mistakes: analysis.mistakes || [],
       };
     } catch (error) {
       console.error("Error analyzing journal entry with Gemini:", error);
@@ -320,7 +322,7 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
   async translateText(
     text: string,
     sourceLanguage: string,
-    targetLanguage: string
+    targetLanguage: string,
   ): Promise<string> {
     const prompt = `
       You are an expert language translator. Translate the following text from ${sourceLanguage} to ${targetLanguage}.
@@ -451,6 +453,51 @@ export class GeminiQuestionGenerationService implements QuestionGenerationServic
       return suggestions as RoleSuggestion[];
     } catch (error) {
       console.error("Error refining role with Gemini:", error);
+      throw error;
+    }
+  }
+
+  async generateTopics(context: {
+    targetLanguage: string;
+    proficiency: number;
+    count: number;
+  }): Promise<string[]> {
+    const { targetLanguage, proficiency, count } = context;
+    const prompt = `
+      You are an expert language learning assistant.
+      Generate ${count} interesting and level-appropriate journal topics for a user learning ${targetLanguage}.
+      The user's current proficiency level is ${proficiency} out of 100.
+      Your response must be a single raw JSON array of strings, without any markdown formatting or surrounding text.
+
+      Example for count 3:
+      [
+        "Describe your favorite holiday and why it is special to you.",
+        "What is a skill you would like to learn and how would you start?",
+        "If you could have any superpower, what would it be and why?"
+      ]
+
+      Now, generate the topics.
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const text = result.text || "";
+      if (!text) {
+        throw new Error("Empty response from Gemini API for topic generation");
+      }
+      const cleanedText = this.cleanJsonString(text);
+      if (!cleanedText) {
+        throw new Error(
+          "Failed to get a valid response from the AI for topic generation.",
+        );
+      }
+      const topics = JSON.parse(cleanedText) as string[];
+      return topics;
+    } catch (error) {
+      console.error("Error generating topics with Gemini:", error);
       throw error;
     }
   }

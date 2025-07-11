@@ -102,40 +102,40 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 **Objective:** Transform the dashboard from a static page into a dynamic, personalized hub for the user's learning journey.
 
-- [ ] **2.1. Create Dashboard Summary Component**
-    - [ ] **File:** `src/components/DashboardSummary.tsx` (New file)
-    - [ ] **Action:** Create a new component to display key metrics.
-    - [ ] **Props:** It will accept `totalEntries: number`, `averageScore: number`, and `weakestSkill: string`.
-    - [ ] **UI:** Create responsive cards to display each metric (e.g., "Total Entries", "Avg. Proficiency", "Focus Area").
+- [x] **2.1. Create Dashboard Summary Component**
+    - [x] **File:** `src/components/DashboardSummary.tsx` (New file)
+    - [x] **Action:** Create a new component to display key metrics.
+    - [x] **Props:** It will accept `totalEntries: number`, `averageScore: number`, and `weakestSkill: string`.
+    - [x] **UI:** Create responsive cards to display each metric (e.g., "Total Entries", "Avg. Proficiency", "Focus Area").
 
-- [ ] **2.2. Enhance Dashboard API and Frontend**
-    - [ ] **File:** `src/app/api/analytics/route.ts`
-    - [ ] **Action:** Modify the `GET` handler to calculate and return `averageScore` and `weakestSkill`.
+- [x] **2.2. Enhance Dashboard API and Frontend**
+    - [x] **File:** `src/app/api/analytics/route.ts`
+    - [x] **Action:** Modify the `GET` handler to calculate and return `averageScore` and `weakestSkill`.
         - `averageScore`: Calculate the average of all sub-skill scores across all analyses.
         - `weakestSkill`: Identify which of `grammar`, `phrasing`, or `vocabulary` has the lowest average score.
-    - [ ] **File:** `src/app/dashboard/page.tsx`
-    - [ ] **Action:** Update the `useQuery` for `analytics` to fetch this new data.
-    - [ ] **Action:** Conditionally render the new `DashboardSummary.tsx` component with the fetched data. If `totalEntries` is 0, do not render the summary.
+    - [x] **File:** `src/app/dashboard/page.tsx`
+    - [x] **Action:** Update the `useQuery` for `analytics` to fetch this new data.
+    - [x] **Action:** Conditionally render the new `DashboardSummary.tsx` component with the fetched data. If `totalEntries` is 0, do not render the summary.
 
-- [ ] **2.3. Implement "First Entry" Call-to-Action**
-    - [ ] **File:** `src/app/dashboard/page.tsx`
-    - [ ] **Condition:** If the analytics data shows `totalEntries === 0` and onboarding is complete.
-    - [ ] **Action:** Render a prominent `Card` component with a title like "Start Your Journey", a brief explanation, and a large `Button` that links to `/journal`.
+- [x] **2.3. Implement "First Entry" Call-to-Action**
+    - [x] **File:** `src/app/dashboard/page.tsx`
+    - [x] **Condition:** If the analytics data shows `totalEntries === 0` and onboarding is complete.
+    - [x] **Action:** Render a prominent `Card` component with a title like "Start Your Journey", a brief explanation, and a large `Button` that links to `/journal`.
 
-- [ ] **2.4. Add Recent Journals to Dashboard**
-    - [ ] **File:** `src/app/dashboard/page.tsx`
-    - [ ] **Condition:** If `totalEntries > 0`.
-    - [ ] **Action:** Fetch the 3 most recent journal entries (this can be a new API endpoint or an expansion of the `/api/analytics` route).
-    - [ ] **Action:** Use the existing `JournalHistoryList.tsx` component to display these recent entries on the dashboard, creating an "at-a-glance" view of recent activity.
+- [x] **2.4. Add Recent Journals to Dashboard**
+    - [x] **File:** `src/app/dashboard/page.tsx`
+    - [x] **Condition:** If `totalEntries > 0`.
+    - [x] **Action:** Fetch the 3 most recent journal entries (this can be a new API endpoint or an expansion of the `/api/analytics` route).
+    - [x] **Action:** Use the existing `JournalHistoryList.tsx` component to display these recent entries on the dashboard, creating an "at-a-glance" view of recent activity.
 
-- [ ] **2.5. Implement AI Topic Generation**
-    - [ ] **File:** `src/lib/ai/gemini-service.ts`
-    - [ ] **Action:** Add a new method `generateTopics(context: { targetLanguage: string, proficiency: number, count: number }): Promise<string[]>` to the `GeminiQuestionGenerationService`. The prompt should ask for topics suitable for the user's level.
-    - [ ] **File:** `src/app/api/user/generate-topics/route.ts` (New file)
-    - [ ] **Action:** Create a new API route that gets the user's profile (`targetLanguage`, `aiAssessedProficiency`), calls the new AI service method, and returns a list of topic strings.
-    - [ ] **File:** `src/app/dashboard/page.tsx`
-    - [ ] **Action:** Add a "Suggest New Topics" button to the dashboard.
-    - [ ] **Logic:** On click, call the new API endpoint using `useMutation` and display the generated topics, allowing the user to click one to start a new journal entry.
+- [x] **2.5. Implement AI Topic Generation**
+    - [x] **File:** `src/lib/ai/gemini-service.ts`
+    - [x] **Action:** Add a new method `generateTopics(context: { targetLanguage: string, proficiency: number, count: number }): Promise<string[]>` to the `GeminiQuestionGenerationService`. The prompt should ask for topics suitable for the user's level.
+    - [x] **File:** `src/app/api/user/generate-topics/route.ts` (New file)
+    - [x] **Action:** Create a new API route that gets the user's profile (`targetLanguage`, `aiAssessedProficiency`), calls the new AI service method, and returns a list of topic strings.
+    - [x] **File:** `src/app/dashboard/page.tsx`
+    - [x] **Action:** Add a "Suggest New Topics" button to the dashboard.
+    - [x] **Logic:** On click, call the new API endpoint using `useMutation` and display the generated topics, allowing the user to click one to start a new journal entry.
 
 ---
 

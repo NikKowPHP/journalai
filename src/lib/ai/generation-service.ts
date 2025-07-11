@@ -68,7 +68,7 @@ export interface QuestionGenerationService {
   analyzeJournalEntry(
     journalContent: string,
     targetLanguage?: string,
-    proficiencyScore?: number
+    proficiencyScore?: number,
   ): Promise<JournalAnalysisResult>;
 
   /**
@@ -91,9 +91,9 @@ export interface QuestionGenerationService {
    * @returns Promise resolving to a structured evaluation including the transcription.
    */
   evaluateAudioAnswer?(
-    context: AudioEvaluationContext
+    context: AudioEvaluationContext,
   ): Promise<EvaluationResult & { transcription: string }>;
-/**
+  /**
    * Generates a concise, relevant title for a journal entry.
    * @param journalContent The content of the journal entry.
    * @returns Promise resolving to the generated title.
@@ -101,11 +101,15 @@ export interface QuestionGenerationService {
   generateTitleForEntry(journalContent: string): Promise<string>;
 
   /**
-   * Generates a concise, relevant title for a journal entry.
-   * @param journalContent The content of the journal entry.
-   * @returns Promise resolving to the generated title.
+   * Generates journal topics for a user.
+   * @param context Object containing target language, proficiency and count
+   * @returns Promise resolving to an array of topic strings.
    */
-  generateTitleForEntry(journalContent: string): Promise<string>;
+  generateTopics(context: {
+    targetLanguage: string;
+    proficiency: number;
+    count: number;
+  }): Promise<string[]>;
 }
 
 /**
