@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Flashcard } from "@/components/Flashcard";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useReviewSrsItem } from "@/lib/hooks/data-hooks";
 
 /**
  * Manages a study session with a deck of flashcards, tracking progress through the deck.
@@ -26,29 +26,13 @@ interface StudySessionProps {
 }
 
 export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
-  const queryClient = useQueryClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const currentCard = cards[currentCardIndex];
 
-  const reviewMutation = useMutation({
-    mutationFn: (quality: number) =>
-      fetch("/api/srs/review", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          srsItemId: currentCard.id,
-          quality,
-        }),
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyDeck"] });
-    },
-  });
+  const reviewMutation = useReviewSrsItem();
 
   const handleReview = (quality: number) => {
-    reviewMutation.mutate(quality);
+    reviewMutation.mutate({ srsItemId: currentCard.id, quality });
     handleNextCard();
   };
 

@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
   // SubskillScores component expects an array of { skill, score }
   const skillBreakdown = data?.subskillScores ? Object.entries(data.subskillScores).map(([skill, score]) => ({
     skill: skill.charAt(0).toUpperCase() + skill.slice(1),
-    score: score,
+    score: Number(score),
   })) : [];
 
   return (
