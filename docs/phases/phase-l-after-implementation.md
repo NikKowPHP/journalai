@@ -94,20 +94,20 @@ This is the core implementation phase, building out each step of the user's jour
 
 This phase focuses on refining the visual experience during data loading.
 
-- [ ] **4.1. Implement Skeletons in `JournalHistoryList`**
-    - [ ] In `src/components/JournalHistoryList.tsx`, when `isLoading` is true, render a list of 3-4 `Skeleton` components matching the layout of a journal card (a line for the title, two for the snippet).
+- [x] **4.1. Implement Skeletons in `JournalHistoryList`**
+    - [x] In `src/components/JournalHistoryList.tsx`, when `isLoading` is true, render a list of 3-4 `Skeleton` components matching the layout of a journal card (a line for the title, two for the snippet).
 
-- [ ] **4.2. Implement Skeletons in `AnalyticsPage`**
-    - [ ] In `src/app/analytics/page.tsx`, when `isLoading` is true, display a skeleton layout.
-    - [ ] The `ProficiencyChart` and `SubskillScores` should be replaced with rectangular `Skeleton` components of the same dimensions.
+- [x] **4.2. Implement Skeletons in `AnalyticsPage`**
+    - [x] In `src/app/analytics/page.tsx`, when `isLoading` is true, display a skeleton layout.
+    - [x] The `ProficiencyChart` and `SubskillScores` should be replaced with rectangular `Skeleton` components of the same dimensions.
 
-- [ ] **4.3. Implement Skeletons in `AdminDashboard`**
-    - [ ] In `src/components/AdminDashboard.tsx`, if the data is loading, render a skeleton table with a few rows of `Skeleton` cells.
+- [x] **4.3. Implement Skeletons in `AdminDashboard`**
+    - [x] In `src/components/AdminDashboard.tsx`, if the data is loading, render a skeleton table with a few rows of `Skeleton` cells.
 
-- [ ] **4.4. Implement Skeleton in `ProfileForm`**
-    - [ ] In `src/components/ProfileForm.tsx`, when the `useQuery` for the profile is loading, replace the `Input` and `Select` components with corresponding `Skeleton` placeholders.
+- [x] **4.4. Implement Skeleton in `ProfileForm`**
+    - [x] In `src/components/ProfileForm.tsx`, when the `useQuery` for the profile is loading, replace the `Input` and `Select` components with corresponding `Skeleton` placeholders.
 
-- [ ] **4.5. Refine All Modals and Popups**
-    - [ ] Review every `Dialog` and `BubbleMenu` usage.
-    - [ ] Ensure they use the newly styled `dialog.tsx` which provides a bottom-sheet on mobile and a macOS-style window on desktop.
-    - [ ] Ensure all popups used in the new onboarding flow follow this style for a consistent, high-quality user experience.
+- [x] **4.5. Refine All Modals and Popups**
+    - [x] Review every `Dialog` and `BubbleMenu` usage.
+    - [x] Ensure they use the newly styled `dialog.tsx` which provides a bottom-sheet on mobile and a macOS-style window on desktop.
+    - [x] Ensure all popups used in the new onboarding flow follow this style for a consistent, high-quality user experience.

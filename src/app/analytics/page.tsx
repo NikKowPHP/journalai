@@ -4,6 +4,7 @@ import { SubskillScores } from "@/components/SubskillScores";
 import { PricingTable } from "@/components/PricingTable";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsPage() {
   const { user: authUser } = useAuth();
@@ -27,8 +28,26 @@ export default function AnalyticsPage() {
     },
   });
 
-  if (userLoading || isLoading) return <div>Loading...</div>;
-  if (userError || error) return <div>Error: {userError?.message || error?.message}</div>;
+  if (userLoading || isLoading) {
+    return (
+        <div className="container mx-auto p-6 space-y-8">
+            <Skeleton className="h-10 w-1/3" />
+
+            <div className="grid gap-8 md:grid-cols-2">
+                <div className="space-y-4 p-6 border rounded-lg bg-background">
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-64 w-full" />
+                </div>
+                <div className="space-y-4 p-6 border rounded-lg bg-background">
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-64 w-full" />
+                </div>
+            </div>
+        </div>
+    );
+  }
+
+  if (userError || error) return <div>Error: {(userError as Error)?.message || (error as Error)?.message}</div>;
 
   if (userData.subscriptionTier !== "PRO") {
     return (

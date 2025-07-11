@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "./ui/skeleton";
 
 interface ProfileFormProps {
   email?: string;
@@ -18,7 +19,28 @@ interface ProfileFormProps {
   writingStyle?: string;
   writingPurpose?: string;
   selfAssessedLevel?: string;
+  isLoading?: boolean;
 }
+
+const ProfileFormSkeleton = () => (
+  <Card>
+    <CardContent className="p-4 space-y-6">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-11 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <Skeleton className="h-12 w-full" />
+    </CardContent>
+  </Card>
+);
 
 export function ProfileForm({
   email,
@@ -27,6 +49,7 @@ export function ProfileForm({
   writingStyle,
   writingPurpose,
   selfAssessedLevel,
+  isLoading,
 }: ProfileFormProps) {
   const queryClient = useQueryClient();
 
@@ -60,6 +83,10 @@ export function ProfileForm({
       selfAssessedLevel: formData.get('selfAssessedLevel') as string,
     });
   };
+
+  if (isLoading) {
+    return <ProfileFormSkeleton />;
+  }
 
   return (
     <Card>

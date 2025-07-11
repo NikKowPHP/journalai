@@ -41,6 +41,7 @@ export default function SettingsPage() {
         <section>
           <h2 className="text-subhead px-4 mb-2 text-muted-foreground uppercase">Profile</h2>
           <ProfileForm
+            isLoading={isLoading}
             email={profile?.email}
             nativeLanguage={profile?.nativeLanguage}
             targetLanguage={profile?.targetLanguage}

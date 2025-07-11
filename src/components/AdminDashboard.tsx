@@ -8,23 +8,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
 interface User {
   id: string;
   email: string;
-  tier: string;
-  status: string;
+  subscriptionTier: string;
+  subscriptionStatus: string;
 }
 
 interface AdminDashboardProps {
   users: User[];
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  isLoading: boolean;
 }
 
-export function AdminDashboard({ users, searchTerm, onSearchChange }: AdminDashboardProps) {
+const SkeletonRow = () => (
+  <TableRow>
+    <TableCell>
+      <Skeleton className="h-5 w-48" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-5 w-16" />
+    </TableCell>
+    <TableCell>
+      <Skeleton className="h-5 w-24" />
+    </TableCell>
+  </TableRow>
+);
 
+export function AdminDashboard({ users, searchTerm, onSearchChange, isLoading }: AdminDashboardProps) {
   return (
     <div className="space-y-4">
       <Input
@@ -43,23 +58,29 @@ export function AdminDashboard({ users, searchTerm, onSearchChange }: AdminDashb
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
-            <Link key={user.id} href={`/admin/users/${user.id}`}>
-              <TableRow className="hover:bg-muted/50 cursor-pointer">
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.tier}</TableCell>
-                <TableCell>
-                  <span
-                    className={
-                      user.status === "Active" ? "text-green-600" : "text-red-600"
-                    }
-                  >
-                    {user.status}
-                  </span>
-                </TableCell>
-              </TableRow>
-            </Link>
-          ))}
+          {isLoading ? (
+            <>
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </>
+          ) : (
+            users.map((user) => (
+                <TableRow key={user.id} className="hover:bg-muted/50 cursor-pointer">
+                    <TableCell><Link href={`/admin/users/${user.id}`} className="block w-full h-full">{user.email}</Link></TableCell>
+                    <TableCell><Link href={`/admin/users/${user.id}`} className="block w-full h-full">{user.subscriptionTier}</Link></TableCell>
+                    <TableCell>
+                    <Link href={`/admin/users/${user.id}`} className="block w-full h-full">
+                        <span className={user.subscriptionStatus === "ACTIVE" ? "text-green-600" : "text-red-600"}>
+                            {user.subscriptionStatus}
+                        </span>
+                    </Link>
+                    </TableCell>
+                </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

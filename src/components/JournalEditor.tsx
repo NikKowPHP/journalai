@@ -183,20 +183,20 @@ export function JournalEditor({
     <div className="border rounded-lg overflow-hidden">
       {editor && (
         <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-          <div className="flex gap-1 p-1 bg-white border rounded shadow">
+          <div className="flex gap-1 p-1 bg-popover text-popover-foreground border border-border rounded-md shadow-md">
             <button
               onClick={() => editor.chain().focus().toggleBold().run()}
               className={`p-1 rounded ${
-                editor.isActive("bold") ? "bg-gray-200" : ""
-              }`}
+                editor.isActive("bold") ? "bg-accent" : ""
+              } hover:bg-accent`}
             >
               Bold
             </button>
             <button
               onClick={() => editor.chain().focus().toggleItalic().run()}
               className={`p-1 rounded ${
-                editor.isActive("italic") ? "bg-gray-200" : ""
-              }`}
+                editor.isActive("italic") ? "bg-accent" : ""
+              } hover:bg-accent`}
             >
               Italic
             </button>
@@ -209,7 +209,7 @@ export function JournalEditor({
                   );
                   translateMutation.mutate({ text: selectedText });
                 }}
-                className="p-1 rounded hover:bg-gray-200"
+                className="p-1 rounded hover:bg-accent"
                 disabled={translateMutation.isPending}
               >
                 {translateMutation.isPending ? "Translating..." : "Translate"}

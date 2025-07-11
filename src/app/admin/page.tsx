@@ -26,17 +26,6 @@ export default function AdminPage() {
       }).then(res => res.data),
   });
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-8 space-y-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <div className="p-6 border rounded-lg bg-background">
-          <p>Loading users...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="container mx-auto p-8 space-y-6">
@@ -47,6 +36,7 @@ export default function AdminPage() {
       </div>
     );
   }
+
   return (
     <div className="container mx-auto p-8 space-y-6">
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
@@ -55,6 +45,7 @@ export default function AdminPage() {
           users={users || []}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          isLoading={isLoading}
         />
       </div>
     </div>
