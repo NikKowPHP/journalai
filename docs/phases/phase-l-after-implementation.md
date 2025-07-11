@@ -35,30 +35,30 @@ This phase establishes the global design tokens and foundational styles that wil
 
 This phase focuses on restyling the base-level, reusable components for both mobile (iOS) and desktop (macOS) contexts.
 
-- [ ] **2.1. Button (`button.tsx`):**
-    - [ ] **Mobile (iOS):** Style buttons to have a "pill" shape or standard rounded rectangle.
-    - [ ] **Desktop (macOS):** Style buttons to be flatter with a subtle border and a vibrant blue for the primary action.
-    - [ ] Add a `glass` or `translucent` variant for a frosted glass effect.
+- [x] **2.1. Button (`button.tsx`):**
+    - [x] **Mobile (iOS):** Style buttons to have a "pill" shape or standard rounded rectangle.
+    - [x] **Desktop (macOS):** Style buttons to be flatter with a subtle border and a vibrant blue for the primary action.
+    - [x] Add a `glass` or `translucent` variant for a frosted glass effect.
 
-- [ ] **2.2. Input (`input.tsx`):**
-    - [ ] **Mobile (iOS):** Style inputs to appear inset within a grouped list format.
-    - [ ] **Desktop (macOS):** Style inputs with a flatter appearance and subtle focus shadows.
+- [x] **2.2. Input (`input.tsx`):**
+    - [x] **Mobile (iOS):** Style inputs to appear inset within a grouped list format.
+    - [x] **Desktop (macOS):** Style inputs with a flatter appearance and subtle focus shadows.
 
-- [ ] **2.3. Card (`card.tsx`):**
-    - [ ] **Mobile (iOS):** Restyle cards to emulate iOS grouped table view cells (inset, with separators).
-    - [ ] **Desktop (macOS):** Give cards a lighter, translucent background (frosted glass effect) with a very thin border, removing heavy shadows.
+- [x] **2.3. Card (`card.tsx`):**
+    - [x] **Mobile (iOS):** Restyle cards to emulate iOS grouped table view cells (inset, with separators).
+    - [x] **Desktop (macOS):** Give cards a lighter, translucent background (frosted glass effect) with a very thin border, removing heavy shadows.
 
-- [ ] **2.4. Dialog (`dialog.tsx`):**
-    - [ ] **Mobile (iOS):** Use media queries to transform the dialog into a **bottom sheet** that slides up from the screen's bottom.
-    - [ ] **Desktop (macOS):** Restyle the dialog to resemble a native macOS window, adding a header/title bar area and non-functional "traffic light" dots. The `DialogOverlay` should provide a background blur effect.
+- [x] **2.4. Dialog (`dialog.tsx`):**
+    - [x] **Mobile (iOS):** Use media queries to transform the dialog into a **bottom sheet** that slides up from the screen's bottom.
+    - [x] **Desktop (macOS):** Restyle the dialog to resemble a native macOS window, adding a header/title bar area and non-functional "traffic light" dots. The `DialogOverlay` should provide a background blur effect.
 
-- [ ] **2.5. Select (`select.tsx`):**
-    - [ ] **Mobile (iOS):** Trigger a native-style "wheel" picker that covers the bottom half of the screen.
-    - [ ] **Desktop (macOS):** Style the trigger like a macOS pop-up button. Style the dropdown `SelectContent` with a translucent appearance.
+- [x] **2.5. Select (`select.tsx`):**
+    - [x] **Mobile (iOS):** Trigger a native-style "wheel" picker that covers the bottom half of the screen.
+    - [x] **Desktop (macOS):** Style the trigger like a macOS pop-up button. Style the dropdown `SelectContent` with a translucent appearance.
 
-- [ ] **2.6. Table (`table.tsx`):**
-    - [ ] **Mobile (iOS):** Transform tables into a list of cards, where each row is a tappable card item.
-    - [ ] **Desktop (macOS):** Style the table with alternating row colors (zebra-striping) and a distinct header row.
+- [x] **2.6. Table (`table.tsx`):**
+    - [x] **Mobile (iOS):** Transform tables into a list of cards, where each row is a tappable card item.
+    - [x] **Desktop (macOS):** Style the table with alternating row colors (zebra-striping) and a distinct header row.
 
 ---
 
