@@ -7,11 +7,15 @@ import { useState, useEffect, useRef } from "react";
 interface JournalEditorProps {
   initialContent?: string;
   topicTitle?: string;
+  isOnboarding?: boolean;
+  onOnboardingSubmit?: (journalId: string) => void;
 }
 
 export function JournalEditor({
   initialContent = "Start writing your thoughts in your target language...",
   topicTitle = "Free Write",
+  isOnboarding = false,
+  onOnboardingSubmit,
 }: JournalEditorProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -91,7 +95,9 @@ export function JournalEditor({
         body: JSON.stringify({ content, topicTitle }),
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["journals"] });
+      if (!isOnboarding) {
+        queryClient.invalidateQueries({ queryKey: ["journals"] });
+      }
     },
   });
 
@@ -113,29 +119,20 @@ export function JournalEditor({
     createJournalMutation.mutate(content, {
       onSuccess: async (response) => {
         const journal = await response.json();
+        if (isOnboarding && onOnboardingSubmit) {
+          onOnboardingSubmit(journal.id);
+        }
         analyzeJournalMutation.mutate(journal.id, {
           onSuccess: () => {
-            setStatusMessage("Analysis started - your journal is being analyzed in the background");
+            if(!isOnboarding) setStatusMessage("Analysis started - your journal is being analyzed in the background");
           },
           onError: (error) => {
-            if (retryAttempts < 3) {
-              const newDelay = currentDelay * 2;
-              setRetryAttempts(retryAttempts + 1);
-              setCurrentDelay(newDelay);
-              setStatusMessage(`Analysis failed - retrying in ${newDelay/1000} seconds...`);
-              setTimeout(() => {
-                analyzeJournalMutation.mutate(journal.id);
-              }, currentDelay);
-            } else {
-              setStatusMessage("Failed to start analysis after multiple attempts");
-              setRetryAttempts(0);
-              setCurrentDelay(1000);
-            }
+             if(!isOnboarding) setStatusMessage("Failed to start analysis.");
           }
         });
       },
       onError: () => {
-        setStatusMessage("Failed to save your journal");
+        if(!isOnboarding) setStatusMessage("Failed to save your journal");
       }
     });
   };

@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import {
   Dialog,
@@ -8,7 +8,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -16,29 +15,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-/**
-A multi-step onboarding wizard that guides new users through initial setup.
-@param {object} props - The component props.
-@param {boolean} props.isOpen - Controls the visibility of the wizard.
-@param {function} props.onClose - Callback invoked when the wizard is closed.
-@param {function} props.onComplete - Callback invoked when onboarding is finished.
-@returns {React.ReactElement} The onboarding wizard component.
-*/
+import { useAuth } from "@/lib/auth-context";
+
+
 interface OnboardingData {
   nativeLanguage: string;
   targetLanguage: string;
   writingStyle: string;
   writingPurpose: string;
   selfAssessedLevel: string;
-  evaluationText?: string;
-  aiSuggestedLevel?: string;
 }
+
 interface OnboardingWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: () => void;
   onError?: (error: string) => void;
 }
+
 export function OnboardingWizard({
   isOpen,
   onClose,
@@ -46,65 +40,58 @@ export function OnboardingWizard({
   onError,
 }: OnboardingWizardProps) {
   const [step, setStep] = React.useState(1);
-  const [isEvaluating, setIsEvaluating] = React.useState(false);
+  const { user: authUser } = useAuth();
+  const queryClient = useQueryClient();
+  
   const [formData, setFormData] = React.useState<OnboardingData>({
     nativeLanguage: "",
     targetLanguage: "",
-    writingStyle: "",
-    writingPurpose: "",
-    selfAssessedLevel: "",
+    writingStyle: "Casual",
+    writingPurpose: "Personal",
+    selfAssessedLevel: "Beginner"
   });
-  const { mutate: evaluateSkill } = useMutation({
-    mutationFn: (text: string) =>
-      axios.post("/api/user/evaluate-skill", { text }),
-    onSuccess: (data) => {
-      setFormData((prev) => ({
-        ...prev,
-        aiSuggestedLevel:
-          data.data.score > 80
-            ? "advanced"
-            : data.data.score > 50
-              ? "intermediate"
-              : "beginner",
-      }));
-      setIsEvaluating(false);
-      nextStep();
-    },
-    onError: () => {
-      setIsEvaluating(false);
-      onError?.("Failed to evaluate skill level");
-    },
-  });
+
   const { mutate: submitOnboarding, isPending } = useMutation({
-    mutationFn: (data: OnboardingData) => axios.post("/api/user/onboard", data),
-    onSuccess: onComplete,
-    onError: (error) => onError?.(error.message),
+    mutationFn: (data: OnboardingData) =>
+      axios.post("/api/user/onboard", data),
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["user", authUser?.id] });
+        onComplete();
+    },
+    onError: (error) => onError?.(error.message)
   });
+
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
+
   const handleChange = (field: keyof OnboardingData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
+
   const handleComplete = () => {
     submitOnboarding(formData);
   };
+
+  const isNextDisabled = () => {
+    if (step === 2 && !formData.nativeLanguage) return true;
+    if (step === 3 && !formData.targetLanguage) return true;
+    return false;
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>
             {step === 1 && "Welcome to LinguaScribe!"}
-            {step === 2 && "Native Language"}
-            {step === 3 && "Target Language"}
-            {step === 4 && "Writing Purpose"}
-            {step === 5 && "AI Skill Evaluation"}
-            {step === 6 && "Ready to Start!"}
-            {step === 7 && "Skill Level"}
+            {step === 2 && "Setup Your Profile"}
+            {step === 3 && "Setup Your Profile"}
           </DialogTitle>
         </DialogHeader>
+
         {step === 1 && (
           <div className="space-y-4">
-            <p>We'll help you get started with just a few quick questions.</p>
+            <p>Let's get you started with just a few quick questions.</p>
           </div>
         )}
 
@@ -115,47 +102,7 @@ export function OnboardingWizard({
               onValueChange={(value) => handleChange("nativeLanguage", value)}
               value={formData.nativeLanguage}
             >
-              <SelectTrigger className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring">
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value="english"
-                  className="focus:bg-accent focus:text-accent-foreground"
-                >
-                  English
-                </SelectItem>
-                <SelectItem
-                  value="spanish"
-                  className="focus:bg-accent focus:text-accent-foreground"
-                >
-                  Spanish
-                </SelectItem>
-                <SelectItem
-                  value="french"
-                  className="focus:bg-accent focus:text-accent-foreground"
-                >
-                  French
-                </SelectItem>
-                <SelectItem
-                  value="german"
-                  className="focus:bg-accent focus:text-accent-foreground"
-                >
-                  German
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="space-y-4">
-            <p>What language do you want to master?</p>
-            <Select
-              onValueChange={(value) => handleChange("targetLanguage", value)}
-              value={formData.targetLanguage}
-            >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
@@ -168,111 +115,50 @@ export function OnboardingWizard({
           </div>
         )}
 
-        {step === 4 && (
+        {step === 3 && (
           <div className="space-y-4">
-            <p>What is your main writing purpose?</p>
+            <p>What language do you want to master?</p>
             <Select
-              onValueChange={(value) => handleChange("writingPurpose", value)}
-              value={formData.writingPurpose}
+              onValueChange={(value) => handleChange("targetLanguage", value)}
+              value={formData.targetLanguage}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select purpose" />
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="casual">Casual</SelectItem>
-                <SelectItem value="business">Business</SelectItem>
-                <SelectItem value="academic">Academic</SelectItem>
+                <SelectItem value="english">English</SelectItem>
+                <SelectItem value="spanish">Spanish</SelectItem>
+                <SelectItem value="french">French</SelectItem>
+                <SelectItem value="german">German</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="space-y-4">
-            <p>
-              Write a short paragraph in your target language so we can evaluate
-              your skill level:
-            </p>
-            <textarea
-              className="w-full min-h-[120px] p-2 border rounded"
-              value={formData.evaluationText || ""}
-              onChange={(e) => handleChange("evaluationText", e.target.value)}
-              disabled={isEvaluating}
-            />
-          </div>
-        )}
-
-        {step === 7 && (
-          <div className="space-y-4">
-            <p>What is your skill level?</p>
-            {formData.aiSuggestedLevel && (
-              <p className="text-sm text-muted-foreground">
-                AI suggestion: {formData.aiSuggestedLevel}
-              </p>
-            )}
-            <Select
-              onValueChange={(value) =>
-                handleChange("selfAssessedLevel", value)
-              }
-              value={formData.selfAssessedLevel}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        )}
-
-        {step === 6 && (
-          <div className="space-y-4">
-            <p>
-              You're all set! Click "Get Started" to begin your language
-              journey.
-            </p>
           </div>
         )}
 
         <div className="flex justify-between mt-6 gap-4">
-          {step > 1 && step !== 6 && (
+          {step > 1 && (
             <Button
               variant="outline"
               onClick={prevStep}
-              className="hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring"
             >
               Back
             </Button>
           )}
-          {step === 5 ? (
-            <Button
-              onClick={() => {
-                if (formData.evaluationText) {
-                  setIsEvaluating(true);
-                  evaluateSkill(formData.evaluationText);
-                }
-              }}
-              disabled={!formData.evaluationText || isEvaluating}
-            >
-              {isEvaluating ? "Evaluating..." : "Evaluate"}
-            </Button>
-          ) : step < 7 ? (
+          {step < 3 ? (
             <Button
               onClick={nextStep}
-              className="hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
+              disabled={isNextDisabled()}
+              className="ml-auto"
             >
               Next
             </Button>
           ) : (
             <Button
               onClick={handleComplete}
-              disabled={isPending}
-              className="hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
+              disabled={isPending || isNextDisabled()}
+              className="ml-auto"
             >
-              {isPending ? "Saving..." : "Get Started"}
+              {isPending ? "Saving..." : "Finish Setup"}
             </Button>
           )}
         </div>

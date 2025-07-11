@@ -15,6 +15,7 @@ interface FlashcardProps {
   backContent: string;
   context?: string;
   onReview?: (quality: number) => void;
+  onOnboardingReview?: () => void;
 }
 
 export function Flashcard({
@@ -22,8 +23,19 @@ export function Flashcard({
   backContent,
   context,
   onReview,
+  onOnboardingReview,
 }: FlashcardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [onboardingReviewed, setOnboardingReviewed] = useState(false);
+
+  const handleReview = (quality: number) => {
+    onReview?.(quality);
+    if (onOnboardingReview && !onboardingReviewed) {
+      onOnboardingReview();
+      setOnboardingReviewed(true);
+    }
+    setIsFlipped(false);
+  };
 
   return (
     <Card className="p-6 space-y-6 bg-gradient-to-br from-background to-muted/20">
@@ -46,30 +58,21 @@ export function Flashcard({
             <Button
               variant="destructive"
               className="flex-1 hover:bg-destructive/90"
-              onClick={() => {
-                onReview?.(0);
-                setIsFlipped(false);
-              }}
+              onClick={() => handleReview(0)}
             >
               Forgot ❌
             </Button>
             <Button
               variant="default"
               className="flex-1 hover:bg-primary/90 bg-blue-600"
-              onClick={() => {
-                onReview?.(3);
-                setIsFlipped(false);
-              }}
+              onClick={() => handleReview(3)}
             >
               Good ✔️
             </Button>
             <Button
               variant="secondary"
               className="flex-1 hover:bg-secondary/90 bg-green-600 text-white"
-              onClick={() => {
-                onReview?.(5);
-                setIsFlipped(false);
-              }}
+              onClick={() => handleReview(5)}
             >
               Easy 💡
             </Button>

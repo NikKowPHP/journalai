@@ -2,8 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getUserProfile } from './user';
+import axios from 'axios';
 
 type OnboardingStep =
   | 'PROFILE_SETUP'
@@ -19,13 +20,18 @@ interface OnboardingContextType {
   step: OnboardingStep;
   setStep: (step: OnboardingStep) => void;
   isActive: boolean;
+  onboardingJournalId: string | null;
+  setOnboardingJournalId: (id: string | null) => void;
+  completeOnboarding: () => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const { user: authUser, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<OnboardingStep>('INACTIVE');
+  const [onboardingJournalId, setOnboardingJournalId] = useState<string | null>(null);
 
   const { data: userProfile } = useQuery({
     queryKey: ['user', authUser?.id],
@@ -33,14 +39,28 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     enabled: !!authUser && !authLoading,
   });
 
+  const completeOnboardingMutation = useMutation({
+    mutationFn: () => axios.post('/api/user/complete-onboarding'),
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['user', authUser?.id] });
+        setStep('INACTIVE');
+    }
+  });
+
+  const completeOnboarding = () => {
+    if (step !== 'COMPLETED') {
+        setStep('COMPLETED');
+    }
+    completeOnboardingMutation.mutate();
+  };
+
   useEffect(() => {
     if (userProfile && !userProfile.onboardingCompleted) {
         if (!userProfile.nativeLanguage || !userProfile.targetLanguage) {
              setStep('PROFILE_SETUP');
         } else {
-            // This is a simplification for now. The subsequent steps will need
-            // to check the user's progress (e.g., if they have a journal entry, if it has analysis, etc.)
-            // to determine the correct starting step if they leave and come back.
+            // This is a simplification. A real implementation would check
+            // for journal entries, analyses, etc., to resume the flow.
             setStep('FIRST_JOURNAL'); 
         }
     } else {
@@ -54,6 +74,9 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     step,
     setStep,
     isActive,
+    onboardingJournalId,
+    setOnboardingJournalId,
+    completeOnboarding,
   };
 
   return (

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AuthLinks } from "@/components/AuthLinks";
@@ -9,6 +10,11 @@ import { DesktopSidebar } from "./DesktopSidebar";
 import { BottomTabBar } from "./BottomTabBar";
 import { useOnboarding } from "@/lib/onboarding-context";
 import { OnboardingWizard } from "../OnboardingWizard";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
+import { JournalEditor } from "../JournalEditor";
+import { useQuery } from "@tanstack/react-query";
+import Spinner from "../ui/Spinner";
+import { Button } from "../ui/button";
 
 function AppFooter() {
   return (
@@ -34,10 +40,50 @@ function AppFooter() {
   );
 }
 
+const AwaitingAnalysisModal = () => {
+    const { onboardingJournalId, setStep } = useOnboarding();
+    const router = useRouter();
+
+    const { data: journal } = useQuery({
+        queryKey: ['journal', onboardingJournalId],
+        queryFn: async () => {
+            const res = await fetch(`/api/journal/${onboardingJournalId}`);
+            if (!res.ok) throw new Error('Failed to fetch journal');
+            return res.json();
+        },
+        enabled: !!onboardingJournalId,
+        refetchInterval: 3000, // Poll every 3 seconds
+    });
+
+    useEffect(() => {
+        if (journal?.analysis) {
+            setStep('VIEW_ANALYSIS');
+            router.push(`/journal/${journal.id}`);
+        }
+    }, [journal, setStep, router]);
+
+    return (
+        <Dialog open={true}>
+            <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                    <DialogTitle>Analysis in Progress</DialogTitle>
+                    <DialogDescription>
+                        We're analyzing your journal entry. This may take a moment. Please wait...
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="flex justify-center items-center py-8">
+                    <Spinner size="lg" />
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { step, setStep, isActive } = useOnboarding();
+  const { step, setStep, isActive, setOnboardingJournalId, completeOnboarding } = useOnboarding();
   const pathname = usePathname();
+  const router = useRouter();
 
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/forgot-password') || pathname.startsWith('/reset-password');
   
@@ -48,33 +94,79 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const OnboardingOverlay = () => {
     if (!isActive) return null;
     
-    // In phase 3, this will have more steps. For now, it just shows the wizard.
-    if (step === 'PROFILE_SETUP') {
-      return (
-        <OnboardingWizard
-          isOpen={true}
-          onClose={() => {
-            // Onboarding is mandatory, can't be closed.
-          }}
-          onComplete={() => {
-            // This is simplified. In the next phase, it will advance the step.
-            // For now, it just completes.
-            setStep('FIRST_JOURNAL');
-          }}
-          onError={(err) => console.error("Onboarding wizard error:", err)}
-        />
-      );
-    }
+    switch(step) {
+        case 'PROFILE_SETUP':
+            return <OnboardingWizard
+                isOpen={true}
+                onClose={() => {}}
+                onComplete={() => setStep('FIRST_JOURNAL')}
+                onError={(err) => console.error("Onboarding wizard error:", err)}
+            />;
+        
+        case 'FIRST_JOURNAL':
+            return <Dialog open={true}>
+                <DialogContent showCloseButton={false} className="max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle>Your First Entry</DialogTitle>
+                        <DialogDescription>
+                            Great! Now, write a short paragraph in your target language. Don't worry about mistakes - that's how we learn!
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] overflow-y-auto">
+                        <JournalEditor
+                            isOnboarding={true}
+                            onOnboardingSubmit={(id) => {
+                                setOnboardingJournalId(id);
+                                setStep('AWAITING_ANALYSIS');
+                            }}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>;
 
-    // Placeholder for other steps to be built in Phase 3
-    return (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center text-white p-4 text-center">
-            <div>
-                <h2 className="text-2xl font-bold mb-2">Onboarding in Progress</h2>
-                <p>Current Step: {step}</p>
-            </div>
-        </div>
-    );
+        case 'AWAITING_ANALYSIS':
+            return <AwaitingAnalysisModal />;
+
+        case 'CREATE_DECK':
+             return <Dialog open={true}>
+                <DialogContent showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle>Flashcard Created!</DialogTitle>
+                        <DialogDescription>
+                            You've added your first correction to your study deck. Let's go practice.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button onClick={() => { router.push('/study'); setStep('STUDY_INTRO'); }}>
+                            Go to Study Page
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>;
+
+        case 'COMPLETED':
+            return <Dialog open={true}>
+                <DialogContent showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle>🎉 Setup Complete!</DialogTitle>
+                        <DialogDescription>
+                            You're all set. You're ready to master your new language.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:flex-row">
+                        <Button variant="secondary" onClick={() => { completeOnboarding(); router.push('/analytics'); }}>
+                            View My Progress
+                        </Button>
+                        <Button onClick={() => { completeOnboarding(); router.push('/dashboard'); }}>
+                            Explore Dashboard
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>;
+        
+        default:
+            return null;
+    }
   };
 
 

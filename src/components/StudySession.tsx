@@ -15,16 +15,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
  */
 interface StudyCard {
   id: string;
-  front: string;
-  back: string;
+  frontContent: string;
+  backContent: string;
   context: string;
 }
 
 interface StudySessionProps {
   cards: StudyCard[];
+  onOnboardingReview?: () => void;
 }
 
-export function StudySession({ cards }: StudySessionProps) {
+export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
   const queryClient = useQueryClient();
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const currentCard = cards[currentCardIndex];
@@ -65,10 +66,11 @@ export function StudySession({ cards }: StudySessionProps) {
             Card {currentCardIndex + 1} of {cards.length}
           </div>
           <Flashcard
-            frontContent={currentCard.front}
-            backContent={currentCard.back}
+            frontContent={currentCard.frontContent}
+            backContent={currentCard.backContent}
             context={currentCard.context}
             onReview={handleReview}
+            onOnboardingReview={onOnboardingReview}
           />
         </>
       ) : (

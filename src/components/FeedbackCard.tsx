@@ -16,22 +16,22 @@ interface FeedbackCardProps {
   suggestion: string;
   explanation: string;
   mistakeId: string;
+  onOnboardingAddToDeck?: () => void;
 }
 
 function AddToDeckButton({
   mistakeId,
-  original,
-  suggestion,
-  explanation,
+  onOnboardingAddToDeck
 }: {
   mistakeId: string;
-  original: string;
-  suggestion: string;
-  explanation: string;
+  onOnboardingAddToDeck?: () => void;
 }) {
   const { mutate, isPending, isSuccess } = useMutation({
     mutationFn: () =>
       axios.post("/api/srs/create-from-mistake", { mistakeId }),
+    onSuccess: () => {
+        onOnboardingAddToDeck?.();
+    }
   });
 
   if (isSuccess) {
@@ -59,6 +59,7 @@ export function FeedbackCard({
   suggestion,
   explanation,
   mistakeId,
+  onOnboardingAddToDeck,
 }: FeedbackCardProps) {
   return (
     <Card className="p-6 space-y-6">
@@ -81,9 +82,7 @@ export function FeedbackCard({
 
       <AddToDeckButton
         mistakeId={mistakeId}
-        original={original}
-        suggestion={suggestion}
-        explanation={explanation}
+        onOnboardingAddToDeck={onOnboardingAddToDeck}
       />
     </Card>
   );

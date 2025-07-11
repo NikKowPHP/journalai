@@ -54,39 +54,39 @@ This phase sets up the necessary database fields and client-side state managemen
 
 This is the core implementation phase, building out each step of the user's journey.
 
-- [ ] **3.1. Step 1: Language & Profile Setup**
-    - [ ] Refactor `src/components/OnboardingWizard.tsx`. This component will now *only* handle the initial profile setup (native/target language, etc.).
-    - [ ] Upon successful submission, the wizard will call a function from the `OnboardingContext` to advance the state to `'FIRST_JOURNAL'`.
-    - [ ] The UI should be a full-screen modal, preventing interaction with the underlying page.
+- [x] **3.1. Step 1: Language & Profile Setup**
+    - [x] Refactor `src/components/OnboardingWizard.tsx`. This component will now *only* handle the initial profile setup (native/target language, etc.).
+    - [x] Upon successful submission, the wizard will call a function from the `OnboardingContext` to advance the state to `'FIRST_JOURNAL'`.
+    - [x] The UI should be a full-screen modal, preventing interaction with the underlying page.
 
-- [ ] **3.2. Step 2: The First Journal Entry**
-    - [ ] When the onboarding state is `'FIRST_JOURNAL'`, display a modal or full-screen overlay containing the `JournalEditor`.
-    - [ ] The modal should have a clear title like "Your First Entry" and a description explaining the task.
-    - [ ] On submission, the `JournalEditor` will advance the onboarding state to `'AWAITING_ANALYSIS'`.
+- [x] **3.2. Step 2: The First Journal Entry**
+    - [x] When the onboarding state is `'FIRST_JOURNAL'`, display a modal or full-screen overlay containing the `JournalEditor`.
+    - [x] The modal should have a clear title like "Your First Entry" and a description explaining the task.
+    - [x] On submission, the `JournalEditor` will advance the onboarding state to `'AWAITING_ANALYSIS'`.
 
-- [ ] **3.3. Step 3: Awaiting and Viewing Analysis**
-    - [ ] When the state is `'AWAITING_ANALYSIS'`, show a modal with a message like "Analyzing your entry..." and an Apple-style activity indicator.
-    - [ ] Implement a polling mechanism (e.g., using `useQuery` with `refetchInterval`) that checks the journal entry's analysis status via the `/api/journal/[id]` endpoint.
-    - [ ] Once the analysis is detected, update the onboarding state to `'VIEW_ANALYSIS'` and automatically redirect the user to the journal's detail page (`/journal/[id]`).
+- [x] **3.3. Step 3: Awaiting and Viewing Analysis**
+    - [x] When the state is `'AWAITING_ANALYSIS'`, show a modal with a message like "Analyzing your entry..." and an Apple-style activity indicator.
+    - [x] Implement a polling mechanism (e.g., using `useQuery` with `refetchInterval`) that checks the journal entry's analysis status via the `/api/journal/[id]` endpoint.
+    - [x] Once the analysis is detected, update the onboarding state to `'VIEW_ANALYSIS'` and automatically redirect the user to the journal's detail page (`/journal/[id]`).
 
-- [ ] **3.4. Step 4: Guided Tour of the Analysis Page**
-    - [ ] On the `/journal/[id]` page, if the onboarding state is `'VIEW_ANALYSIS'`, trigger a guided tour.
-    - [ ] Use custom-built, HIG-compliant popovers to highlight key elements:
+- [x] **3.4. Step 4: Guided Tour of the Analysis Page**
+    - [x] On the `/journal/[id]` page, if the onboarding state is `'VIEW_ANALYSIS'`, trigger a guided tour.
+    - [x] Use custom-built, HIG-compliant popovers to highlight key elements:
         - A popover pointing to the `AnalysisDisplay` explaining the color-coded feedback.
         - A popover pointing to a `FeedbackCard` and its "Add to Study Deck" button, prompting the user to click it.
-    - [ ] When the user clicks "Add to Study Deck" for the first time, advance the onboarding state to `'CREATE_DECK'`.
+    - [x] When the user clicks "Add to Study Deck" for the first time, advance the onboarding state to `'CREATE_DECK'`.
 
-- [ ] **3.5. Step 5: Guided Tour of the Study Page**
-    - [ ] When the state is `'CREATE_DECK'`, show a success modal: "Great! You've created your first flashcard. Let's go practice." with a single button "Go to Study Page".
-    - [ ] On click, redirect to `/study` and set the state to `'STUDY_INTRO'`.
-    - [ ] On the `/study` page, if the state is `'STUDY_INTRO'`, show a simple guided popover explaining how the `Flashcard` component works (Flip, then choose difficulty).
-    - [ ] After the user reviews their first card, advance the state to `'ONBOARDING_COMPLETED'`.
+- [x] **3.5. Step 5: Guided Tour of the Study Page**
+    - [x] When the state is `'CREATE_DECK'`, show a success modal: "Great! You've created your first flashcard. Let's go practice." with a single button "Go to Study Page".
+    - [x] On click, redirect to `/study` and set the state to `'STUDY_INTRO'`.
+    - [x] On the `/study` page, if the state is `'STUDY_INTRO'`, show a simple guided popover explaining how the `Flashcard` component works (Flip, then choose difficulty).
+    - [x] After the user reviews their first card, advance the state to `'ONBOARDING_COMPLETED'`.
 
-- [ ] **3.6. Step 6: Onboarding Completion**
-    - [ ] When the state is `'ONBOARDING_COMPLETED'`, show a final congratulatory modal.
-    - [ ] This modal should say "Setup Complete! You're ready to master your new language." and offer two buttons: "Explore Dashboard" and "View My Progress".
-    - [ ] In the background, make a `POST` request to the `/api/user/complete-onboarding` endpoint to persist the user's status.
-    - [ ] The onboarding context should now be inactive for this user on subsequent visits.
+- [x] **3.6. Step 6: Onboarding Completion**
+    - [x] When the state is `'ONBOARDING_COMPLETED'`, show a final congratulatory modal.
+    - [x] This modal should say "Setup Complete! You're ready to master your new language." and offer two buttons: "Explore Dashboard" and "View My Progress".
+    - [x] In the background, make a `POST` request to the `/api/user/complete-onboarding` endpoint to persist the user's status.
+    - [x] The onboarding context should now be inactive for this user on subsequent visits.
 
 ---
 
