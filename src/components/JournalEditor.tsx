@@ -140,33 +140,43 @@ export function JournalEditor({
     });
   };
 
-  // Handle typing timeout for autocomplete
+  // Set up editor update listener to track typing
   useEffect(() => {
-    if (!editor) return;
-
+    if (!editor) {
+      return;
+    }
     const handleUpdate = () => {
       setLastTyped(Date.now());
-      setSuggestion(""); // Clear suggestion on new typing
+      setSuggestion(""); // Clear old suggestion on new typing
     };
-
-    const checkTypingPause = () => {
-      const now = Date.now();
-      if (now - lastTyped > 2000 && !suggestion) {
-        const text = editor.getText();
-        if (text.trim().length > 0) {
-          autocompleteMutation.mutate(text);
-        }
-      }
-    };
-
-    editor.on('update', handleUpdate);
-    const interval = setInterval(checkTypingPause, 500);
-    
+    editor.on("update", handleUpdate);
     return () => {
-      editor.off('update', handleUpdate);
-      clearInterval(interval);
+      editor.off("update", handleUpdate);
     };
-  }, [editor, lastTyped, suggestion, autocompleteMutation]);
+  }, [editor]);
+
+  // Debounce autocomplete API call
+  useEffect(() => {
+    if (lastTyped === 0) {
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      // Don't fetch if a suggestion already exists or a request is in flight
+      if (suggestion || autocompleteMutation.isPending) {
+        return;
+      }
+      const text = editor?.getText();
+      if (text && text.trim().length > 0) {
+        autocompleteMutation.mutate(text);
+      }
+    }, 1500); // 1.5 second delay after user stops typing
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [lastTyped, editor, suggestion, autocompleteMutation]);
+
 
   if (!editor) {
     return null;
