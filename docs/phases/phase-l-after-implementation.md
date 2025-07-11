@@ -1,139 +1,113 @@
-# Todo List: UI/UX Overhaul for Apple Look & Feel (PWA Edition)
+# Project Plan: Onboarding Overhaul & UI Polish
 
-This plan outlines the steps to transform the application into a high-fidelity PWA. The goal is an Apple iOS-native look and feel on mobile (with a bottom tab bar) and a macOS-native application look on desktop.
-
----
-
-## Phase 1: Foundation & Design System Definition
-
-This phase establishes the global design tokens and foundational styles that will be used across the entire application.
-
-- [x] **1.1. Research and Define Design Principles:**
-    - [x] Analyze Apple's Human Interface Guidelines (HIG) for iOS and macOS.
-    - [x] Create a brief document summarizing key principles for typography, spacing, color, iconography, and layout for both platforms.
-
-- [x] **1.2. Typography Setup:**
-    - [x] Choose and integrate a font that mimics Apple's San Francisco (SF) font, such as "Inter".
-    - [x] Update `tailwind.config.ts` and `src/app/globals.css` to use the new font family by default.
-    - [x] Define text styles (Large Title, Title 1, Body, etc.) in `globals.css` that map to Apple's HIG, with responsive adjustments.
-
-- [x] **1.3. Color Palette & Theming:**
-    - [x] Define the primary color palette based on Apple's vibrant blues and neutral grays for both light and dark modes.
-    - [x] Update `--background`, `--foreground`, `--primary`, `--secondary`, etc., CSS variables in `src/app/globals.css`.
-    - [x] Ensure the dark mode palette aligns with macOS/iOS dark themes (true black for iOS, dark gray for macOS).
-
-- [x] **1.4. Layout, Spacing & Radius:**
-    - [x] Update Tailwind's spacing scale in `tailwind.config.ts` to reflect Apple's 8pt grid system.
-    - [x] Modify the base `--radius` variable in `globals.css` to match the rounded corners on iOS/macOS elements.
-
-- [x] **1.5. Iconography:**
-    - [x] Review `lucide-react` icons against Apple's SF Symbols. Replace any icons that feel out of place to maintain a consistent aesthetic.
+This plan details the implementation of a new, guided user onboarding flow, fixes the dashboard loading bug, and implements Apple-style skeleton loaders for a polished user experience.
 
 ---
 
-## Phase 2: Core UI Component Redesign (`src/components/ui`)
+## Phase 1: Bug Fixes & Foundational Components
 
-This phase focuses on restyling the base-level, reusable components for both mobile (iOS) and desktop (macOS) contexts.
+This phase addresses critical bugs and creates the reusable components needed for the subsequent phases.
 
-- [x] **2.1. Button (`button.tsx`):**
-    - [x] **Mobile (iOS):** Style buttons to have a "pill" shape or standard rounded rectangle.
-    - [x] **Desktop (macOS):** Style buttons to be flatter with a subtle border and a vibrant blue for the primary action.
-    - [x] Add a `glass` or `translucent` variant for a frosted glass effect.
+- [x] **1.1. Diagnose and Fix Dashboard Infinite Loading State**
+    - [x] **Analysis:** In `src/app/dashboard/page.tsx`, inspect the `useQuery` for `getUserProfile`. The dependency on `authUser?.id` is correct, but the display logic (`user?.nativeLanguage ? ... : 'Loading...'`) is likely the issue. The component may not be re-rendering correctly after the `OnboardingWizard` completes.
+    - [x] **Action:** In the `OnboardingWizard`'s `onComplete` handler (`src/components/OnboardingWizard.tsx`), ensure it invalidates the `['user', authUser?.id]` query key using `queryClient.invalidateQueries()`.
+    - [x] **Action:** Update the `handleWizardComplete` function in `src/app/dashboard/page.tsx` to correctly trigger a refetch of the user profile.
+    - [x] **Validation:** Confirm that after a new user completes the initial language setup, the dashboard transitions from the loading state to showing its content without a page refresh.
 
-- [x] **2.2. Input (`input.tsx`):**
-    - [x] **Mobile (iOS):** Style inputs to appear inset within a grouped list format.
-    - [x] **Desktop (macOS):** Style inputs with a flatter appearance and subtle focus shadows.
+- [x] **1.2. Create Reusable Skeleton Loader Component**
+    - [x] Create a new file `src/components/ui/skeleton.tsx`.
+    - [x] Implement a simple, reusable skeleton component using `div`s and Tailwind CSS animation classes (`animate-pulse`).
+    - [x] Style the skeleton with a light gray background (`bg-muted`) that respects the app's light/dark theme, consistent with Apple's HIG.
 
-- [x] **2.3. Card (`card.tsx`):**
-    - [x] **Mobile (iOS):** Restyle cards to emulate iOS grouped table view cells (inset, with separators).
-    - [x] **Desktop (macOS):** Give cards a lighter, translucent background (frosted glass effect) with a very thin border, removing heavy shadows.
-
-- [x] **2.4. Dialog (`dialog.tsx`):**
-    - [x] **Mobile (iOS):** Use media queries to transform the dialog into a **bottom sheet** that slides up from the screen's bottom.
-    - [x] **Desktop (macOS):** Restyle the dialog to resemble a native macOS window, adding a header/title bar area and non-functional "traffic light" dots. The `DialogOverlay` should provide a background blur effect.
-
-- [x] **2.5. Select (`select.tsx`):**
-    - [x] **Mobile (iOS):** Trigger a native-style "wheel" picker that covers the bottom half of the screen.
-    - [x] **Desktop (macOS):** Style the trigger like a macOS pop-up button. Style the dropdown `SelectContent` with a translucent appearance.
-
-- [x] **2.6. Table (`table.tsx`):**
-    - [x] **Mobile (iOS):** Transform tables into a list of cards, where each row is a tappable card item.
-    - [x] **Desktop (macOS):** Style the table with alternating row colors (zebra-striping) and a distinct header row.
+- [x] **1.3. Enhance Global Spinner**
+    - [x] Modify `src/lib/auth-context.tsx` and the `GlobalSpinner` component.
+    - [x] Restyle the spinner to look like the native macOS/iOS activity indicator (a circle of fading dots or a spinning arc) instead of a simple border-based spinner.
 
 ---
 
-## Phase 3: Page Layout & Navigation Overhaul
+## Phase 2: Backend & State Management for New Onboarding
 
-This phase re-imagines the application structure to align with platform-specific navigation patterns, **including the mobile bottom tab bar**.
+This phase sets up the necessary database fields and client-side state management for the new guided flow.
 
-- [x] **3.1. Create Bottom Tab Bar Component:**
-    - [x] Create a new component `src/components/layout/BottomTabBar.tsx`.
-    - [x] Style the bar with a translucent, blurry background (backdrop-filter).
-    - [x] Add icons and labels for primary navigation links (Dashboard, Journal, Study, Analytics, Settings).
-    - [x] Use the `usePathname` hook from `next/navigation` to apply an "active" style to the current route's tab.
+- [ ] **2.1. Update User Schema for Onboarding Tracking**
+    - [ ] In `prisma/schema.prisma`, add a new field to the `User` model: `onboardingCompleted Boolean @default(false)`.
+    - [ ] Run `npx prisma migrate dev --name add_onboarding_completed_flag` to apply the change to the database.
+    - [ ] Run `npx prisma generate` to update the Prisma Client.
 
-- [x] **3.2. Main Layout (`src/app/layout.tsx`):**
-    - [x] **Conditional Rendering Logic:**
-        - [x] Hide the existing top `<nav>` on mobile viewports.
-        - [x] Render the new `<BottomTabBar />` component only on mobile viewports.
-        - [x] Implement a desktop-only **Sidebar** for navigation, which will be hidden on mobile.
-    - [x] The main page content should have appropriate padding (`padding-bottom`) on mobile to avoid being obscured by the bottom tab bar.
+- [ ] **2.2. Create an Onboarding Status API Endpoint**
+    - [ ] Create a new API route: `src/app/api/user/complete-onboarding/route.ts`.
+    - [ ] Implement a `POST` handler in this route that sets the `onboardingCompleted` flag to `true` for the currently authenticated user.
 
-- [x] **3.3. Update Public & Auth Pages (`/`, `/login`, `/signup`, etc.):**
-    - [x] Restyle landing page (`/page.tsx`) and auth forms (`SignInForm.tsx`, `SignUpForm.tsx`) to match the new Apple aesthetic.
-    - [x] Ensure form elements use the newly styled `Input` and `Button` components.
+- [ ] **2.3. Create Onboarding Context Provider**
+    - [ ] Create a new file `src/lib/onboarding-context.tsx`.
+    - [ ] Implement an `OnboardingProvider` that wraps the `AppShell`.
+    - [ ] The context should track the current onboarding step (e.g., `'LANGUAGE_SELECT'`, `'FIRST_JOURNAL'`, `'AWAITING_ANALYSIS'`, `'VIEW_ANALYSIS'`, `'CREATE_DECK'`, `'STUDY_INTRO'`, `'COMPLETED'`).
+    - [ ] The provider will fetch the user's `onboardingCompleted` status and determine if the guided flow should be active.
 
-- [x] **3.4. Update Authenticated Pages (`/dashboard`, `/journal`, `/settings`, etc.):**
-    - [x] **Dashboard (`/dashboard`):** Use a `UITableView`-style list for `SuggestedTopics` on mobile.
-    - [x] **Journal (`/journal`):** Redesign `JournalHistoryList` to use the new card-based list on mobile.
-    - [x] **Settings (`/settings`):** Structure the page like the iOS Settings app, using grouped, inset lists.
+- [ ] **2.4. Integrate Onboarding Provider**
+    - [ ] In `src/providers.tsx`, wrap the `AuthProvider`'s children with the new `OnboardingProvider`.
+    - [ ] Modify the main application layout (`src/components/layout/AppShell.tsx`) to conditionally render onboarding UI overlays based on the state from `useOnboarding()`.
 
 ---
 
-## Phase 4: Progressive Web App (PWA) Implementation
+## Phase 3: Implementing the Guided Onboarding Flow
 
-This phase adds the necessary components to make the site installable and feel like a native application.
+This is the core implementation phase, building out each step of the user's journey.
 
-- [x] **4.1. Add PWA Dependency:**
-    - [x] Install `next-pwa`: `npm install next-pwa`.
+- [ ] **3.1. Step 1: Language & Profile Setup**
+    - [ ] Refactor `src/components/OnboardingWizard.tsx`. This component will now *only* handle the initial profile setup (native/target language, etc.).
+    - [ ] Upon successful submission, the wizard will call a function from the `OnboardingContext` to advance the state to `'FIRST_JOURNAL'`.
+    - [ ] The UI should be a full-screen modal, preventing interaction with the underlying page.
 
-- [x] **4.2. Create Web App Manifest:**
-    - [x] Create a `public/manifest.json` file.
-    - [x] Populate the manifest with app details: `name`, `short_name`, `description`, `start_url`, `display: 'standalone'`, `background_color`, `theme_color`.
+- [ ] **3.2. Step 2: The First Journal Entry**
+    - [ ] When the onboarding state is `'FIRST_JOURNAL'`, display a modal or full-screen overlay containing the `JournalEditor`.
+    - [ ] The modal should have a clear title like "Your First Entry" and a description explaining the task.
+    - [ ] On submission, the `JournalEditor` will advance the onboarding state to `'AWAITING_ANALYSIS'`.
 
-- [x] **4.3. Generate App Icons:**
-    - [x] Create a set of app icons in various sizes (e.g., 72x72, 96x96, 128x128, 144x144, 152x152, 192x192, 384x384, 512x512).
-    - [x] Place the icons in the `public/icons` directory.
-    - [x] Reference these icons in the `manifest.json` file.
+- [ ] **3.3. Step 3: Awaiting and Viewing Analysis**
+    - [ ] When the state is `'AWAITING_ANALYSIS'`, show a modal with a message like "Analyzing your entry..." and an Apple-style activity indicator.
+    - [ ] Implement a polling mechanism (e.g., using `useQuery` with `refetchInterval`) that checks the journal entry's analysis status via the `/api/journal/[id]` endpoint.
+    - [ ] Once the analysis is detected, update the onboarding state to `'VIEW_ANALYSIS'` and automatically redirect the user to the journal's detail page (`/journal/[id]`).
 
-- [x] **4.4. Configure Service Worker:**
-    - [x] Modify `next.config.ts` to use the `next-pwa` plugin.
-    - [x] Configure the PWA options, setting `dest: 'public'` and defining runtime caching strategies for pages, assets, and images. Ensure API calls (`/api/**`) are configured to be network-first.
+- [ ] **3.4. Step 4: Guided Tour of the Analysis Page**
+    - [ ] On the `/journal/[id]` page, if the onboarding state is `'VIEW_ANALYSIS'`, trigger a guided tour.
+    - [ ] Use custom-built, HIG-compliant popovers to highlight key elements:
+        - A popover pointing to the `AnalysisDisplay` explaining the color-coded feedback.
+        - A popover pointing to a `FeedbackCard` and its "Add to Study Deck" button, prompting the user to click it.
+    - [ ] When the user clicks "Add to Study Deck" for the first time, advance the onboarding state to `'CREATE_DECK'`.
 
-- [x] **4.5. Update Root Layout for PWA:**
-    - [x] In `src/app/layout.tsx`, add the necessary `<meta>` tags and `<link>` tags to the document `<head>`.
-    - [x] Link to the `manifest.json`: `<link rel="manifest" href="/manifest.json" />`.
-    - [x] Add `theme-color` meta tag.
-    - [x] Add Apple-specific meta tags for PWA behavior: `<meta name="apple-mobile-web-app-capable" content="yes" />` and `<meta name="apple-mobile-web-app-status-bar-style" content="default">`.
-    - [x] Add Apple touch icons: `<link rel="apple-touch-icon" href="/icons/icon-192x192.png">`.
+- [ ] **3.5. Step 5: Guided Tour of the Study Page**
+    - [ ] When the state is `'CREATE_DECK'`, show a success modal: "Great! You've created your first flashcard. Let's go practice." with a single button "Go to Study Page".
+    - [ ] On click, redirect to `/study` and set the state to `'STUDY_INTRO'`.
+    - [ ] On the `/study` page, if the state is `'STUDY_INTRO'`, show a simple guided popover explaining how the `Flashcard` component works (Flip, then choose difficulty).
+    - [ ] After the user reviews their first card, advance the state to `'ONBOARDING_COMPLETED'`.
+
+- [ ] **3.6. Step 6: Onboarding Completion**
+    - [ ] When the state is `'ONBOARDING_COMPLETED'`, show a final congratulatory modal.
+    - [ ] This modal should say "Setup Complete! You're ready to master your new language." and offer two buttons: "Explore Dashboard" and "View My Progress".
+    - [ ] In the background, make a `POST` request to the `/api/user/complete-onboarding` endpoint to persist the user's status.
+    - [ ] The onboarding context should now be inactive for this user on subsequent visits.
 
 ---
 
-## Phase 5: Final Polish & Interaction
+## Phase 4: UI Polish and Skeleton Implementation
 
-This final phase adds the micro-interactions and details that complete the native experience.
+This phase focuses on refining the visual experience during data loading.
 
-- [x] **5.1. Animations & Transitions:**
-    - [x] Add subtle, physics-based transitions for page navigation and modal presentations.
-    - [x] Animate button presses and list item taps.
+- [ ] **4.1. Implement Skeletons in `JournalHistoryList`**
+    - [ ] In `src/components/JournalHistoryList.tsx`, when `isLoading` is true, render a list of 3-4 `Skeleton` components matching the layout of a journal card (a line for the title, two for the snippet).
 
-- [x] **5.2. State Refinement & Haptics:**
-    - [x] Review and refine all `:hover`, `:focus-visible`, and `:active` states for all interactive components.
-    - [x] Style the `Spinner.tsx` to look like the native iOS/macOS activity indicator.
-    - [x] (Optional) Implement subtle haptic feedback on button taps for a more native feel on supported mobile devices.
+- [ ] **4.2. Implement Skeletons in `AnalyticsPage`**
+    - [ ] In `src/app/analytics/page.tsx`, when `isLoading` is true, display a skeleton layout.
+    - [ ] The `ProficiencyChart` and `SubskillScores` should be replaced with rectangular `Skeleton` components of the same dimensions.
 
-- [x] **5.3. Final Review & Cleanup:**
-    - [x] Do a full visual review of every page on both mobile and desktop.
-    - [x] Test the PWA installation flow on Android and iOS (via "Add to Home Screen").
-    - [x] Verify offline functionality for cached pages.
-    - [x] Remove any unused CSS or component styles from the old design system.
+- [ ] **4.3. Implement Skeletons in `AdminDashboard`**
+    - [ ] In `src/components/AdminDashboard.tsx`, if the data is loading, render a skeleton table with a few rows of `Skeleton` cells.
+
+- [ ] **4.4. Implement Skeleton in `ProfileForm`**
+    - [ ] In `src/components/ProfileForm.tsx`, when the `useQuery` for the profile is loading, replace the `Input` and `Select` components with corresponding `Skeleton` placeholders.
+
+- [ ] **4.5. Refine All Modals and Popups**
+    - [ ] Review every `Dialog` and `BubbleMenu` usage.
+    - [ ] Ensure they use the newly styled `dialog.tsx` which provides a bottom-sheet on mobile and a macOS-style window on desktop.
+    - [ ] Ensure all popups used in the new onboarding flow follow this style for a consistent, high-quality user experience.
