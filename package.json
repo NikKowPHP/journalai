@@ -28,6 +28,7 @@
     "@supabase/supabase-js": "^2.50.0",
     "@tanstack/react-query": "^5.81.5",
     "@testing-library/jest-dom": "^6.6.3",
+    "@tiptap/extension-placeholder": "^2.25.1",
     "@tiptap/pm": "^2.25.0",
     "@tiptap/react": "^2.25.0",
     "@tiptap/starter-kit": "^2.25.0",

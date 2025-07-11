@@ -1,40 +1,45 @@
 import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { Button } from "./ui/button";
 
 interface JournalEditorProps {
-  initialContent?: string;
   topicTitle?: string;
   isOnboarding?: boolean;
   onOnboardingSubmit?: (journalId: string) => void;
 }
 
 export function JournalEditor({
-  initialContent = "Start writing your thoughts in your target language...",
   topicTitle = "Free Write",
   isOnboarding = false,
   onOnboardingSubmit,
 }: JournalEditorProps) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
+
   const editor = useEditor({
-    extensions: [StarterKit],
-    content: initialContent,
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: "Start writing your thoughts in your target language...",
+      }),
+    ],
+    content: "",
     editorProps: {
       attributes: {
         class:
           "prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 bg-background text-foreground",
       },
       handleKeyDown: (view, event) => {
-        if (event.key === 'Tab' && suggestion) {
+        if (event.key === "Tab" && suggestion) {
           event.preventDefault();
-          const tr = view.state.tr
-            .insertText(suggestion)
-            .scrollIntoView();
-          view.dispatch(tr);
+          editor.chain().focus().insertContent(suggestion).run();
           setSuggestion("");
+          setIsSuggestionVisible(false);
           return true;
         }
         return false;
@@ -42,13 +47,10 @@ export function JournalEditor({
     },
   });
 
-  const editorRef = useRef(editor);
   const [translation, setTranslation] = useState("");
   const [suggestion, setSuggestion] = useState("");
   const [lastTyped, setLastTyped] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
-  const [retryAttempts, setRetryAttempts] = useState(0);
-  const [currentDelay, setCurrentDelay] = useState(1000);
 
   const autocompleteMutation = useMutation({
     mutationFn: (text: string) =>
@@ -58,10 +60,11 @@ export function JournalEditor({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ text }),
-      }).then(res => res.json()),
+      }).then((res) => res.json()),
     onSuccess: (data) => {
       if (data.completedText) {
         setSuggestion(data.completedText);
+        setIsSuggestionVisible(true);
       }
     },
   });
@@ -76,9 +79,9 @@ export function JournalEditor({
         body: JSON.stringify({
           text,
           sourceLanguage: "English",
-          targetLanguage: "English"
+          targetLanguage: "English",
         }),
-      }).then(res => res.json()),
+      }).then((res) => res.json()),
     onSuccess: (data) => {
       setTranslation(data.translatedText);
       console.log("Translation complete:", data.translatedText);
@@ -115,7 +118,7 @@ export function JournalEditor({
   const handleSubmit = async () => {
     if (!editor) return;
     const content = editor.getText();
-    
+
     createJournalMutation.mutate(content, {
       onSuccess: async (response) => {
         const journal = await response.json();
@@ -124,17 +127,28 @@ export function JournalEditor({
         }
         analyzeJournalMutation.mutate(journal.id, {
           onSuccess: () => {
-            if(!isOnboarding) setStatusMessage("Analysis started - your journal is being analyzed in the background");
+            if (!isOnboarding)
+              setStatusMessage(
+                "Analysis started - your journal is being analyzed in the background",
+              );
           },
           onError: (error) => {
-             if(!isOnboarding) setStatusMessage("Failed to start analysis.");
-          }
+            if (!isOnboarding) setStatusMessage("Failed to start analysis.");
+          },
         });
       },
       onError: () => {
-        if(!isOnboarding) setStatusMessage("Failed to save your journal");
-      }
+        if (!isOnboarding) setStatusMessage("Failed to save your journal");
+      },
     });
+  };
+
+  const acceptSuggestion = () => {
+    if (editor && suggestion) {
+      editor.chain().focus().insertContent(suggestion).run();
+      setSuggestion("");
+      setIsSuggestionVisible(false);
+    }
   };
 
   // Set up editor update listener to track typing
@@ -145,6 +159,7 @@ export function JournalEditor({
     const handleUpdate = () => {
       setLastTyped(Date.now());
       setSuggestion(""); // Clear old suggestion on new typing
+      setIsSuggestionVisible(false);
     };
     editor.on("update", handleUpdate);
     return () => {
@@ -173,7 +188,6 @@ export function JournalEditor({
       clearTimeout(handler);
     };
   }, [lastTyped, editor, suggestion, autocompleteMutation]);
-
 
   if (!editor) {
     return null;
@@ -205,7 +219,7 @@ export function JournalEditor({
                 onClick={() => {
                   const selectedText = editor.state.doc.textBetween(
                     editor.state.selection.from,
-                    editor.state.selection.to
+                    editor.state.selection.to,
                   );
                   translateMutation.mutate({ text: selectedText });
                 }}
@@ -228,18 +242,27 @@ export function JournalEditor({
           </div>
         )}
       </div>
-      <div className="p-4 border-t">
-        <button
-          className="px-4 py-2 rounded bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring"
-          onClick={handleSubmit}
-          disabled={createJournalMutation.isPending}
-        >
-          Submit for Analysis
-        </button>
-        {statusMessage && (
-          <div className="mt-2 text-sm text-muted-foreground">
-            {statusMessage}
-          </div>
+      <div className="p-4 border-t flex items-center justify-between">
+        <div>
+          <Button
+            onClick={handleSubmit}
+            disabled={createJournalMutation.isPending}
+          >
+            Submit for Analysis
+          </Button>
+          {statusMessage && (
+            <div className="mt-2 text-sm text-muted-foreground">
+              {statusMessage}
+            </div>
+          )}
+        </div>
+        {isSuggestionVisible && suggestion && (
+          <Button size="sm" onClick={acceptSuggestion} variant="secondary">
+            Accept Suggestion{" "}
+            <kbd className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
+              Tab
+            </kbd>
+          </Button>
         )}
       </div>
     </div>

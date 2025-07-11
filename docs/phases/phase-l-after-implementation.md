@@ -47,22 +47,22 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 **Objective:** Solidify the authentication flow and improve the core writing experience.
 
-- [ ] **1.1. Implement User Logout Functionality** (Unchanged)
-- [ ] **1.2. Refactor Journal Editor to Use a Proper Placeholder** (Unchanged)
-- [ ] **1.3. Refine AI Autocomplete Interaction & UI (New)**
-    - [ ] **File:** `src/components/JournalEditor.tsx`
-    - [ ] **Analysis:** The current autocomplete is passive. It needs to be an explicit, user-triggered action to feel intuitive and controlled.
-    - [ ] **Action:** Modify the `autocompleteMutation.onSuccess` handler. Instead of just setting a `suggestion` state, also set a new state variable like `isSuggestionVisible(true)`.
-    - [ ] **Action:** In the `JournalEditor`'s return JSX, conditionally render a small, unobtrusive "Accept Suggestion" `Button` when `isSuggestionVisible` is true. Position this button near the cursor or in a fixed, logical location (e.g., bottom right of the editor).
-    - [ ] **Action:** The `onClick` handler for this new button will:
+- [x] **1.1. Implement User Logout Functionality** (Unchanged)
+- [x] **1.2. Refactor Journal Editor to Use a Proper Placeholder** (Unchanged)
+- [x] **1.3. Refine AI Autocomplete Interaction & UI (New)**
+    - [x] **File:** `src/components/JournalEditor.tsx`
+    - [x] **Analysis:** The current autocomplete is passive. It needs to be an explicit, user-triggered action to feel intuitive and controlled.
+    - [x] **Action:** Modify the `autocompleteMutation.onSuccess` handler. Instead of just setting a `suggestion` state, also set a new state variable like `isSuggestionVisible(true)`.
+    - [x] **Action:** In the `JournalEditor`'s return JSX, conditionally render a small, unobtrusive "Accept Suggestion" `Button` when `isSuggestionVisible` is true. Position this button near the cursor or in a fixed, logical location (e.g., bottom right of the editor).
+    - [x] **Action:** The `onClick` handler for this new button will:
         1.  Use `editor.chain().focus().insertContent(suggestion).run()` to apply the text.
         2.  Reset the suggestion state: `setSuggestion('')` and `setIsSuggestionVisible(false)`.
-    - [ ] **Action:** Keep the `Tab` key functionality as a keyboard shortcut for power users.
-- [ ] **1.4. Re-evaluate and Defer Automatic Flashcard Creation from Autocomplete (New)**
-    - [ ] **Product Decision:** Creating a flashcard from an AI *suggestion* is fundamentally different from creating one from a *correction*. A suggestion is one of many possible ways to continue a sentence, not a fix for a mistake. Automating this would likely clutter the user's study deck with low-value cards.
-    - [ ] **Action:** The "Accept Suggestion" button (from task 1.3) will **not** create a flashcard. Its sole purpose is to insert the suggested text into the editor, reducing writing friction.
-    - [ ] **Justification (for documentation/team alignment):** The core learning loop of LinguaScribe is `Write -> Get Feedback on Mistakes -> Study Mistakes`. Autocomplete is a writing *aid*, not part of the feedback loop. We will preserve the integrity of the study deck by only populating it with explicit corrections from the analysis phase.
-    - [ ] **Future Scope (Optional):** A future enhancement could add a "Learn this phrase" button next to the "Accept" button, allowing users to *optionally* create a vocabulary/phrasing card, but this should be a deliberate user choice.
+    - [x] **Action:** Keep the `Tab` key functionality as a keyboard shortcut for power users.
+- [x] **1.4. Re-evaluate and Defer Automatic Flashcard Creation from Autocomplete (New)**
+    - [x] **Product Decision:** Creating a flashcard from an AI *suggestion* is fundamentally different from creating one from a *correction*. A suggestion is one of many possible ways to continue a sentence, not a fix for a mistake. Automating this would likely clutter the user's study deck with low-value cards.
+    - [x] **Action:** The "Accept Suggestion" button (from task 1.3) will **not** create a flashcard. Its sole purpose is to insert the suggested text into the editor, reducing writing friction.
+    - [x] **Justification (for documentation/team alignment):** The core learning loop of LinguaScribe is `Write -> Get Feedback on Mistakes -> Study Mistakes`. Autocomplete is a writing *aid*, not part of the feedback loop. We will preserve the integrity of the study deck by only populating it with explicit corrections from the analysis phase.
+    - [x] **Future Scope (Optional):** A future enhancement could add a "Learn this phrase" button next to the "Accept" button, allowing users to *optionally* create a vocabulary/phrasing card, but this should be a deliberate user choice.
 
 
 
@@ -71,19 +71,19 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 **Objective:** Solidify the authentication flow and improve the core writing experience.
 
-- [ ] **1.1. Implement User Logout Functionality in App Shell**
-    - [ ] **File:** `src/app/settings/page.tsx`
-    - [ ] **Action:** Add a "Logout" button to the settings page.
-    - [ ] **Logic:** On click, call the `signOut` function from the `useAuth` hook (`lib/auth-context.tsx`).
-    - [ ] **File:** `src/components/layout/DesktopSidebar.tsx`
-    - [ ] **Action:** Add a "Logout" button at the bottom of the sidebar, below "Settings".
-    - [ ] **Logic:** On click, call the `signOut` function from the `useAuth` hook. Ensure the button is visually distinct and provides clear user feedback.
+- [x] **1.1. Implement User Logout Functionality in App Shell**
+    - [x] **File:** `src/app/settings/page.tsx`
+    - [x] **Action:** Add a "Logout" button to the settings page.
+    - [x] **Logic:** On click, call the `signOut` function from the `useAuth` hook (`lib/auth-context.tsx`).
+    - [x] **File:** `src/components/layout/DesktopSidebar.tsx`
+    - [x] **Action:** Add a "Logout" button at the bottom of the sidebar, below "Settings".
+    - [x] **Logic:** On click, call the `signOut` function from the `useAuth` hook. Ensure the button is visually distinct and provides clear user feedback.
 
-- [ ] **1.2. Refactor Journal Editor to Use a Proper Placeholder**
-    - [ ] **File:** `src/components/JournalEditor.tsx`
-    - [ ] **Analysis:** The editor currently uses `initialContent` which is not a true placeholder. This text is editable and must be deleted by the user.
-    - [ ] **Action:** Import the `Placeholder` extension from Tiptap: `import Placeholder from '@tiptap/extension-placeholder'`.
-    - [ ] **Action:** Add the `Placeholder` extension to the `useEditor` configuration.
+- [x] **1.2. Refactor Journal Editor to Use a Proper Placeholder**
+    - [x] **File:** `src/components/JournalEditor.tsx`
+    - [x] **Analysis:** The editor currently uses `initialContent` which is not a true placeholder. This text is editable and must be deleted by the user.
+    - [x] **Action:** Import the `Placeholder` extension from Tiptap: `import Placeholder from '@tiptap/extension-placeholder'`.
+    - [x] **Action:** Add the `Placeholder` extension to the `useEditor` configuration.
         ```javascript
         // Inside useEditor hook
         extensions: [
@@ -94,7 +94,7 @@ This plan outlines the atomic tasks required to implement logout functionality, 
         ],
         content: '', // Set initial content to empty
         ```
-    - [ ] **Action:** Remove the `initialContent` prop and its default value. The component will now show a non-interactive placeholder when empty.
+    - [x] **Action:** Remove the `initialContent` prop and its default value. The component will now show a non-interactive placeholder when empty.
 
 ---
 
