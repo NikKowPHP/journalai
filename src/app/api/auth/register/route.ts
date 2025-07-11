@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { signUp } from "@/lib/auth";
 import { authRateLimiter } from "@/lib/rateLimiter";
 import { validatePassword } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   // Get client IP from headers
@@ -23,12 +24,13 @@ export async function POST(request: Request) {
   }
 
   try {
+    logger.info("/api/auth/register - POST");
     // Check if request body is valid JSON
     let body;
     try {
       body = await request.json();
     } catch (error) {
-      console.error("Invalid JSON format in request body:", error);
+      logger.error("Invalid JSON format in request body:", error);
       return NextResponse.json(
         { error: "Invalid JSON format in request body" },
         { status: 400 },
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
     const { data, error } = await signUp(email, password);
 
     if (error) {
-      console.error("Registration error:", error);
+      logger.error("Registration error:", { email, error });
       return NextResponse.json(
         {
           error: error.message,
@@ -73,7 +75,7 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Internal server error";
-    console.error("Server error during registration:", error);
+    logger.error("Server error during registration:", error);
     return NextResponse.json(
       {
         error: message,

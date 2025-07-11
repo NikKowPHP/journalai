@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/services/stripe.service";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -11,27 +12,25 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
+    logger.info(`/api/billing/checkout - POST - User: ${user.id}`, body);
+
     const { priceId } = body;
 
     if (!priceId) {
       return NextResponse.json(
         { error: "Price ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
-    
-    const dbUser = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { stripeCustomerId: true, email: true }
-    });
 
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { stripeCustomerId: true, email: true },
+    });
 
     // Get or create customer in Stripe
     let customerId = dbUser?.stripeCustomerId;
@@ -42,12 +41,12 @@ export async function POST(request: Request) {
           userId: user.id,
         },
       });
-      
+
       await prisma.user.update({
         where: { id: user.id },
         data: { stripeCustomerId: customer.id },
       });
-      
+
       customerId = customer.id;
     }
 
@@ -68,10 +67,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error: any) {
-    console.error("Checkout error:", error);
+    logger.error("Checkout error:", error);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { authRateLimiter } from "@/lib/rateLimiter";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   // Get client IP from headers
@@ -23,10 +24,18 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser(); // Get user for logging
+    if (user) {
+      logger.info(`/api/auth/signout - POST - User: ${user.id}`);
+    } else {
+      logger.info("/api/auth/signout - POST - No user session found.");
+    }
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      console.error("Signout error:", error);
+      logger.error("Signout error:", error);
       return NextResponse.json(
         {
           error: error.message,
@@ -42,7 +51,7 @@ export async function POST(request: Request) {
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Internal server error";
-    console.error("Server error during signout:", error);
+    logger.error("Server error during signout:", error);
     return NextResponse.json(
       {
         error: message,

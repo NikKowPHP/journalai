@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -32,14 +35,17 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  
   try {
+    const body = await req.json();
+    logger.info(`/api/user/profile - PUT - User: ${session.user.id}`, body);
+
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
       data: {
@@ -53,9 +59,10 @@ export async function PUT(req: Request) {
 
     return NextResponse.json(updatedUser);
   } catch (error) {
+    logger.error("Failed to update profile", error);
     return NextResponse.json(
       { error: "Failed to update profile" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

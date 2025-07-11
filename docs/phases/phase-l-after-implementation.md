@@ -7,17 +7,17 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 **Objective:** Implement foundational, system-wide enhancements for easier debugging and a more stable development environment.
 
-- [ ] **0.1. Create a Centralized, Environment-Aware Logging Utility**
-    - [ ] **File:** `src/lib/logger.ts` (New File)
-    - [ ] **Action:** Create a simple logger utility. This utility will wrap `console.log`, `console.warn`, and `console.error`.
-    - [ ] **Logic:**
+- [x] **0.1. Create a Centralized, Environment-Aware Logging Utility**
+    - [x] **File:** `src/lib/logger.ts` (New File)
+    - [x] **Action:** Create a simple logger utility. This utility will wrap `console.log`, `console.warn`, and `console.error`.
+    - [x] **Logic:**
         - The logger will only output messages if `process.env.NODE_ENV === 'development'`. In production, all calls will be no-ops to avoid performance overhead and log clutter.
         - Each log message should be prefixed with a timestamp and log level (e.g., `[2023-10-27T10:00:00Z] [INFO]`).
-    - [ ] **Export:** Export a singleton instance of the logger for use across the application.
+    - [x] **Export:** Export a singleton instance of the logger for use across the application.
 
-- [ ] **0.2. Systematically Integrate Logging into All API Mutation Routes**
-    - [ ] **Objective:** Add logging to every `POST`, `PUT`, and `DELETE` handler in the `src/app/api` directory for comprehensive action tracking during development.
-    - [ ] **Files to Modify:**
+- [x] **0.2. Systematically Integrate Logging into All API Mutation Routes**
+    - [x] **Objective:** Add logging to every `POST`, `PUT`, and `DELETE` handler in the `src/app/api` directory for comprehensive action tracking during development.
+    - [x] **Files to Modify:**
         - `src/app/api/admin/users/[id]/subscription/route.ts`
         - `src/app/api/analyze/route.ts`
         - `src/app/api/auth/login/route.ts`
@@ -34,7 +34,7 @@ This plan outlines the atomic tasks required to implement logout functionality, 
         - `src/app/api/user/onboard/route.ts`
         - `src/app/api/user/profile/route.ts`
         - `src/app/api/user/route.ts` (for DELETE)
-    - [ ] **Action (for each file):**
+    - [x] **Action (for each file):**
         - Import the new `logger` from `src/lib/logger.ts`.
         - Inside each mutation handler (`POST`, `PUT`, `DELETE`), at the top of the `try` block, add an informational log. Include the route path, method, and authenticated user ID (if available).
           - `logger.info(\`/api/journal - POST - User: \${user.id}\`, { content, topicTitle });`
@@ -43,7 +43,7 @@ This plan outlines the atomic tasks required to implement logout functionality, 
 
 ---
 
-### **Phase 1: Authentication & Core UX Polish**
+### Phase 1: Authentication & Core UX Polish
 
 **Objective:** Solidify the authentication flow and improve the core writing experience.
 
@@ -65,6 +65,38 @@ This plan outlines the atomic tasks required to implement logout functionality, 
     - [ ] **Future Scope (Optional):** A future enhancement could add a "Learn this phrase" button next to the "Accept" button, allowing users to *optionally* create a vocabulary/phrasing card, but this should be a deliberate user choice.
 
 
+
+
+### Phase 1: Authentication & Core UX Polish
+
+**Objective:** Solidify the authentication flow and improve the core writing experience.
+
+- [ ] **1.1. Implement User Logout Functionality in App Shell**
+    - [ ] **File:** `src/app/settings/page.tsx`
+    - [ ] **Action:** Add a "Logout" button to the settings page.
+    - [ ] **Logic:** On click, call the `signOut` function from the `useAuth` hook (`lib/auth-context.tsx`).
+    - [ ] **File:** `src/components/layout/DesktopSidebar.tsx`
+    - [ ] **Action:** Add a "Logout" button at the bottom of the sidebar, below "Settings".
+    - [ ] **Logic:** On click, call the `signOut` function from the `useAuth` hook. Ensure the button is visually distinct and provides clear user feedback.
+
+- [ ] **1.2. Refactor Journal Editor to Use a Proper Placeholder**
+    - [ ] **File:** `src/components/JournalEditor.tsx`
+    - [ ] **Analysis:** The editor currently uses `initialContent` which is not a true placeholder. This text is editable and must be deleted by the user.
+    - [ ] **Action:** Import the `Placeholder` extension from Tiptap: `import Placeholder from '@tiptap/extension-placeholder'`.
+    - [ ] **Action:** Add the `Placeholder` extension to the `useEditor` configuration.
+        ```javascript
+        // Inside useEditor hook
+        extensions: [
+          StarterKit,
+          Placeholder.configure({
+            placeholder: 'Start typing in your target language...',
+          })
+        ],
+        content: '', // Set initial content to empty
+        ```
+    - [ ] **Action:** Remove the `initialContent` prop and its default value. The component will now show a non-interactive placeholder when empty.
+
+---
 
 ### Phase 2: Dashboard Overhaul & Dynamic Content
 

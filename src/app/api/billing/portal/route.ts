@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/services/stripe.service";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
   try {
@@ -11,22 +12,20 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    logger.info(`/api/billing/portal - POST - User: ${user.id}`);
 
     // Get customer ID from database
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { stripeCustomerId: true }
+      select: { stripeCustomerId: true },
     });
 
     if (!dbUser?.stripeCustomerId) {
       return NextResponse.json(
         { error: "No subscription found" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -38,10 +37,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: portalSession.url });
   } catch (error: any) {
-    console.error("Portal error:", error);
+    logger.error("Portal error:", error);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
