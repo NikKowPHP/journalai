@@ -1,6 +1,7 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useCreateSrsFromMistake } from "@/lib/hooks/data-hooks";
 
 /**
  * Displays a single feedback item with original text, suggestion, and explanation.
@@ -25,15 +26,15 @@ function AddToDeckButton({
   mistakeId: string;
   onOnboardingAddToDeck?: () => void;
 }) {
-  const { mutate, isPending, isSuccess } = useCreateSrsFromMistake();
-
-  const handleCreate = () => {
-    mutate(mistakeId, {
-      onSuccess: () => {
-        onOnboardingAddToDeck?.();
-      },
-    });
-  };
+  const queryClient = useQueryClient();
+  const { mutate, isPending, isSuccess } = useMutation({
+    mutationFn: () =>
+      axios.post("/api/srs/create-from-mistake", { mistakeId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["studyDeck"] });
+      onOnboardingAddToDeck?.();
+    },
+  });
 
   if (isSuccess) {
     return (
@@ -47,7 +48,7 @@ function AddToDeckButton({
     <Button
       variant="secondary"
       className="w-full"
-      onClick={handleCreate}
+      onClick={() => mutate()}
       disabled={isPending}
     >
       {isPending ? "Adding..." : "Add to Study Deck"}
