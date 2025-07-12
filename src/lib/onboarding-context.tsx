@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './auth-context';
-import { useCompleteOnboarding, useUserProfile } from './hooks/data-hooks';
+import { useCompleteOnboarding, useUserProfile, useJournalHistory } from './hooks/data-hooks';
 
 type OnboardingStep =
   | 'PROFILE_SETUP'
@@ -30,7 +30,8 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const [step, setStep] = useState<OnboardingStep>('INACTIVE');
   const [onboardingJournalId, setOnboardingJournalId] = useState<string | null>(null);
 
-  const { data: userProfile } = useUserProfile();
+  const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
+  const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
   const completeOnboardingMutation = useCompleteOnboarding();
 
 
@@ -46,18 +47,50 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    if (userProfile && !userProfile.onboardingCompleted) {
-        if (!userProfile.nativeLanguage || !userProfile.targetLanguage) {
-             setStep('PROFILE_SETUP');
-        } else {
-            // This is a simplification. A real implementation would check
-            // for journal entries, analyses, etc., to resume the flow.
-            setStep('FIRST_JOURNAL'); 
-        }
+    // Wait until all user data and journal data has been loaded
+    if (authLoading || isProfileLoading || isJournalsLoading) {
+      return;
+    }
+
+    if (authUser && userProfile && !userProfile.onboardingCompleted) {
+      // Case 1: The user's profile is not yet filled out.
+      if (!userProfile.nativeLanguage || !userProfile.targetLanguage) {
+        setStep('PROFILE_SETUP');
+        return;
+      }
+
+      // Case 2: The user's profile is complete, but they have not written any entries.
+      if (!journals || journals.length === 0) {
+        setStep('FIRST_JOURNAL');
+        return;
+      }
+
+      // Case 3: The user has a profile and has written at least one entry.
+      const latestJournal = journals[0]; // The API sorts entries from newest to oldest.
+
+      if (latestJournal && !latestJournal.analysis) {
+        // Their latest entry is awaiting analysis.
+        setOnboardingJournalId(latestJournal.id);
+        setStep('AWAITING_ANALYSIS');
+      } else if (latestJournal && latestJournal.analysis) {
+        // Their entry has been analyzed; guide them to view it.
+        setStep('VIEW_ANALYSIS');
+      }
     } else {
+      // The user is either logged out or has already finished onboarding.
       setStep('INACTIVE');
     }
-  }, [userProfile]);
+  }, [
+    authUser,
+    userProfile,
+    journals,
+    authLoading,
+    isProfileLoading,
+    isJournalsLoading,
+    setStep,
+    setOnboardingJournalId
+  ]);
+
 
   const isActive = step !== 'INACTIVE' && step !== 'COMPLETED';
 

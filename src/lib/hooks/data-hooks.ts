@@ -78,6 +78,7 @@ export const useAnalyzeJournal = () => {
     mutationFn: apiClient.analyze.start,
     onSuccess: (analysis, journalId) => {
       queryClient.invalidateQueries({ queryKey: ["journal", journalId] });
+      queryClient.invalidateQueries({ queryKey: ["journals", authUser?.id] });
       queryClient.invalidateQueries({ queryKey: ["analytics", authUser?.id] });
       queryClient.invalidateQueries({ queryKey: ["userProfile", authUser?.id] });
     },

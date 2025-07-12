@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
       content: true,
       createdAt: true,
       topic: { select: { title: true } },
+      analysis: true,
     },
   });
 
