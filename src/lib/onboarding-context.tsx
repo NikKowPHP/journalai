@@ -54,7 +54,21 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
 
     if (authUser && userProfile && !userProfile.onboardingCompleted) {
       // Case 1: The user's profile is not yet filled out.
-      if (!userProfile.nativeLanguage || !userProfile.targetLanguage) {
+      const isProfileIncomplete =
+        !userProfile.nativeLanguage ||
+        !userProfile.targetLanguage ||
+        !userProfile.writingStyle ||
+        !userProfile.writingPurpose ||
+        !userProfile.selfAssessedLevel;
+
+        console.log(`is profile complete`, isProfileIncomplete);
+        console.log(`nativeLanguage:`, userProfile.nativeLanguage);
+        console.log(`targetLanguage:`, userProfile.targetLanguage);
+        console.log(`writingStyle:`, userProfile.writingStyle);
+        console.log(`writingPurpose:`, userProfile.writingPurpose);
+        console.log(`selfAssessedLevel:`, userProfile.selfAssessedLevel);
+
+      if (isProfileIncomplete) {
         setStep('PROFILE_SETUP');
         return;
       }

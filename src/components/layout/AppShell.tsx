@@ -93,7 +93,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   
   const OnboardingOverlay = () => {
     if (!isActive) return null;
-    
+    console.log('step', step)
     switch(step) {
         case 'PROFILE_SETUP':
             return <OnboardingWizard
