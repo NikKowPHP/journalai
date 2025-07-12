@@ -18,7 +18,7 @@ import { Button } from "../ui/button";
 
 function AppFooter() {
   return (
-    <footer className="border-t py-6 bg-secondary/50">
+    <footer className="hidden md:flex border-t py-6 bg-secondary/50">
       <div className="container mx-auto px-4 text-sm text-muted-foreground flex flex-col sm:flex-row items-center justify-between gap-4">
         <p>© {new Date().getFullYear()} LinguaScribe. All rights reserved.</p>
         <div className="flex gap-4">

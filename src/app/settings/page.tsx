@@ -6,7 +6,7 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowUpRight, ChevronsRight, LogOut } from "lucide-react";
+import { ArrowUpRight, ChevronsRight, LogOut, Mail } from "lucide-react";
 import {
   useCreatePortalSession,
   useUserProfile,
@@ -96,6 +96,26 @@ export default function SettingsPage() {
                 <Link href="/api/user/export">
                   <span>Export My Data</span>
                   <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="text-subhead px-4 mb-2 text-muted-foreground uppercase">
+            Developer
+          </h2>
+          <Card>
+            <CardContent className="p-0 md:p-2">
+              <Button
+                asChild
+                variant="ghost"
+                className="w-full justify-between h-14 px-4 rounded-none md:rounded-md"
+              >
+                <Link href="mailto:lessay.tech@gmail.com">
+                  <span>Contact & Support</span>
+                  <Mail className="h-4 w-4 text-muted-foreground" />
                 </Link>
               </Button>
             </CardContent>
