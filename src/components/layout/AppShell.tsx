@@ -126,6 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             return <AwaitingAnalysisModal />;
             
         case 'VIEW_ANALYSIS':
+            if (pathname.startsWith('/journal/')) return null;
             return (
                 <Dialog open={true}>
                     <DialogContent showCloseButton={false}>
@@ -136,7 +137,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                            <Button onClick={() => router.push(`/journal/${onboardingJournalId}`)}>
+                            <Button
+                              onClick={() => { router.push(`/journal/${onboardingJournalId}`); }}
+                              disabled={!onboardingJournalId}
+                            >
                                 View My Analysis
                             </Button>
                         </DialogFooter>

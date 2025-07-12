@@ -61,13 +61,6 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         !userProfile.writingPurpose ||
         !userProfile.selfAssessedLevel;
 
-        console.log(`is profile complete`, isProfileIncomplete);
-        console.log(`nativeLanguage:`, userProfile.nativeLanguage);
-        console.log(`targetLanguage:`, userProfile.targetLanguage);
-        console.log(`writingStyle:`, userProfile.writingStyle);
-        console.log(`writingPurpose:`, userProfile.writingPurpose);
-        console.log(`selfAssessedLevel:`, userProfile.selfAssessedLevel);
-
       if (isProfileIncomplete) {
         setStep('PROFILE_SETUP');
         return;
@@ -88,6 +81,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         setStep('AWAITING_ANALYSIS');
       } else if (latestJournal && latestJournal.analysis) {
         // Their entry has been analyzed; guide them to view it.
+        setOnboardingJournalId(latestJournal.id);
         setStep('VIEW_ANALYSIS');
       }
     } else {

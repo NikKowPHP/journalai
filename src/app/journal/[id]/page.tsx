@@ -10,6 +10,7 @@ import {
   useJournalEntry,
   useRetryJournalAnalysis,
 } from "@/lib/hooks/data-hooks";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const GuidedPopover = ({
   children,
@@ -33,7 +34,7 @@ const GuidedPopover = ({
 export default function JournalAnalysisPage() {
   const params = useParams();
   const id = params.id as string;
-  const { step, setStep } = useOnboarding();
+  const { step, setStep, completeOnboarding } = useOnboarding();
   const isTourActive = step === "VIEW_ANALYSIS";
 
   const { data: journal, isLoading, error } = useJournalEntry(id);
@@ -96,31 +97,56 @@ export default function JournalAnalysisPage() {
 
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Detailed Feedback</h2>
-            {journal.analysis.mistakes.map((feedback: any, index: number) => (
-              <div key={feedback.id} className="w-full lg:w-2/3 mx-auto">
-                {isTourActive && index === 0 ? (
-                  <GuidedPopover
-                    title="Create a Flashcard"
-                    description="Click 'Add to Study Deck' to save this correction for later practice."
-                  >
+            {journal.analysis.mistakes &&
+            journal.analysis.mistakes.length > 0 ? (
+              journal.analysis.mistakes.map((feedback: any, index: number) => (
+                <div key={feedback.id} className="w-full lg:w-2/3 mx-auto">
+                  {isTourActive && index === 0 ? (
+                    <GuidedPopover
+                      title="Create a Flashcard"
+                      description="Click 'Add to Study Deck' to save this correction for later practice."
+                    >
+                      <FeedbackCard
+                        original={feedback.originalText}
+                        suggestion={feedback.correctedText}
+                        explanation={feedback.explanation}
+                        mistakeId={feedback.id}
+                        onOnboardingAddToDeck={() => setStep("CREATE_DECK")}
+                      />
+                    </GuidedPopover>
+                  ) : (
                     <FeedbackCard
                       original={feedback.originalText}
                       suggestion={feedback.correctedText}
                       explanation={feedback.explanation}
                       mistakeId={feedback.id}
-                      onOnboardingAddToDeck={() => setStep("CREATE_DECK")}
                     />
-                  </GuidedPopover>
-                ) : (
-                  <FeedbackCard
-                    original={feedback.originalText}
-                    suggestion={feedback.correctedText}
-                    explanation={feedback.explanation}
-                    mistakeId={feedback.id}
-                  />
-                )}
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="w-full lg:w-2/3 mx-auto">
+                <Card className="p-6 text-center">
+                  <CardHeader>
+                    <CardTitle>Great Job!</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Our AI didn't find any specific mistakes to correct in
+                      this entry. You're on the right track!
+                    </p>
+                    {isTourActive && (
+                      <Button
+                        onClick={completeOnboarding}
+                        className="mt-4"
+                      >
+                        Continue Onboarding
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
-            ))}
+            )}
           </div>
         </>
       ) : (
