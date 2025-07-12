@@ -38,6 +38,18 @@ const ProfileFormSkeleton = () => (
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-9 w-full" />
       </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-full" />
+      </div>
       <Skeleton className="h-12 w-full" />
     </CardContent>
   </Card>
@@ -114,6 +126,48 @@ export function ProfileForm({
                     {lang.name}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Writing Style</Label>
+            <Select name="writingStyle" defaultValue={writingStyle}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select writing style" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Casual">Casual</SelectItem>
+                <SelectItem value="Formal">Formal</SelectItem>
+                <SelectItem value="Academic">Academic</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Writing Purpose</Label>
+            <Select name="writingPurpose" defaultValue={writingPurpose}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select writing purpose" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Personal">Personal</SelectItem>
+                <SelectItem value="Professional">Professional</SelectItem>
+                <SelectItem value="Creative">Creative</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Self-Assessed Level</Label>
+            <Select name="selfAssessedLevel" defaultValue={selfAssessedLevel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Beginner">Beginner</SelectItem>
+                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                <SelectItem value="Advanced">Advanced</SelectItem>
               </SelectContent>
             </Select>
           </div>
