@@ -42,7 +42,6 @@ function AppFooter() {
 
 const AwaitingAnalysisModal = () => {
     const { onboardingJournalId, setStep } = useOnboarding();
-    const router = useRouter();
 
     const { data: journal } = useQuery({
         queryKey: ['journal', onboardingJournalId],
@@ -58,9 +57,8 @@ const AwaitingAnalysisModal = () => {
     useEffect(() => {
         if (journal?.analysis) {
             setStep('VIEW_ANALYSIS');
-            router.push(`/journal/${journal.id}`);
         }
-    }, [journal, setStep, router]);
+    }, [journal, setStep]);
 
     return (
         <Dialog open={true}>
@@ -81,7 +79,7 @@ const AwaitingAnalysisModal = () => {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { step, setStep, isActive, setOnboardingJournalId, completeOnboarding } = useOnboarding();
+  const { step, setStep, isActive, setOnboardingJournalId, completeOnboarding, onboardingJournalId } = useOnboarding();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -93,7 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   
   const OnboardingOverlay = () => {
     if (!isActive) return null;
-    console.log('step', step)
+    
     switch(step) {
         case 'PROFILE_SETUP':
             return <OnboardingWizard
@@ -126,6 +124,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         case 'AWAITING_ANALYSIS':
             return <AwaitingAnalysisModal />;
+            
+        case 'VIEW_ANALYSIS':
+            return (
+                <Dialog open={true}>
+                    <DialogContent showCloseButton={false}>
+                        <DialogHeader>
+                            <DialogTitle>Analysis Complete!</DialogTitle>
+                            <DialogDescription>
+                                Your first journal entry has been analyzed. Let's review the feedback together.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button onClick={() => router.push(`/journal/${onboardingJournalId}`)}>
+                                View My Analysis
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            );
 
         case 'CREATE_DECK':
              return <Dialog open={true}>
