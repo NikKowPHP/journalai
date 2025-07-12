@@ -42,18 +42,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Get user's current proficiency score
+    // 2. Get user's current proficiency score and target language
     const userData = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { aiAssessedProficiency: true },
+      select: { aiAssessedProficiency: true, targetLanguage: true },
     });
     const proficiencyScore = userData?.aiAssessedProficiency || 2.0;
 
-    // 3. Call the AI service with proficiency context
+    // 3. Call the AI service with proficiency context and target language
     const aiService = getQuestionGenerationService();
     const analysisResult = await aiService.analyzeJournalEntry(
       journal.content,
-      undefined, // targetLanguage
+      userData?.targetLanguage || undefined,
       proficiencyScore,
     );
 

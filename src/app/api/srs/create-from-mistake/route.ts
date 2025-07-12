@@ -37,7 +37,7 @@ export async function POST(request: Request) {
         backContent: mistake.correctedText,
         context: mistake.explanation,
         mistakeId: mistake.id,
-        nextReviewAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
+        nextReviewAt: new Date(),
       },
     });
 
