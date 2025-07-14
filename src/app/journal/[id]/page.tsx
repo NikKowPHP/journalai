@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   useJournalEntry,
   useRetryJournalAnalysis,
-  useCompleteOnboarding,
 } from "@/lib/hooks/data-hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -36,10 +35,8 @@ export default function JournalAnalysisPage() {
   const params = useParams();
   const id = params.id as string;
   const { step, setStep } = useOnboardingStore();
-  const completeOnboardingMutation = useCompleteOnboarding();
 
   const completeOnboarding = () => {
-    completeOnboardingMutation.mutate();
     setStep("COMPLETED");
   };
 

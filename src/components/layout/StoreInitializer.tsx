@@ -1,3 +1,4 @@
+// src/components/layout/StoreInitializer.tsx
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -5,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useOnboardingStore } from '@/lib/stores/onboarding.store';
-import { useUserProfile, useJournalHistory } from '@/lib/hooks/data-hooks';
+import { useUserProfile, useJournalHistory, useStudyDeck, useCompleteOnboarding } from '@/lib/hooks/data-hooks';
 
 function StoreInitializer() {
   const { setUserAndLoading } = useAuthStore();
@@ -33,32 +34,78 @@ function StoreInitializer() {
   const authLoading = useAuthStore(state => state.loading);
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
   const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
+  const { data: studyDeck, isLoading: isDeckLoading } = useStudyDeck();
+  const completeOnboardingMutation = useCompleteOnboarding();
 
   useEffect(() => {
-    if (authLoading || isProfileLoading || isJournalsLoading) return;
+  
+    if (authLoading || isProfileLoading || isJournalsLoading || isDeckLoading) return;
     
     if (user && userProfile && !userProfile.onboardingCompleted) {
-      const isProfileIncomplete = !userProfile.nativeLanguage || !userProfile.targetLanguage;
-      if (isProfileIncomplete) {
+
+      const profileIsComplete = !!(userProfile.nativeLanguage && userProfile.targetLanguage);
+      const hasJournals = journals && journals.length > 0;
+      const hasSrsItems = (userProfile._count?.srsItems ?? 0) > 0;
+
+      // **THE FIX**: Self-healing logic for onboarding completion.
+      // If a user has done all the steps but the flag isn't set, this completes it for them.
+      if (profileIsComplete && hasJournals && hasSrsItems) {
+        if (!completeOnboardingMutation.isPending) {
+          completeOnboardingMutation.mutate();
+        }
+        // Exit early and let the component re-render with the updated profile.
+        return;
+      }
+      
+      // If self-healing didn't trigger, proceed with the normal state machine.
+      if (!profileIsComplete) {
         setOnboardingStep('PROFILE_SETUP');
         return;
       }
-      if (!journals || journals.length === 0) {
+
+      if (!hasJournals) {
         setOnboardingStep('FIRST_JOURNAL');
         return;
       }
+
       const latestJournal = journals[0];
+
       if (latestJournal && !latestJournal.analysis) {
         setOnboardingJournalId(latestJournal.id);
         setOnboardingStep('AWAITING_ANALYSIS');
-      } else if (latestJournal && latestJournal.analysis) {
-        setOnboardingJournalId(latestJournal.id);
-        setOnboardingStep('VIEW_ANALYSIS');
+        return;
       }
+      
+      if (latestJournal && latestJournal.analysis) {
+        setOnboardingJournalId(latestJournal.id);
+        
+        if (!hasSrsItems) {
+          setOnboardingStep('VIEW_ANALYSIS');
+          return;
+        } 
+        else {
+          setOnboardingStep('STUDY_INTRO');
+          return;
+        }
+      }
+
     } else {
       setOnboardingStep('INACTIVE');
     }
-  }, [user, userProfile, journals, authLoading, isProfileLoading, isJournalsLoading, setOnboardingStep, setOnboardingJournalId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+      user, 
+      userProfile, 
+      journals, 
+      studyDeck,
+      authLoading, 
+      isProfileLoading, 
+      isJournalsLoading, 
+      isDeckLoading,
+      setOnboardingStep, 
+      setOnboardingJournalId,
+      completeOnboardingMutation
+  ]);
 
   return null;
 }

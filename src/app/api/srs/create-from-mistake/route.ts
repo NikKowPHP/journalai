@@ -15,10 +15,20 @@ export async function POST(request: Request) {
       mistakeId,
     });
 
-    // Get the mistake details
+    // Get the mistake details and verify ownership
     const mistake = await prisma.mistake.findUnique({
       where: { id: mistakeId },
-      include: { analysis: true },
+      include: {
+        analysis: {
+          include: {
+            entry: {
+              select: {
+                authorId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!mistake) {
@@ -26,6 +36,20 @@ export async function POST(request: Request) {
         { error: "Mistake not found" },
         { status: 404 },
       );
+    }
+
+    // Authorization check
+    if (mistake.analysis.entry.authorId !== user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Check if an SRS item for this mistake already exists for this user.
+    const existingSrsItem = await prisma.srsReviewItem.findUnique({
+      where: { mistakeId: mistakeId },
+    });
+
+    if (existingSrsItem) {
+      return NextResponse.json(existingSrsItem);
     }
 
     // Create the SRS item

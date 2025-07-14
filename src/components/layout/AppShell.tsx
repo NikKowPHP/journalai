@@ -122,9 +122,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const completeOnboarding = () => {
-    if (step !== "COMPLETED") {
-      setStep("COMPLETED");
-    }
     completeOnboardingMutation.mutate();
   };
 

@@ -37,9 +37,7 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
   };
 
   const handleNextCard = () => {
-    if (currentCardIndex < cards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1);
-    }
+    setCurrentCardIndex(currentCardIndex + 1);
   };
 
   return (

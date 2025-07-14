@@ -6,19 +6,19 @@ import { logger } from "@/lib/logger";
 export async function DELETE() {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  logger.info(`/api/user - DELETE - User: ${session.user.id}`);
+  logger.info(`/api/user - DELETE - User: ${user.id}`);
 
   try {
     // Mark user for deletion instead of hard deleting
     await prisma.user.update({
-      where: { email: session.user.email },
+      where: { email: user.email },
       data: { status: "DELETION_PENDING" },
     });
 
