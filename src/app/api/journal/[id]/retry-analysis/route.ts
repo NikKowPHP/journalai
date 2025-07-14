@@ -6,8 +6,15 @@ import { logger } from "@/lib/logger";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+
+  // Await the params to get the journal ID
+  const { id: journalId } = await params;
+  if (!journalId) {
+    return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,7 +23,7 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   
-  const journalId = params.id;
+ 
   logger.info(`Retry analysis requested for journal ${journalId} by user ${user.id}`);
 
   try {

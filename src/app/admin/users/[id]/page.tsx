@@ -17,13 +17,18 @@ type JournalEntryWithRelations = JournalEntry & {
   analysis: (Analysis & { mistakes: Mistake[] }) | null;
 };
 
-export default async function UserDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+// Define props interface for clarity and type safety
+interface UserDetailPageProps {
+  params: Promise<{ id: string }>
+;
+}
+
+// Define the page component as an async function constant
+const UserDetailPage = async ({ params }: UserDetailPageProps) => {
+  // Await the params to get the user ID
+  const { id } = await params;
   const user = await getUserById({
-    where: { id: params.id },
+    where: { id },
     include: {
       journalEntries: {
         include: {
@@ -75,7 +80,7 @@ export default async function UserDetailPage({
           </div>
 
           <UpdateSubscriptionForm
-            userId={params.id}
+            userId={id}
             currentTier={user.subscriptionTier || "FREE"}
             currentStatus={user.subscriptionStatus || "ACTIVE"}
           />
@@ -153,4 +158,6 @@ export default async function UserDetailPage({
       </div>
     </div>
   );
-}
+};
+
+export default UserDetailPage;

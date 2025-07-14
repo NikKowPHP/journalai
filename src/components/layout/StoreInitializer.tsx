@@ -92,7 +92,7 @@ function StoreInitializer() {
     } else {
       setOnboardingStep('INACTIVE');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [
       user, 
       userProfile, 

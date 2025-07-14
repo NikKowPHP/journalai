@@ -7,8 +7,12 @@ import { logger } from "@/lib/logger";
 // GET handler to fetch a single journal with its analysis
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
+  if (!id) {
+    return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+  }
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,7 +22,7 @@ export async function GET(
 
   const journal = await prisma.journalEntry.findFirst({
     where: {
-      id: params.id,
+      id,
       authorId: user.id,
     },
     include: {
@@ -45,9 +49,13 @@ const updateJournalSchema = z.object({
 // PUT handler to update a journal
 export async function PUT(
   req: NextRequest,
-  context: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await context.params;
+    if (!id) {
+      return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+    }
     const { params } = context;
     const supabase = await createClient();
     const {
@@ -57,7 +65,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    logger.info(`/api/journal/${params.id} - PUT - User: ${user.id}`, body);
+    logger.info(`/api/journal/${id} - PUT - User: ${user.id}`, body);
 
     const parsed = updateJournalSchema.safeParse(body);
     if (!parsed.success)
@@ -67,7 +75,7 @@ export async function PUT(
 
     const updatedJournal = await prisma.journalEntry.update({
       where: {
-        id: params.id,
+        id,
         authorId: user.id,
       },
       data: {
@@ -89,9 +97,13 @@ export async function PUT(
 // DELETE handler to remove a journal
 export async function DELETE(
   req: NextRequest,
-  context: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await context.params;
+    if (!id) {
+      return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+    }
     const { params } = context;
     const supabase = await createClient();
     const {
@@ -100,11 +112,11 @@ export async function DELETE(
     if (!user)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    logger.info(`/api/journal/${params.id} - DELETE - User: ${user.id}`);
+    logger.info(`/api/journal/${id} - DELETE - User: ${user.id}`);
 
     await prisma.journalEntry.delete({
       where: {
-        id: params.id,
+        id,
         authorId: user.id,
       },
     });

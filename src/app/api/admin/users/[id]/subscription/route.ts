@@ -11,13 +11,17 @@ const subscriptionSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // Authenticate and authorize
+    const { id } = await params;
+    if (!id) {
+      return new NextResponse("User ID is required", { status: 400 });
+    }
     const { user } = await authMiddleware(req);
     logger.info(
-      `/api/admin/users/${params.id}/subscription - PUT - Admin: ${user.id}`,
+      `/api/admin/users/${id}/subscription - PUT - Admin: ${user.id}`,
     );
 
     const body = await req.json();
@@ -28,7 +32,7 @@ export async function PUT(
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         subscriptionTier: parsed.data.subscriptionTier,
         subscriptionStatus: parsed.data.subscriptionStatus || "ACTIVE",
@@ -37,8 +41,9 @@ export async function PUT(
 
     return NextResponse.json(updatedUser);
   } catch (error: any) {
+    const { id } = await params;
     logger.error(
-      `Error in /api/admin/users/${params.id}/subscription PUT`,
+      `Error in /api/admin/users/${id}/subscription PUT`,
       error,
     );
     if (error.message === "Unauthorized") {
