@@ -4,11 +4,12 @@ import { AnalysisDisplay } from "@/components/AnalysisDisplay";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { Button } from "@/components/ui/button";
 import { useParams } from "next/navigation";
-import { useOnboarding } from "@/lib/onboarding-context";
+import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useJournalEntry,
   useRetryJournalAnalysis,
+  useCompleteOnboarding,
 } from "@/lib/hooks/data-hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -34,7 +35,14 @@ const GuidedPopover = ({
 export default function JournalAnalysisPage() {
   const params = useParams();
   const id = params.id as string;
-  const { step, setStep, completeOnboarding } = useOnboarding();
+  const { step, setStep } = useOnboardingStore();
+  const completeOnboardingMutation = useCompleteOnboarding();
+
+  const completeOnboarding = () => {
+    completeOnboardingMutation.mutate();
+    setStep("COMPLETED");
+  };
+
   const isTourActive = step === "VIEW_ANALYSIS";
 
   const { data: journal, isLoading, error } = useJournalEntry(id);
@@ -136,10 +144,7 @@ export default function JournalAnalysisPage() {
                       this entry. You're on the right track!
                     </p>
                     {isTourActive && (
-                      <Button
-                        onClick={completeOnboarding}
-                        className="mt-4"
-                      >
+                      <Button onClick={completeOnboarding} className="mt-4">
                         Continue Onboarding
                       </Button>
                     )}

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import { useState } from 'react';
-import { useAuth } from '@/lib/auth-context';
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/lib/stores/auth.store';
 import AuthErrorDisplay from './AuthErrorDisplay';
 import Link from 'next/link';
 import Spinner from './ui/Spinner';
@@ -11,21 +11,19 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 
 export default function SignInForm() {
-  const { signIn } = useAuth();
+  const { signIn, error, loading, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
-    const result = await signIn(email, password);
-    if (result.error) {
-      setError(result.error);
-    }
-    setLoading(false);
+    await signIn(email, password);
   };
 
   return (

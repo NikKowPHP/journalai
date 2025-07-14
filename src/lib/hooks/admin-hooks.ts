@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../services/api-client.service";
-import { useAuth } from "../auth-context";
+import { useAuthStore } from "@/lib/stores/auth.store";
 
 export const useAdminUsers = (page: number, searchTerm: string) => {
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["admin-users", searchTerm, page],
     queryFn: () =>

@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useAuthStore } from "@/lib/stores/auth.store";
 import React from "react";
 
 export function AuthLinks() {
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useAuthStore();
 
   if (user) {
     return (

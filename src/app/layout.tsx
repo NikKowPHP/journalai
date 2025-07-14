@@ -5,6 +5,7 @@ import "./globals.css";
 import { Providers } from "@/providers";
 import { CookieBanner } from "@/components/CookieBanner";
 import { AppShell } from "@/components/layout/AppShell";
+import StoreInitializer from "@/components/layout/StoreInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,6 +46,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
+          <StoreInitializer />
           <AppShell>{children}</AppShell>
           <CookieBanner />
         </Providers>

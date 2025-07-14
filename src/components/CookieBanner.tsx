@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth-context";
+import { useAuthStore } from "@/lib/stores/auth.store";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,7 @@ export function CookieBanner() {
     }
   }, []);
 
-  const { user } = useAuth();
+  const user = useAuthStore((state) => state.user);
   const pathname = usePathname();
 
   const handleConsent = (consent: boolean) => {

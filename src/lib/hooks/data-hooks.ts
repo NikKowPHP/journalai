@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient, ProfileData } from "../services/api-client.service";
-import { useAuth } from "../auth-context";
+import { useAuthStore } from "@/lib/stores/auth.store";
 import { OnboardingData } from "../services/api-client.service";
 
 export const useUserProfile = () => {
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["userProfile", authUser?.id],
     queryFn: apiClient.profile.get,
@@ -13,7 +13,7 @@ export const useUserProfile = () => {
 };
 
 export const useAnalyticsData = () => {
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["analytics", authUser?.id],
     queryFn: apiClient.analytics.get,
@@ -22,7 +22,7 @@ export const useAnalyticsData = () => {
 };
 
 export const useJournalHistory = () => {
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["journals", authUser?.id],
     queryFn: apiClient.journal.getAll,
@@ -39,7 +39,7 @@ export const useJournalEntry = (id: string) => {
 };
 
 export const useStudyDeck = () => {
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useQuery({
     queryKey: ["studyDeck", authUser?.id],
     queryFn: apiClient.srs.getDeck,
@@ -51,18 +51,20 @@ export const useStudyDeck = () => {
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: (data: Partial<ProfileData>) => apiClient.profile.update(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProfile", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["userProfile", authUser?.id],
+      });
     },
   });
 };
 
 export const useSubmitJournal = () => {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: apiClient.journal.create,
     onSuccess: () => {
@@ -73,14 +75,16 @@ export const useSubmitJournal = () => {
 
 export const useAnalyzeJournal = () => {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: apiClient.analyze.start,
     onSuccess: (analysis, journalId) => {
       queryClient.invalidateQueries({ queryKey: ["journal", journalId] });
       queryClient.invalidateQueries({ queryKey: ["journals", authUser?.id] });
       queryClient.invalidateQueries({ queryKey: ["analytics", authUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ["userProfile", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["userProfile", authUser?.id],
+      });
     },
   });
 };
@@ -115,7 +119,7 @@ export const useCreateSrsFromMistake = () => {
 
 export const useReviewSrsItem = () => {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: apiClient.srs.review,
     onSuccess: () => {
@@ -126,34 +130,38 @@ export const useReviewSrsItem = () => {
 
 export const useOnboardUser = () => {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: (data: OnboardingData) => apiClient.user.onboard(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProfile", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["userProfile", authUser?.id],
+      });
     },
   });
 };
 
 export const useCompleteOnboarding = () => {
   const queryClient = useQueryClient();
-  const { user: authUser } = useAuth();
+  const authUser = useAuthStore((state) => state.user);
   return useMutation({
     mutationFn: apiClient.user.completeOnboarding,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProfile", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["userProfile", authUser?.id],
+      });
     },
   });
 };
 
 export const useCreateCheckoutSession = () => {
-    return useMutation({
-        mutationFn: apiClient.billing.createCheckoutSession,
-    });
+  return useMutation({
+    mutationFn: apiClient.billing.createCheckoutSession,
+  });
 };
 
 export const useCreatePortalSession = () => {
-    return useMutation({
-        mutationFn: apiClient.billing.createPortalSession,
-    });
+  return useMutation({
+    mutationFn: apiClient.billing.createPortalSession,
+  });
 };

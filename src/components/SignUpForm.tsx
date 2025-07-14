@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
-import { useState } from 'react';
-import { useAuth } from '@/lib/auth-context';
+import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/lib/stores/auth.store';
 import AuthErrorDisplay from './AuthErrorDisplay';
 import { validateEmail, validatePassword, calculatePasswordStrength } from '../lib/validation';
 import Spinner from './ui/Spinner';
@@ -11,19 +11,23 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 
 export default function SignUpForm() {
-  const { signUp } = useAuth();
+  const { signUp, error, loading, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [verificationSent, setVerificationSent] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    clearError();
     setEmailError(undefined);
     setPasswordError(undefined);
 
@@ -39,13 +43,9 @@ export default function SignUpForm() {
       return;
     }
 
-    setLoading(true);
     const { data, error: signUpError } = await signUp(email, password);
-    setLoading(false);
 
-    if (signUpError) {
-      setError(signUpError);
-    } else if (data?.user?.confirmation_sent_at) {
+    if (!signUpError && data?.user?.confirmation_sent_at) {
       setVerificationSent(true);
       setEmail('');
       setPassword('');

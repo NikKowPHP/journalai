@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Book, Brain, BarChart2, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/lib/auth-context";
+import { useAuthStore } from "@/lib/stores/auth.store";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -15,7 +15,7 @@ const navItems = [
 
 export function DesktopSidebar() {
   const pathname = usePathname();
-  const { signOut } = useAuth();
+  const { signOut } = useAuthStore();
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">

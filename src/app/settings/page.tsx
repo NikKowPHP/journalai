@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
+import { useAuthStore } from "@/lib/stores/auth.store";
 import { ProfileForm } from "@/components/ProfileForm";
 import { AccountDeletion } from "@/components/AccountDeletion";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
 } from "@/lib/hooks/data-hooks";
 
 export default function SettingsPage() {
-  const { user, signOut } = useAuth();
+  const signOut = useAuthStore((state) => state.signOut);
   const { data: profile, isLoading } = useUserProfile();
   const portalMutation = useCreatePortalSession();
 

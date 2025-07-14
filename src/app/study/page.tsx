@@ -1,6 +1,6 @@
 "use client";
 import { StudySession } from "@/components/StudySession";
-import { useOnboarding } from "@/lib/onboarding-context";
+import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStudyDeck } from "@/lib/hooks/data-hooks";
 
@@ -17,7 +17,7 @@ const GuidedPopover = ({ children, title, description }: { children: React.React
 
 
 export default function StudyPage() {
-  const { step, setStep, completeOnboarding } = useOnboarding();
+  const { step, setStep } = useOnboardingStore();
   const isTourActive = step === 'STUDY_INTRO';
 
   const { data: studyDeck, isLoading, error } = useStudyDeck();

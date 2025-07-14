@@ -1,163 +1,375 @@
-Of course. This is an excellent refinement. Adopting a modular, hook-based architecture for data fetching and mutations is a cornerstone of modern React development. It will significantly improve code reusability, maintainability, and testability.
+Of course. Here is a detailed, step-by-step markdown plan to replace the existing Context API with Zustand for more robust global client state management.
 
-Here is the refined, step-by-step implementation plan that incorporates this best practice.
+### Project Plan: Migrate from React Context to Zustand
 
----
+This plan outlines the process of replacing the `AuthContext` and `OnboardingContext` with Zustand, a lightweight and powerful state management library. This will simplify the provider tree, improve performance by preventing unnecessary re-renders, and make global state management more scalable.
 
-# Refined Implementation Plan: Modular Architecture & Feature Rollout
+#### Phase 1: Setup and Store Creation
 
-**Core Principle:** This plan prioritizes high modularity and adherence to best practices. All client-side data fetching and mutations will be managed by `@tanstack/react-query` and abstracted into reusable custom hooks. Direct `fetch` calls within components will be eliminated in favor of this structured approach.
+This phase involves adding the new dependency and creating the Zustand store files that will house our application's global state.
 
-### **Phase 0: Architectural Foundation - Centralized Data Access Layer**
+-   [x] **1.1. Install Zustand**
+    -   Execute the following command to add Zustand to the project.
+    ```bash
+    npm install zustand
+    ```
 
-**Objective:** Establish a robust and reusable data access pattern before implementing new features. This is the most critical phase for achieving high modularity.
+-   [x] **1.2. Create Authentication Store**
+    -   Create a new file: `src/lib/stores/auth.store.ts`.
+    -   This store will manage user session, loading status, and authentication methods.
 
-- [x] **Task 0.1: Create a Centralized API Client Service**
-    - [x] **Objective:** Consolidate all API call logic into one place for maintainability and type safety.
-    - [x] **File:** `src/lib/services/api-client.service.ts` (New File)
-    - [x] **Action:**
-        1.  Create a file to house all functions that interact with the application's API routes.
-        2.  For each data entity, create an object with methods for `get`, `create`, `update`, `delete`.
-        3.  Use a consistent client like `axios` or a typed `fetch` wrapper.
-        4.  **Example Structure:**
-            ```typescript
-            import axios from 'axios';
+    ```typescript
+    // src/lib/stores/auth.store.ts
+    import { create } from 'zustand';
+    import { User } from '@supabase/supabase-js';
+    import { createClient } from '@/lib/supabase/client';
+    
+    interface AuthState {
+      user: User | null;
+      loading: boolean;
+      error: string | null;
+      
+      setUserAndLoading: (user: User | null, loading: boolean) => void;
+      signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+      signUp: (email: string, password: string) => Promise<{ data: any; error: string | null }>;
+      signOut: () => Promise<void>;
+      clearError: () => void;
+    }
+    
+    export const useAuthStore = create<AuthState>((set, get) => ({
+      user: null,
+      loading: true,
+      error: null,
+    
+      setUserAndLoading: (user, loading) => set({ user, loading }),
+    
+      signIn: async (email, password) => {
+        set({ error: null, loading: true });
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to sign in');
+          }
+          if (data.session) {
+            const supabase = createClient();
+            await supabase.auth.setSession({
+              access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+            });
+            // The onAuthStateChange listener will update the user state
+          } else {
+            throw new Error('Login successful but no session returned.');
+          }
+          set({ loading: false });
+          return { error: null };
+        } catch (err: unknown) {
+          const error = err as Error;
+          set({ error: error.message, loading: false });
+          return { error: error.message };
+        }
+      },
+    
+      signUp: async (email, password) => {
+        set({ error: null, loading: true });
+        try {
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to sign up');
+          }
+          // The onAuthStateChange listener will handle setting the user if email confirmation is not required.
+          set({ loading: false });
+          return { data, error: null };
+        } catch (err: unknown) {
+          const error = err as Error;
+          set({ error: error.message, loading: false });
+          return { data: null, error: error.message };
+        }
+      },
+    
+      signOut: async () => {
+        set({ loading: true });
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        set({ user: null, loading: false });
+      },
+      
+      clearError: () => set({ error: null }),
+    }));
+    ```
 
-            export const apiClient = {
-              profile: {
-                get: async () => {
-                  const { data } = await axios.get('/api/user/profile');
-                  return data; // Add return types
-                },
-                update: async (profileData: TProfileUpdate) => {
-                  const { data } = await axios.put('/api/user/profile', profileData);
-                  return data;
-                },
-              },
-              analytics: {
-                get: async () => {
-                  const { data } = await axios.get('/api/analytics');
-                  return data; // Add return types
-                },
-              },
-              // ... other services for journal, srs, admin, etc.
-            };
-            ```
+-   [x] **1.3. Create Onboarding Store**
+    -   Create a new file: `src/lib/stores/onboarding.store.ts`.
+    -   This store will manage the multi-step onboarding flow.
 
-- [x] **Task 0.2: Implement Reusable Data-Fetching Hooks**
-    - [x] **Objective:** Abstract `useQuery` logic into custom hooks for each major data type.
-    - [x] **File:** `src/lib/hooks/data-hooks.ts` (New File, or separate files like `src/lib/hooks/use-profile.ts`)
-    - [x] **Action:**
-        1.  Create custom hooks that wrap `@tanstack/react-query`'s `useQuery`.
-        2.  These hooks will use the functions from `api-client.service.ts`.
-        3.  **Example `useUserProfile` hook:**
-            ```typescript
-            import { useQuery } from '@tanstack/react-query';
-            import { apiClient } from '../services/api-client.service';
+    ```typescript
+    // src/lib/stores/onboarding.store.ts
+    import { create } from 'zustand';
 
-            export const useUserProfile = () => {
-              return useQuery({
-                queryKey: ['userProfile'],
-                queryFn: apiClient.profile.get,
-              });
-            };
-            ```
-        4.  Create similar hooks: `useAnalyticsData`, `useJournalHistory`, etc.
+    type OnboardingStep =
+      | 'PROFILE_SETUP'
+      | 'FIRST_JOURNAL'
+      | 'AWAITING_ANALYSIS'
+      | 'VIEW_ANALYSIS'
+      | 'CREATE_DECK'
+      | 'STUDY_INTRO'
+      | 'COMPLETED'
+      | 'INACTIVE';
+    
+    interface OnboardingState {
+      step: OnboardingStep;
+      isActive: boolean;
+      onboardingJournalId: string | null;
+      setStep: (step: OnboardingStep) => void;
+      setOnboardingJournalId: (id: string | null) => void;
+      resetOnboarding: () => void;
+    }
+    
+    export const useOnboardingStore = create<OnboardingState>((set) => ({
+      step: 'INACTIVE',
+      isActive: false,
+      onboardingJournalId: null,
+    
+      setStep: (step) => set(state => ({ step, isActive: step !== 'INACTIVE' && step !== 'COMPLETED' })),
+      
+      setOnboardingJournalId: (id) => set({ onboardingJournalId: id }),
 
-- [x] **Task 0.3: Implement Reusable Data-Mutation Hooks**
-    - [x] **Objective:** Abstract `useMutation` logic to handle updates, creations, and deletions consistently.
-    - [x] **File:** `src/lib/hooks/data-hooks.ts` (or relevant separate files)
-    - [x] **Action:**
-        1.  Create custom hooks that wrap `useMutation` and handle `onSuccess` invalidation logic.
-        2.  **Example `useUpdateProfile` hook:**
-            ```typescript
-            import { useMutation, useQueryClient } from '@tanstack/react-query';
-            import { apiClient } from '../services/api-client.service';
+      resetOnboarding: () => set({ step: 'INACTIVE', isActive: false, onboardingJournalId: null }),
+    }));
+    ```
 
-            export const useUpdateProfile = () => {
-              const queryClient = useQueryClient();
-              return useMutation({
-                mutationFn: apiClient.profile.update,
-                onSuccess: () => {
-                  queryClient.invalidateQueries({ queryKey: ['userProfile'] });
-                },
-              });
-            };
-            ```
-        4.  Create similar mutation hooks: `useSubmitJournal`, `useGenerateTopics`, `useDeleteAccount`.
+#### Phase 2: Application-Wide Integration of New Stores
 
-### **Phase 1: Developer Experience & System Observability**
+This phase involves replacing all usages of the old Contexts with the new Zustand hooks and initializing the stores.
 
-- [x] **Task 1.1: Implement Centralized Logging Utility**
-    - [x] **File:** `src/lib/logger.ts`
-    - [x] **Action:** Create the environment-aware logging utility as previously planned.
+-   [x] **2.1. Create a Store Initializer Component**
+    -   Create a new file: `src/components/layout/StoreInitializer.tsx`.
+    -   This client component will listen to Supabase's `onAuthStateChange` and sync the user state with our Zustand store. It will also manage the onboarding flow logic.
 
-- [x] **Task 1.2: Integrate Logging into All API Mutation Routes**
-    - [x] **Action:** Systematically add `logger.info()` and `logger.error()` calls to all `POST`, `PUT`, `DELETE` handlers in the `/api` directory.
+    ```typescript
+    // src/components/layout/StoreInitializer.tsx
+    'use client';
 
-### **Phase 2: Authentication & Core UX Polish**
+    import { useEffect, useRef } from 'react';
+    import { usePathname, useRouter } from 'next/navigation';
+    import { createClient } from '@/lib/supabase/client';
+    import { useAuthStore } from '@/lib/stores/auth.store';
+    import { useOnboardingStore } from '@/lib/stores/onboarding.store';
+    import { useUserProfile, useJournalHistory } from '@/lib/hooks/data-hooks';
 
-- [x] **Task 2.1: Implement User Logout Functionality**
-    - [x] **File:** `src/components/layout/DesktopSidebar.tsx`
-    - [x] **Action:** Ensure the "Logout" button correctly calls `signOut` from the `useAuth` hook.
+    function StoreInitializer() {
+      const { setUserAndLoading } = useAuthStore();
+      const setOnboardingStep = useOnboardingStore(state => state.setStep);
+      const setOnboardingJournalId = useOnboardingStore(state => state.setOnboardingJournalId);
+      const initialized = useRef(false);
+      const router = useRouter();
 
-- [x] **Task 2.2: Refine AI Autocomplete Interaction**
-    - [x] **File:** `src/components/JournalEditor.tsx`
-    - [x] **Action:** Implement the UI for an explicit "Accept Suggestion" button that appears when a suggestion is available, complete with a keyboard shortcut hint.
+      // Auth state listener
+      useEffect(() => {
+        if (!initialized.current) {
+          const supabase = createClient();
+          supabase.auth.onAuthStateChange(async (event, session) => {
+            setUserAndLoading(session?.user ?? null, false);
+            if(event === 'SIGNED_OUT') {
+                router.push('/');
+            }
+          });
+          initialized.current = true;
+        }
+      }, [setUserAndLoading, router]);
+      
+      // Onboarding logic
+      const user = useAuthStore(state => state.user);
+      const authLoading = useAuthStore(state => state.loading);
+      const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
+      const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
 
-### **Phase 3: Dashboard Overhaul & Dynamic Content**
+      useEffect(() => {
+        if (authLoading || isProfileLoading || isJournalsLoading) return;
+        
+        if (user && userProfile && !userProfile.onboardingCompleted) {
+          const isProfileIncomplete = !userProfile.nativeLanguage || !userProfile.targetLanguage;
+          if (isProfileIncomplete) {
+            setOnboardingStep('PROFILE_SETUP');
+            return;
+          }
+          if (!journals || journals.length === 0) {
+            setOnboardingStep('FIRST_JOURNAL');
+            return;
+          }
+          const latestJournal = journals[0];
+          if (latestJournal && !latestJournal.analysis) {
+            setOnboardingJournalId(latestJournal.id);
+            setOnboardingStep('AWAITING_ANALYSIS');
+          } else if (latestJournal && latestJournal.analysis) {
+            setOnboardingJournalId(latestJournal.id);
+            setOnboardingStep('VIEW_ANALYSIS');
+          }
+        } else {
+          setOnboardingStep('INACTIVE');
+        }
+      }, [user, userProfile, journals, authLoading, isProfileLoading, isJournalsLoading, setOnboardingStep, setOnboardingJournalId]);
 
-- [x] **Task 3.1: Enhance Analytics API Endpoint**
-    - [x] **File:** `src/app/api/analytics/route.ts`
-    - [x] **Action:** Implement the backend logic to calculate and return `averageScore`, `weakestSkill`, and `recentJournals`.
+      return null;
+    }
 
-- [x] **Task 3.2: Integrate Dynamic Data into Dashboard**
-    - [x] **File:** `src/app/dashboard/page.tsx`
-    - [x] **Action:**
-        1.  Replace any existing direct data fetching with the new custom hooks: `useUserProfile()` and `useAnalyticsData()`.
-        2.  Use the `isLoading` state from the hooks to render a `Skeleton` UI.
-        3.  Conditionally render the "Start Your Journey" `Card` or the `DashboardSummary` and `JournalHistoryList` based on the fetched data (`totalEntries`).
+    export default StoreInitializer;
+    ```
 
-- [x] **Task 3.3: Implement AI Topic Generation with Hooks**
-    - [x] **File:** `src/lib/ai/gemini-service.ts` & `src/app/api/user/generate-topics/route.ts`
-    - [x] **Action:** Implement the AI service method and API route for topic generation.
-    - [x] **File:** `src/app/dashboard/page.tsx`
-    - [x] **Action:**
-        1.  Use the `useGenerateTopics` mutation hook (created in Phase 0).
-        2.  Connect the "Suggest New Topics" button's `onClick` to the hook's `mutate` function.
-        3.  Use the hook's `isPending` state to show a loading indicator on the button.
-        4.  Store the result in component state and pass it to the `SuggestedTopics` component.
+-   [x] **2.2. Update Root Layout (`layout.tsx`)**
+    -   Modify `src/app/layout.tsx` to include the `StoreInitializer` inside the `Providers`.
 
-### **Phase 4: Adaptive Learning & Onboarding Enforcement**
+    ```typescript
+    // src/app/layout.tsx
+    // ... imports
+    import { AppShell } from "@/components/layout/AppShell";
+    import StoreInitializer from "@/components/layout/StoreInitializer"; // Import the new component
 
-- [x] **Task 4.1: Gate Journaling Feature with User Profile Hook**
-    - [x] **File:** `src/app/journal/page.tsx`
-    - [x] **Action:**
-        1.  Use the `useUserProfile()` hook to get the user's profile data.
-        2.  Based on the `data.onboardingCompleted` flag, conditionally blur the `JournalEditor` and show the "Complete Your Setup" overlay.
+    // ... metadata, etc.
 
-### **Phase 5: Fully Functional & Modular Admin Dashboard**
+    export default function RootLayout({
+      children,
+    }: Readonly<{
+      children: React.ReactNode;
+    }>) {
+      return (
+        <html lang="en" suppressHydrationWarning>
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          >
+            <Providers>
+              <StoreInitializer /> {/* Add initializer here */}
+              <AppShell>{children}</AppShell>
+              <CookieBanner />
+            </Providers>
+          </body>
+        </html>
+      );
+    }
+    ```
 
-- [x] **Task 5.1: Create Admin Data Hooks**
-    - [x] **File:** `src/lib/hooks/admin-hooks.ts` (New File)
-    - [x] **Action:**
-        1.  Create a `useAdminUsers` hook that accepts `page` and `searchTerm` as arguments and passes them to the API client.
-        2.  Create a `useUpdateUserSubscription` mutation hook.
+-   [x] **2.3. Update `AppShell.tsx`**
+    -   Modify `src/components/layout/AppShell.tsx` to use `useAuthStore` and `useOnboardingStore`.
 
-- [x] **Task 5.2: Implement Backend for Admin Search & Pagination**
-    - [x] **File:** `src/app/api/admin/users/route.ts`
-    - [x] **Action:** Implement the backend logic for search, pagination, and security middleware.
+    ```typescript
+    // src/components/layout/AppShell.tsx
+    // ... other imports
+    import { useAuthStore } from '@/lib/stores/auth.store';
+    import { useOnboardingStore } from '@/lib/stores/onboarding.store';
+    import { useCompleteOnboarding } from '@/lib/hooks/data-hooks'; // Keep this hook
 
-- [x] **Task 5.3: Refactor Admin UI to Use Hooks**
-    - [x] **File:** `src/app/admin/page.tsx`
-    - [x] **Action:**
-        1.  Manage `searchTerm`, `debouncedSearchTerm`, and `page` state within this component.
-        2.  Call the `useAdminUsers(page, debouncedSearchTerm)` hook to fetch data.
-    - [x] **File:** `src/components/AdminDashboard.tsx`
-    - [x] **Action:**
-        1.  This component now becomes a pure "dumb" component. It receives `users`, `isLoading`, pagination state, and event handlers (`onSearchChange`, `setPage`) as props.
-        2.  Implement the mobile-friendly card list and desktop table view.
-    - [x] **File:** `src/app/admin/users/[id]/UpdateSubscriptionForm.tsx`
-    - [x] **Action:**
-        1.  Use the `useUpdateUserSubscription` mutation hook to handle the form submission.
-        2.  Use the hook's `isPending` state to disable the form and show a loading state.
+    // ... AwaitingAnalysisModal, AppFooter, etc.
+
+    export function AppShell({ children }: { children: React.ReactNode }) {
+      const { user, loading } = useAuthStore();
+      const { step, isActive, setOnboardingJournalId, onboardingJournalId, setStep } = useOnboardingStore();
+      const completeOnboardingMutation = useCompleteOnboarding(); // This hook is fine to keep
+      
+      const completeOnboarding = () => {
+        if (step !== 'COMPLETED') {
+            setStep('COMPLETED');
+        }
+        completeOnboardingMutation.mutate(undefined, {
+            onSuccess: () => {
+                setStep('INACTIVE');
+            }
+        });
+      };
+
+      // ... rest of the component logic remains largely the same, just using Zustand state now.
+      // Make sure all references to useAuth() and useOnboarding() are replaced with the new store hooks.
+    }
+    ```
+
+#### Phase 3: Component-Level Migration
+
+Now, we'll update every component that previously used the `AuthContext` or `OnboardingContext`.
+
+-   [x] **3.1. Update `SignInForm.tsx`**
+    -   Switch from `useAuth` to `useAuthStore`.
+
+-   [x] **3.2. Update `SignUpForm.tsx`**
+    -   Switch from `useAuth` to `useAuthStore`.
+
+-   [x] **3.3. Update `DesktopSidebar.tsx`**
+    -   Switch `signOut` call from context to the store's `signOut` method.
+
+-   [x] **3.4. Update `AuthLinks.tsx`**
+    -   Replace `useAuth` with `useAuthStore` to get user and `signOut` function.
+
+-   [x] **3.5. Update `CookieBanner.tsx`**
+    -   Replace `useAuth` with `useAuthStore` to get the `user` object.
+
+-   [x] **3.6. Update `settings/page.tsx`**
+    -   Replace `useAuth` with `useAuthStore` for the `user` and `signOut` functionality.
+
+-   [x] **3.7. Update Data Hooks (`data-hooks.ts` and `admin-hooks.ts`)**
+    -   Modify any hooks that use `useAuth` for the `authUser.id` to get it from `useAuthStore`. This is critical for enabling/disabling queries correctly.
+
+    ```typescript
+    // Example for src/lib/hooks/data-hooks.ts
+    import { useAuthStore } from '@/lib/stores/auth.store';
+    
+    export const useUserProfile = () => {
+      const authUser = useAuthStore(state => state.user);
+      return useQuery({
+        queryKey: ["userProfile", authUser?.id],
+        queryFn: apiClient.profile.get,
+        enabled: !!authUser,
+      });
+    };
+    // Apply this pattern to all other hooks in data-hooks.ts and admin-hooks.ts
+    ```
+
+-   [x] **3.8. Update Onboarding-Dependent Pages**
+    -   Modify `src/app/journal/[id]/page.tsx` to use `useOnboardingStore`.
+    -   Modify `src/app/study/page.tsx` to use `useOnboardingStore`.
+
+#### Phase 4: Final Cleanup
+
+The final step is to remove the old, now-unused files and update the main provider component.
+
+-   [x] **4.1. Refactor `Providers.tsx`**
+    -   Remove `AuthProvider` and `OnboardingProvider` from `src/providers.tsx`. The `StoreInitializer` now handles this logic.
+
+    ```typescript
+    // src/providers.tsx
+    'use client';
+    
+    import React from 'react';
+    import { ThemeProvider } from './components/theme-provider';
+    import { QueryClientProvider } from '@tanstack/react-query';
+    import { queryClient } from './lib/query-client';
+
+    export function Providers({ children }: { children: React.ReactNode }) {
+      return (
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </QueryClientProvider>
+      );
+    }
+    ```
+
+-   [x] **4.2. Delete Old Context Files**
+    -   Delete `src/lib/auth-context.tsx`.
+    -   Delete `src/lib/onboarding-context.tsx`.
+
+-   [x] **4.3. Final Code Review**
+    -   Search the entire codebase for any remaining imports of `auth-context` or `onboarding-context` and remove them.
+    -   Verify that login, logout, sign-up, and the onboarding flow all work as expected with the new Zustand stores.
