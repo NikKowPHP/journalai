@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, BubbleMenu, Editor } from "@tiptap/react";
+import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useMutation } from "@tanstack/react-query";
@@ -17,9 +17,8 @@ export function JournalEditor({
   isOnboarding = false,
   onOnboardingSubmit,
 }: JournalEditorProps) {
-  const [isSuggestionVisible, setIsSuggestionVisible] = useState(false);
   const [translation, setTranslation] = useState("");
-  const [suggestion, setSuggestion] = useState("");
+  const [suggestionSuffix, setSuggestionSuffix] = useState("");
   const [lastTyped, setLastTyped] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
 
@@ -42,16 +41,21 @@ export function JournalEditor({
   const submitJournalMutation = useSubmitJournal();
   const analyzeJournalMutation = useAnalyzeJournal();
 
+  const acceptSuggestion = () => {
+    if (editor && suggestionSuffix) {
+      editor.chain().focus().insertContent(suggestionSuffix).run();
+      setSuggestionSuffix("");
+    }
+  };
+
   useEffect(() => {
     if (!editor) {
       return;
     }
     const handleKeyDown = (_view: any, event: KeyboardEvent): boolean => {
-      if (event.key === "Tab" && suggestion) {
+      if (event.key === "Tab" && suggestionSuffix) {
         event.preventDefault();
-        editor.chain().focus().insertContent(suggestion).run();
-        setSuggestion("");
-        setIsSuggestionVisible(false);
+        acceptSuggestion();
         return true;
       }
       return false;
@@ -61,7 +65,7 @@ export function JournalEditor({
         handleKeyDown,
       },
     });
-  }, [editor, suggestion, setIsSuggestionVisible]);
+  }, [editor, suggestionSuffix]);
 
   const autocompleteMutation = useMutation({
     mutationFn: (text: string) =>
@@ -74,8 +78,15 @@ export function JournalEditor({
       }).then((res) => res.json()),
     onSuccess: (data) => {
       if (data.completedText) {
-        setSuggestion(data.completedText);
-        setIsSuggestionVisible(true);
+        const currentText = editor?.getText() || '';
+        const fullSuggestion = data.completedText;
+        
+        if (fullSuggestion.toLowerCase().startsWith(currentText.toLowerCase())) {
+          const suffix = fullSuggestion.substring(currentText.length);
+          setSuggestionSuffix(suffix);
+        } else {
+          setSuggestionSuffix('');
+        }
       }
     },
   });
@@ -105,7 +116,8 @@ export function JournalEditor({
     const payload = { content, topicTitle };
 
     submitJournalMutation.mutate(payload, {
-      onSuccess: (journal) => {
+      // --- FIX: Add explicit type to the `journal` parameter ---
+      onSuccess: (journal: { id: string }) => {
         if (isOnboarding && onOnboardingSubmit) {
           onOnboardingSubmit(journal.id);
         }
@@ -127,23 +139,13 @@ export function JournalEditor({
     });
   };
 
-  const acceptSuggestion = () => {
-    if (editor && suggestion) {
-      editor.chain().focus().insertContent(suggestion).run();
-      setSuggestion("");
-      setIsSuggestionVisible(false);
-    }
-  };
-
-  // Set up editor update listener to track typing
   useEffect(() => {
     if (!editor) {
       return;
     }
     const handleUpdate = () => {
       setLastTyped(Date.now());
-      setSuggestion(""); // Clear old suggestion on new typing
-      setIsSuggestionVisible(false);
+      setSuggestionSuffix("");
     };
     editor.on("update", handleUpdate);
     return () => {
@@ -151,27 +153,25 @@ export function JournalEditor({
     };
   }, [editor]);
 
-  // Debounce autocomplete API call
   useEffect(() => {
     if (lastTyped === 0) {
       return;
     }
 
     const handler = setTimeout(() => {
-      // Don't fetch if a suggestion already exists or a request is in flight
-      if (suggestion || autocompleteMutation.isPending) {
+      if (suggestionSuffix || autocompleteMutation.isPending) {
         return;
       }
       const text = editor?.getText();
       if (text && text.trim().length > 0) {
         autocompleteMutation.mutate(text);
       }
-    }, 1500); // 1.5 second delay after user stops typing
+    }, 1500);
 
     return () => {
       clearTimeout(handler);
     };
-  }, [lastTyped, editor, suggestion, autocompleteMutation]);
+  }, [lastTyped, editor, suggestionSuffix, autocompleteMutation]);
 
   if (!editor) {
     return null;
@@ -218,15 +218,8 @@ export function JournalEditor({
       )}
       <div className="relative">
         <EditorContent editor={editor} />
-        {suggestion && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto p-4 text-gray-400">
-              {suggestion}
-            </div>
-          </div>
-        )}
       </div>
-      <div className="p-4 border-t flex items-center justify-between">
+      <div className="p-4 border-t flex items-center justify-between min-h-[68px]">
         <div>
           <Button
             onClick={handleSubmit}
@@ -240,13 +233,18 @@ export function JournalEditor({
             </div>
           )}
         </div>
-        {isSuggestionVisible && suggestion && (
-          <Button size="sm" onClick={acceptSuggestion} variant="secondary">
-            Accept Suggestion{" "}
-            <kbd className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
-              Tab
-            </kbd>
-          </Button>
+        {suggestionSuffix && (
+          <div className="flex items-center gap-2 animate-in fade-in">
+             <p className="text-muted-foreground text-sm hidden md:block">
+              <span className="text-foreground/50 line-clamp-1">{editor.getText()}</span><span className="font-semibold text-foreground/80">{suggestionSuffix}</span>
+             </p>
+            <Button size="sm" onClick={acceptSuggestion} variant="secondary">
+              Accept{" "}
+              <kbd className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
+                Tab
+              </kbd>
+            </Button>
+          </div>
         )}
       </div>
     </div>
