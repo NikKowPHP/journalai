@@ -49,3 +49,4 @@ logs/
 .env
 
 public/workbox-0710f85d.js
+public/sw.js

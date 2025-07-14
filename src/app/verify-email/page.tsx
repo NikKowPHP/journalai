@@ -2,12 +2,14 @@ import React from "react";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
+// Type searchParams as a Promise with optional token
 export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: { token: string };
+  searchParams: Promise<{ token?: string }>;  // Updated typing
 }) {
-  const { token } = searchParams;
+  const params = await searchParams;  // Await the Promise
+  const { token } = params;  // Destructure safely (token may be undefined)
 
   if (!token) {
     return (
