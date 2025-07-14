@@ -49,9 +49,12 @@ export function JournalEditor({
   };
 
   useEffect(() => {
-    if (!editor) {
-      return;
-    }
+    if (!editor) return;
+    
+    // Clear suggestion whenever the user types.
+    const clearSuggestion = () => setSuggestionSuffix("");
+    editor.on('update', clearSuggestion);
+
     const handleKeyDown = (_view: any, event: KeyboardEvent): boolean => {
       if (event.key === "Tab" && suggestionSuffix) {
         event.preventDefault();
@@ -65,6 +68,10 @@ export function JournalEditor({
         handleKeyDown,
       },
     });
+
+    return () => {
+      editor.off('update', clearSuggestion);
+    }
   }, [editor, suggestionSuffix]);
 
   const autocompleteMutation = useMutation({
@@ -77,36 +84,10 @@ export function JournalEditor({
         body: JSON.stringify({ text }),
       }).then((res) => res.json()),
     onSuccess: (data) => {
+      // The old, fragile logic is gone. We now expect the backend to send just the suffix.
       if (data.completedText) {
-        const currentText = editor?.getText() || '';
-        const fullSuggestion = data.completedText;
-        
-        if (fullSuggestion.toLowerCase().startsWith(currentText.toLowerCase())) {
-          const suffix = fullSuggestion.substring(currentText.length);
-          setSuggestionSuffix(suffix);
-        } else {
-          setSuggestionSuffix('');
-        }
+        setSuggestionSuffix(data.completedText);
       }
-    },
-  });
-
-  const translateMutation = useMutation({
-    mutationFn: ({ text }: { text: string }) =>
-      fetch("/api/ai/translate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text,
-          sourceLanguage: "English",
-          targetLanguage: "English",
-        }),
-      }).then((res) => res.json()),
-    onSuccess: (data) => {
-      setTranslation(data.translatedText);
-      console.log("Translation complete:", data.translatedText);
     },
   });
 
@@ -116,7 +97,6 @@ export function JournalEditor({
     const payload = { content, topicTitle };
 
     submitJournalMutation.mutate(payload, {
-      // --- FIX: Add explicit type to the `journal` parameter ---
       onSuccess: (journal: { id: string }) => {
         if (isOnboarding && onOnboardingSubmit) {
           onOnboardingSubmit(journal.id);
@@ -140,38 +120,28 @@ export function JournalEditor({
   };
 
   useEffect(() => {
-    if (!editor) {
-      return;
-    }
     const handleUpdate = () => {
       setLastTyped(Date.now());
-      setSuggestionSuffix("");
     };
-    editor.on("update", handleUpdate);
+    editor?.on("transaction", handleUpdate);
     return () => {
-      editor.off("update", handleUpdate);
+      editor?.off("transaction", handleUpdate);
     };
   }, [editor]);
 
   useEffect(() => {
-    if (lastTyped === 0) {
-      return;
-    }
+    if (lastTyped === 0) return;
 
     const handler = setTimeout(() => {
-      if (suggestionSuffix || autocompleteMutation.isPending) {
-        return;
-      }
+      if (autocompleteMutation.isPending) return;
       const text = editor?.getText();
       if (text && text.trim().length > 0) {
         autocompleteMutation.mutate(text);
       }
     }, 1500);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [lastTyped, editor, suggestionSuffix, autocompleteMutation]);
+    return () => clearTimeout(handler);
+  }, [lastTyped, editor, autocompleteMutation]);
 
   if (!editor) {
     return null;
@@ -198,25 +168,22 @@ export function JournalEditor({
             >
               Italic
             </button>
-            {editor.state.selection.content().size > 0 && (
-              <button
-                onClick={() => {
-                  const selectedText = editor.state.doc.textBetween(
-                    editor.state.selection.from,
-                    editor.state.selection.to,
-                  );
-                  translateMutation.mutate({ text: selectedText });
-                }}
-                className="p-1 rounded hover:bg-accent"
-                disabled={translateMutation.isPending}
-              >
-                {translateMutation.isPending ? "Translating..." : "Translate"}
-              </button>
-            )}
           </div>
         </BubbleMenu>
       )}
       <div className="relative">
+         {/* The new "ghost text" renderer for inline suggestions */}
+         {suggestionSuffix && editor && (
+            <div 
+                className="absolute inset-0 p-4 pointer-events-none prose dark:prose-invert prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto"
+                aria-hidden="true"
+            >
+                {/* This invisible span ensures the ghost text aligns with the cursor */}
+                <span className="opacity-0">{editor.getText()}</span>
+                {/* This is the visible ghost text */}
+                <span className="text-muted-foreground">{suggestionSuffix}</span>
+            </div>
+        )}
         <EditorContent editor={editor} />
       </div>
       <div className="p-4 border-t flex items-center justify-between min-h-[68px]">
@@ -235,9 +202,6 @@ export function JournalEditor({
         </div>
         {suggestionSuffix && (
           <div className="flex items-center gap-2 animate-in fade-in">
-             <p className="text-muted-foreground text-sm hidden md:block">
-              <span className="text-foreground/50 line-clamp-1">{editor.getText()}</span><span className="font-semibold text-foreground/80">{suggestionSuffix}</span>
-             </p>
             <Button size="sm" onClick={acceptSuggestion} variant="secondary">
               Accept{" "}
               <kbd className="ml-2 px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500">
