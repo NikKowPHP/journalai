@@ -51,6 +51,11 @@ export interface JournalAnalysisResult {
   }>;
 }
 
+export interface JournalingAids {
+  sentenceStarter: string;
+  suggestedVocab: string[];
+}
+
 export interface QuestionGenerationService {
   /**
    * Generates questions based on given topics and difficulty
@@ -99,6 +104,17 @@ export interface QuestionGenerationService {
    * @returns Promise resolving to the generated title.
    */
   generateTitleForEntry(journalContent: string): Promise<string>;
+
+  /**
+   * Generates journaling aids for a specific topic.
+   * @param context Object containing topic, target language, and proficiency.
+   * @returns Promise resolving to an object with a sentence starter and suggested vocabulary.
+   */
+  generateJournalingAids(context: {
+    topic: string;
+    targetLanguage: string;
+    proficiency: number;
+  }): Promise<JournalingAids>;
 
   /**
    * Generates journal topics for a user.

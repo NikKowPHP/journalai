@@ -7,6 +7,7 @@ import {
   AudioEvaluationContext,
   RoleSuggestion,
   JournalAnalysisResult,
+  JournalingAids,
 } from "./generation-service";
 import {
   GoogleGenAI,
@@ -396,6 +397,50 @@ export class GeminiQuestionGenerationService
       return title.trim();
     } catch (error) {
       console.error("Error generating title with Gemini:", error);
+      throw error;
+    }
+  }
+
+  async generateJournalingAids(context: {
+    topic: string;
+    targetLanguage: string;
+    proficiency: number;
+  }): Promise<JournalingAids> {
+    const { topic, targetLanguage, proficiency } = context;
+    const prompt = `
+      You are an expert language learning mentor. A user with a proficiency of ${proficiency}/100 in ${targetLanguage} wants to write a journal entry on the topic: "${topic}".
+
+      Your task is to provide helpful, personalized aids to get them started.
+      Your response MUST be a single raw JSON object with this exact structure:
+      {
+        "sentenceStarter": "A simple, engaging sentence to begin the journal entry.",
+        "suggestedVocab": ["word1", "word2", "phrase3"]
+      }
+
+      The suggested vocabulary should be relevant to the topic and appropriate for their proficiency level. Include 3-5 items.
+
+      Example for topic "My favorite season" and proficiency 40/100:
+      {
+        "sentenceStarter": "When I think about my favorite time of year, I always come back to...",
+        "suggestedVocab": ["autumn leaves", "crisp air", "cozy sweater", "to harvest"]
+      }
+
+      Now generate the journaling aids for the given context.
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const text = result.text || "";
+      if (!text) {
+        throw new Error("Empty response from Gemini API for journaling aids");
+      }
+      const cleanedText = this.cleanJsonString(text);
+      return JSON.parse(cleanedText) as JournalingAids;
+    } catch (error) {
+      console.error("Error generating journaling aids with Gemini:", error);
       throw error;
     }
   }
