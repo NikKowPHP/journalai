@@ -2,13 +2,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../services/api-client.service";
 import { useAuthStore } from "@/lib/stores/auth.store";
 
-export const useAdminUsers = (page: number, searchTerm: string) => {
-  const authUser = useAuthStore((state) => state.user);
+// The profile data will be passed in to determine if the query should run.
+export const useAdminUsers = (
+  userProfile: { subscriptionTier?: string } | null | undefined,
+  page: number,
+  searchTerm: string,
+) => {
   return useQuery({
     queryKey: ["admin-users", searchTerm, page],
     queryFn: () =>
       apiClient.admin.getUsers({ search: searchTerm, page, limit: 20 }),
-    enabled: !!authUser,
+    // Only enable this query if the user profile is loaded AND the tier is 'ADMIN'.
+    enabled: !!userProfile && userProfile.subscriptionTier === "ADMIN",
   });
 };
 

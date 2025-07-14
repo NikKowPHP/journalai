@@ -1,7 +1,9 @@
 "use client";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { useAdminUsers } from "@/lib/hooks/admin-hooks";
+import { useUserProfile } from "@/lib/hooks/data-hooks";
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PAGE_LIMIT = 20;
 
@@ -9,6 +11,8 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+
+  const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -21,7 +25,33 @@ export default function AdminPage() {
     };
   }, [searchTerm]);
 
-  const { data, isLoading, error } = useAdminUsers(page, debouncedSearchTerm);
+  const {
+    data,
+    isLoading: isAdminUsersLoading,
+    error,
+  } = useAdminUsers(userProfile, page, debouncedSearchTerm);
+
+  const isLoading = isProfileLoading || isAdminUsersLoading;
+
+  if (isProfileLoading) {
+    return (
+      <div className="container mx-auto p-8 space-y-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (!userProfile || userProfile.subscriptionTier !== "ADMIN") {
+    return (
+      <div className="container mx-auto p-8 text-center">
+        <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
+        <p className="text-muted-foreground mt-2">
+          You do not have permission to view this page.
+        </p>
+      </div>
+    );
+  }
 
   if (error) {
     return (
