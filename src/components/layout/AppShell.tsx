@@ -125,11 +125,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (step !== "COMPLETED") {
       setStep("COMPLETED");
     }
-    completeOnboardingMutation.mutate(undefined, {
-      onSuccess: () => {
-        setStep("INACTIVE");
-      },
-    });
+    completeOnboardingMutation.mutate();
   };
 
   const isAuthPage =

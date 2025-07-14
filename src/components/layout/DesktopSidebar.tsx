@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, Book, Brain, BarChart2, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/stores/auth.store";
@@ -16,6 +16,7 @@ const navItems = [
 export function DesktopSidebar() {
   const pathname = usePathname();
   const { signOut } = useAuthStore();
+  const router = useRouter();
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-sidebar border-r border-sidebar-border">
@@ -62,7 +63,10 @@ export function DesktopSidebar() {
           <span>Settings</span>
         </Link>
         <button
-          onClick={() => signOut()}
+          onClick={async () => {
+            await signOut();
+            router.push("/");
+          }}
           className={cn(
             "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors text-sidebar-foreground hover:bg-sidebar-accent/50",
           )}

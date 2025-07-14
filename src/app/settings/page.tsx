@@ -11,11 +11,13 @@ import {
   useCreatePortalSession,
   useUserProfile,
 } from "@/lib/hooks/data-hooks";
+import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {
   const signOut = useAuthStore((state) => state.signOut);
   const { data: profile, isLoading } = useUserProfile();
   const portalMutation = useCreatePortalSession();
+  const router = useRouter();
 
   const handleManageSubscription = () => {
     portalMutation.mutate(undefined, {
@@ -130,7 +132,10 @@ export default function SettingsPage() {
             <CardContent className="p-0 md:p-2">
               <Button
                 variant="ghost"
-                onClick={() => signOut()}
+                onClick={async () => {
+                  await signOut();
+                  router.push("/");
+                }}
                 className="w-full justify-between h-14 px-4 rounded-none md:rounded-md"
               >
                 <span>Logout</span>
