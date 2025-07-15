@@ -1,4 +1,4 @@
-
+/** @jest-environment jsdom */
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUserProfile } from './useUserProfile';
@@ -13,7 +13,7 @@ jest.mock('@/lib/services/api-client.service');
 jest.mock('@/lib/stores/auth.store');
 
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
-const mockedUseAuthStore = useAuthStore as jest.Mock;
+const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
 
 // This factory creates a new QueryClient and wrapper for each test run, ensuring isolation.
 const createWrapper = () => {
@@ -25,9 +25,10 @@ const createWrapper = () => {
       },
     },
   });
-  return ({ children }: { children: React.ReactNode }) => (
+  const wrapper = ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
+  return wrapper;
 };
 
 describe('useUserProfile', () => {
@@ -37,7 +38,7 @@ describe('useUserProfile', () => {
   });
 
   it('should not fetch data if there is no authenticated user', () => {
-    mockedUseAuthStore.mockReturnValue(null); // Simulate a logged-out user
+    mockedUseAuthStore.mockImplementation(selector => selector({ user: null }));
 
     const { result } = renderHook(() => useUserProfile(), { wrapper: createWrapper() });
 
@@ -51,7 +52,7 @@ describe('useUserProfile', () => {
     const mockUser = { id: 'user-123' };
 
     beforeEach(() => {
-      mockedUseAuthStore.mockReturnValue(mockUser); // Simulate a logged-in user
+        mockedUseAuthStore.mockImplementation(selector => selector({ user: mockUser }));
     });
 
     it('should fetch user profile and return data on success (happy path)', async () => {
@@ -60,7 +61,7 @@ describe('useUserProfile', () => {
         nativeLanguage: 'English',
         subscriptionTier: 'FREE',
       };
-      mockedApiClient.profile.get.mockResolvedValue(mockProfile);
+      (mockedApiClient.profile.get as jest.Mock).mockResolvedValue(mockProfile);
 
       const { result } = renderHook(() => useUserProfile(), { wrapper: createWrapper() });
 
@@ -81,7 +82,7 @@ describe('useUserProfile', () => {
 
     it('should handle API errors and populate the error state', async () => {
       const mockError = new Error('Failed to fetch profile');
-      mockedApiClient.profile.get.mockRejectedValue(mockError);
+      (mockedApiClient.profile.get as jest.Mock).mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useUserProfile(), { wrapper: createWrapper() });
 

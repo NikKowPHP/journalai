@@ -1,4 +1,4 @@
-
+/** @jest-environment jsdom */
 import { renderHook, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
@@ -16,8 +16,8 @@ jest.mock('@/lib/stores/language.store');
 jest.mock('@/components/ui/use-toast');
 
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
-const mockedUseAuthStore = useAuthStore as jest.Mock;
-const mockedUseLanguageStore = useLanguageStore as jest.Mock;
+const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
+const mockedUseLanguageStore = useLanguageStore as unknown as jest.Mock;
 const mockedUseToast = useToast as jest.Mock;
 
 const toastMock = jest.fn();
@@ -41,9 +41,9 @@ describe('useSubmitJournal', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mock store return values
-    mockedUseAuthStore.mockReturnValue({ user: { id: 'user-123' } });
-    mockedUseLanguageStore.mockReturnValue({ activeTargetLanguage: 'spanish' });
+    // Mock store return values using a mock implementation for selectors
+    mockedUseAuthStore.mockImplementation(selector => selector({ user: { id: 'user-123' } }));
+    mockedUseLanguageStore.mockImplementation(selector => selector({ activeTargetLanguage: 'spanish' }));
 
     // Mock useToast to return our mock toast function
     mockedUseToast.mockReturnValue({
@@ -55,7 +55,7 @@ describe('useSubmitJournal', () => {
     const { queryClient, wrapper } = createTestWrapper();
     const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
-    mockedApiClient.journal.create.mockResolvedValue({ id: 'journal-456', content: 'Test content' });
+    (mockedApiClient.journal.create as jest.Mock).mockResolvedValue({ id: 'journal-456', content: 'Test content' });
 
     const { result } = renderHook(() => useSubmitJournal(), { wrapper });
 
@@ -87,7 +87,7 @@ describe('useSubmitJournal', () => {
     const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
     
     const mockError = new Error('Your journal entry could not be saved.');
-    mockedApiClient.journal.create.mockRejectedValue(mockError);
+    (mockedApiClient.journal.create as jest.Mock).mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useSubmitJournal(), { wrapper });
 

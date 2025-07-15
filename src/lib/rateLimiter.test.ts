@@ -10,6 +10,7 @@ describe('rateLimiter', () => {
 
   describe('authRateLimiter', () => {
     it('should allow requests under the limit of 10 per minute', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { authRateLimiter } = require('./rateLimiter');
       const ip = '192.168.1.1';
       for (let i = 0; i < 10; i++) {
@@ -19,6 +20,7 @@ describe('rateLimiter', () => {
     });
 
     it('should block the 11th request in a minute', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { authRateLimiter } = require('./rateLimiter');
       const ip = '192.168.1.2';
       // First 10 requests should be allowed
@@ -31,6 +33,7 @@ describe('rateLimiter', () => {
     });
 
     it('should return a valid retryAfter value when blocked', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { authRateLimiter } = require('./rateLimiter');
       const ip = '192.168.1.3';
       for (let i = 0; i < 10; i++) {
@@ -45,6 +48,7 @@ describe('rateLimiter', () => {
 
   describe('tieredRateLimiter', () => {
     it('should block a FREE user after 5 requests', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { tieredRateLimiter } = require('./rateLimiter');
       const freeUserId = 'free-user-id';
       // The default limit for FREE tier is 5.
@@ -58,6 +62,7 @@ describe('rateLimiter', () => {
     });
 
     it('should not block a PRO user after 5 requests', () => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { tieredRateLimiter } = require('./rateLimiter');
       const proUserId = 'pro-user-id';
       for (let i = 0; i < 10; i++) { // test more than 5

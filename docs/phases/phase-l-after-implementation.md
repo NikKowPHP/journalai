@@ -1,9 +1,28 @@
 ### [BASH_COMMANDS]
 ```bash
+touch src/lib/hooks/data/useSubmitJournal.test.ts
 touch src/app/api/ai/stuck-helper/route.test.ts
+touch src/lib/rateLimiter.test.ts
+touch src/lib/hooks/data/useUserProfile.test.ts
+touch src/lib/hooks/editor/useStuckWriterEffect.test.ts
 ```
 ### src/app/api/ai/stuck-helper/route.test.ts
 ```ts
+```
+### src/lib/hooks/data/useSubmitJournal.test.ts
+```ts
+```
+### src/lib/hooks/data/useUserProfile.test.ts
+```ts
+```
+### src/lib/hooks/editor/useStuckWriterEffect.test.ts
+```ts
+```
+### src/lib/rateLimiter.test.ts
+```ts
+```
+### package.json
+```json
 ```
 ### docs/phases/phase-l-after-implementation.md
 ```md
@@ -97,9 +116,9 @@ touch src/app/api/ai/stuck-helper/route.test.ts
 
 ### **Phase 4: Finalization & CI Integration**
 
--   [ ] **8. Configure and Run Code Coverage**
-    -   [ ] Add a new script to `package.json`: `"test:coverage": "jest --coverage"`.
-    -   [ ] Run the script and review the coverage report to identify any critical, untested logic. Aim for high coverage in the `lib` directory.
+-   [x] **8. Configure and Run Code Coverage**
+    -   [x] Add a new script to `package.json`: `"test:coverage": "jest --coverage"`.
+    -   [x] Run the script and review the coverage report to identify any critical, untested logic. Aim for high coverage in the `lib` directory.
 
 -   [ ] **9. Integrate into CI/CD Pipeline**
     -   [ ] If using GitHub Actions, create a `.github/workflows/ci.yml` file.

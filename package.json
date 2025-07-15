@@ -1,3 +1,4 @@
+
 {
   "name": "linguascribe",
   "version": "0.1.0",
@@ -8,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "prisma:seed": "ts-node prisma/seed.cts"
   },
   "prisma": {
@@ -62,6 +64,7 @@
     "@eslint/js": "^9.29.0",
     "@supabase/ssr": "^0.6.1",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/react": "^16.0.0",
     "@types/jest": "^29.5.12",
     "@types/next": "^8.0.7",
     "@types/next-pwa": "^5.6.9",

@@ -17,13 +17,13 @@ jest.mock('@/lib/stores/language.store');
 
 const mockMutate = jest.fn();
 const mockedUseStuckWriterSuggestions = useStuckWriterSuggestions as jest.Mock;
-const mockedUseLanguageStore = useLanguageStore as jest.Mock;
+const mockedUseLanguageStore = useLanguageStore as unknown as jest.Mock;
 
 // A simplified mock of the Tiptap editor
 const createMockEditor = () => {
-  const listeners: { [key: string]: Function } = {};
+  const listeners: { [key: string]: (...args: any[]) => any } = {};
   return {
-    on: jest.fn((event, callback) => {
+    on: jest.fn((event: string, callback: (...args: any[]) => any) => {
       listeners[event] = callback;
     }),
     off: jest.fn(),
@@ -46,7 +46,7 @@ describe('useStuckWriterEffect', () => {
     mockedUseStuckWriterSuggestions.mockReturnValue({
       mutate: mockMutate,
     });
-    mockedUseLanguageStore.mockReturnValue({ activeTargetLanguage: 'english' });
+    mockedUseLanguageStore.mockImplementation(selector => selector({ activeTargetLanguage: 'english' }));
     mockEditor = createMockEditor(); // Create a fresh mock editor for each test
   });
 
