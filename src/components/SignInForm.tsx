@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -9,11 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function SignInForm() {
   const { signIn, error, loading, clearError } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -23,7 +26,10 @@ export default function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn(email, password);
+    const { error } = await signIn(email, password);
+    if (!error) {
+      router.push('/dashboard');
+    }
   };
 
   return (

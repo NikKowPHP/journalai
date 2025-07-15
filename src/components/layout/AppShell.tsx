@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -31,6 +32,12 @@ function AppFooter() {
         <p>© {new Date().getFullYear()} LinguaScribe. All rights reserved.</p>
         <div className="flex gap-4">
           <Link
+            href="/about"
+            className="hover:text-foreground transition-colors"
+          >
+            About Us
+          </Link>
+          <Link
             href="/privacy"
             className="hover:text-foreground transition-colors"
           >
@@ -42,6 +49,12 @@ function AppFooter() {
           >
             Cookie Policy
           </Link>
+          <a
+            href="mailto:lessay.tech@gmail.com"
+            className="hover:text-foreground transition-colors"
+          >
+            Contact Us
+          </a>
         </div>
       </div>
     </footer>
@@ -273,8 +286,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col overflow-hidden">
           <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
             {children}
-            <AppFooter />
           </main>
+          <AppFooter />
           <BottomTabBar />
         </div>
         <OnboardingOverlay />
@@ -284,7 +297,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   // Otherwise, show the public layout
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <nav className="bg-background/80 backdrop-blur-lg border-b sticky top-0 z-40">
         <div className="container mx-auto flex justify-between items-center h-16">
           <Link href="/" className="text-lg font-bold">
@@ -304,8 +317,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </nav>
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
       <AppFooter />
-    </>
+    </div>
   );
 }

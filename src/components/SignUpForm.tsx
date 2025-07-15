@@ -1,3 +1,4 @@
+
 'use client';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function SignUpForm() {
   const { signUp, error, loading, clearError } = useAuthStore();
@@ -18,6 +20,7 @@ export default function SignUpForm() {
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [verificationSent, setVerificationSent] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     return () => {
@@ -45,7 +48,13 @@ export default function SignUpForm() {
 
     const { data, error: signUpError } = await signUp(email, password);
 
-    if (!signUpError && data?.user?.confirmation_sent_at) {
+    if (signUpError) {
+      return;
+    }
+
+    if (data?.session) {
+      router.push('/dashboard');
+    } else if (data?.user?.confirmation_sent_at) {
       setVerificationSent(true);
       setEmail('');
       setPassword('');

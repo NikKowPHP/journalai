@@ -1,3 +1,4 @@
+
 "use client";
 import { ProficiencyChart } from "@/components/ProficiencyChart";
 import { SubskillScores } from "@/components/SubskillScores";
@@ -30,7 +31,7 @@ export default function AnalyticsPage() {
 
   if (userError || error) return <div>Error: {(userError as Error)?.message || (error as Error)?.message}</div>;
 
-  if (userData.subscriptionTier !== "PRO") {
+  if (!userData || !["PRO", "ADMIN"].includes(userData.subscriptionTier)) {
     return (
       <div className="container mx-auto p-6 space-y-8">
         <h1 className="text-3xl font-bold">Analytics (Pro Feature)</h1>

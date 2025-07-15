@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
@@ -33,17 +34,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to sign in');
       }
+
       if (data.session) {
         const supabase = createClient();
         await supabase.auth.setSession({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
         });
-        // The onAuthStateChange listener will update the user state
+        set({ user: data.user, loading: false }); // Immediate update
       } else {
-        throw new Error('Login successful but no session returned.');
+        set({ loading: false });
+        // This might be an email verification case, so we don't throw an error.
       }
-      set({ loading: false });
+      
       return { error: null };
     } catch (err: unknown) {
       const error = err as Error;
@@ -64,8 +67,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to sign up');
       }
-      // The onAuthStateChange listener will handle setting the user if email confirmation is not required.
-      set({ loading: false });
+      
+      if (data.session) {
+        set({ user: data.user, loading: false }); // Immediate update for auto-verified accounts
+      } else {
+        set({ loading: false }); // For accounts needing email verification
+      }
+
       return { data, error: null };
     } catch (err: unknown) {
       const error = err as Error;

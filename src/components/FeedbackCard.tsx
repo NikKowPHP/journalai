@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Card } from "@/components/ui/card";
@@ -17,14 +18,17 @@ interface FeedbackCardProps {
   explanation: string;
   mistakeId: string;
   onOnboardingAddToDeck?: () => void;
+  isAlreadyInDeck: boolean;
 }
 
 function AddToDeckButton({
   mistakeId,
   onOnboardingAddToDeck,
+  isAlreadyInDeck,
 }: {
   mistakeId: string;
   onOnboardingAddToDeck?: () => void;
+  isAlreadyInDeck: boolean;
 }) {
   const queryClient = useQueryClient();
   const { mutate, isPending, isSuccess } = useMutation({
@@ -36,10 +40,10 @@ function AddToDeckButton({
     },
   });
 
-  if (isSuccess) {
+  if (isSuccess || isAlreadyInDeck) {
     return (
       <Button variant="secondary" className="w-full" disabled>
-        Added to Deck!
+        {isAlreadyInDeck ? "Already in Deck" : "Added to Deck!"}
       </Button>
     );
   }
@@ -62,6 +66,7 @@ export function FeedbackCard({
   explanation,
   mistakeId,
   onOnboardingAddToDeck,
+  isAlreadyInDeck,
 }: FeedbackCardProps) {
   return (
     <Card className="p-6 space-y-6">
@@ -85,6 +90,7 @@ export function FeedbackCard({
       <AddToDeckButton
         mistakeId={mistakeId}
         onOnboardingAddToDeck={onOnboardingAddToDeck}
+        isAlreadyInDeck={isAlreadyInDeck}
       />
     </Card>
   );

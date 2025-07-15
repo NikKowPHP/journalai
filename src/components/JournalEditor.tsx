@@ -1,3 +1,4 @@
+
 import {
   useEditor,
   EditorContent,
@@ -267,7 +268,7 @@ export function JournalEditor({
       }
       stuckTimer.current = setTimeout(() => {
         const currentText = editor.getText();
-        if (currentText.trim().length > 5 && activeTargetLanguage) {
+        if (currentText.trim().length > 0 && activeTargetLanguage) {
           // check if editor has content
           stuckSuggestionsMutation.mutate(
             {
@@ -299,13 +300,7 @@ export function JournalEditor({
         clearTimeout(stuckTimer.current);
       }
     };
-  }, [
-    editor,
-    autocompleteMutation,
-    stuckSuggestionsMutation,
-    topicTitle,
-    activeTargetLanguage,
-  ]);
+  }, [editor, autocompleteMutation, topicTitle, activeTargetLanguage]);
 
   const handleSubmit = async () => {
     if (!editor) return;
@@ -331,7 +326,7 @@ export function JournalEditor({
   };
 
   const handleApplyTranslation = (text: string) => {
-    editor?.chain().focus().setContent(text).run();
+    editor?.chain().focus().insertContent(" " + text).run();
   };
 
   if (!editor) {

@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -29,6 +30,7 @@ export async function POST(
   );
 
   try {
+    let generatedTitle: string | undefined;
     const journal = await prisma.journalEntry.findFirst({
       where: { id: journalId, authorId: user.id },
       include: {
@@ -55,12 +57,6 @@ export async function POST(
       );
     }
 
-    if (journal.analysis) {
-      await prisma.analysis.delete({
-        where: { id: journal.analysis.id },
-      });
-    }
-
     const languageProfile = await prisma.languageProfile.findUnique({
       where: {
         userId_language: { userId: user.id, language: targetLanguage },
@@ -74,66 +70,80 @@ export async function POST(
       targetLanguage,
       proficiencyScore,
     );
-
+    
     if (journal.topic?.title === "Free Write") {
-      const generatedTitle = await aiService.generateTitleForEntry(
+      generatedTitle = await aiService.generateTitleForEntry(
         journal.content,
       );
-      await prisma.topic.update({
-        where: { id: journal.topicId },
-        data: { title: generatedTitle },
-      });
     }
 
-    const newAnalysis = await prisma.analysis.create({
-      data: {
-        entryId: journalId,
-        grammarScore: analysisResult.grammarScore,
-        phrasingScore: analysisResult.phrasingScore,
-        vocabScore: analysisResult.vocabularyScore,
-        feedbackJson: analysisResult.feedback,
-        rawAiResponse: JSON.stringify(analysisResult),
-        mistakes: {
-          create: analysisResult.mistakes.map((mistake) => ({
-            type: mistake.type,
-            originalText: mistake.original,
-            correctedText: mistake.corrected,
-            explanation: mistake.explanation,
-          })),
+    const newAnalysis = await prisma.$transaction(async (tx) => {
+      if (journal.analysis) {
+        await tx.analysis.delete({
+          where: { id: journal.analysis.id },
+        });
+      }
+
+      if (generatedTitle) {
+        await tx.topic.update({
+          where: { id: journal.topicId },
+          data: { title: generatedTitle },
+        });
+      }
+
+      const createdAnalysis = await tx.analysis.create({
+        data: {
+          entryId: journalId,
+          grammarScore: analysisResult.grammarScore,
+          phrasingScore: analysisResult.phrasingScore,
+          vocabScore: analysisResult.vocabularyScore,
+          feedbackJson: analysisResult.feedback,
+          rawAiResponse: JSON.stringify(analysisResult),
+          mistakes: {
+            create: analysisResult.mistakes.map((mistake) => ({
+              type: mistake.type,
+              originalText: mistake.original,
+              correctedText: mistake.corrected,
+              explanation: mistake.explanation,
+            })),
+          },
         },
-      },
-    });
+      });
 
-    const userAnalyses = await prisma.analysis.findMany({
-      where: {
-        entry: {
-          authorId: user.id,
-          targetLanguage: targetLanguage,
+      const userAnalyses = await tx.analysis.findMany({
+        where: {
+          entry: {
+            authorId: user.id,
+            targetLanguage: targetLanguage,
+          },
         },
-      },
-      select: {
-        grammarScore: true,
-        phrasingScore: true,
-        vocabScore: true,
-      },
-    });
+        select: {
+          grammarScore: true,
+          phrasingScore: true,
+          vocabScore: true,
+        },
+      });
 
-    const totalScores = userAnalyses.reduce((acc, analysis) => {
-      return (
-        acc +
-        analysis.grammarScore +
-        analysis.phrasingScore +
-        analysis.vocabScore
-      );
-    }, 0);
+      const totalScores = userAnalyses.reduce((acc, analysis) => {
+        return (
+          acc +
+          analysis.grammarScore +
+          analysis.phrasingScore +
+          analysis.vocabScore
+        );
+      }, 0);
 
-    const averageScore = totalScores / (userAnalyses.length * 3);
+      const averageScore =
+        userAnalyses.length > 0 ? totalScores / (userAnalyses.length * 3) : 0;
 
-    await prisma.languageProfile.update({
-      where: {
-        userId_language: { userId: user.id, language: targetLanguage },
-      },
-      data: { aiAssessedProficiency: averageScore },
+      await tx.languageProfile.update({
+        where: {
+          userId_language: { userId: user.id, language: targetLanguage },
+        },
+        data: { aiAssessedProficiency: averageScore },
+      });
+
+      return createdAnalysis;
     });
 
     return NextResponse.json(newAnalysis);

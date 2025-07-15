@@ -1,61 +1,130 @@
-### Phase 1: Backend & AI Core Infrastructure
-
-This phase focuses on creating the necessary AI logic and the API endpoint to serve suggestions to the frontend.
-
--   [x] **1. Extend AI Service Interface (`generation-service.ts`)**
-    -   [x] In `src/lib/ai/generation-service.ts`, define a new context interface: `StuckWriterContext { topic: string; currentText: string; targetLanguage: string; }`.
-    -   [x] Add a new method signature to the `QuestionGenerationService` interface: `generateStuckWriterSuggestions(context: StuckWriterContext): Promise<{ suggestions: string[] }>;`.
-
--   [x] **2. Implement AI Logic in Gemini Service (`gemini-service.ts`)**
-    -   [x] In `src/lib/ai/gemini-service.ts`, implement the new `generateStuckWriterSuggestions` method.
-    -   [x] Develop a system prompt that instructs the AI to act as a supportive writing coach.
-    -   [x] The prompt should take the `topic`, `currentText`, and `targetLanguage` as input.
-    -   [x] Instruct the AI to generate 2-3 open-ended, thought-provoking questions in the specified `targetLanguage` to help the user continue writing.
-    -   [x] Mandate the response format to be a raw JSON object: `{"suggestions": ["question 1", "question 2"]}`.
-    -   [x] Use the existing `cleanJsonString` method to parse the AI's response reliably.
-
--   [x] **3. Create the API Endpoint (`stuck-helper/route.ts`)**
-    -   [x] Create a new file: `src/app/api/ai/stuck-helper/route.ts`.
-    -   [x] Implement a `POST` request handler in this file.
-    -   [x] Secure the endpoint by requiring a valid user session using the Supabase server client.
-    -   [x] Use `zod` to define a schema and validate the incoming request body for `topic`, `currentText`, and `targetLanguage`.
-    -   [x] Call the `getQuestionGenerationService().generateStuckWriterSuggestions()` method with the validated data.
-    -   [x] Add rate limiting using the `tieredRateLimiter` to manage API usage costs.
-    -   [x] Return the AI-generated suggestions as a JSON response.
-
--   [x] **4. Update API Client & Data Hooks**
-    -   [x] In `src/lib/services/api-client.service.ts`, add a new method under the `ai` object: `getStuckSuggestions(payload: { topic: string; currentText: string; targetLanguage: string; })`. This method will call the new `/api/ai/stuck-helper` endpoint.
-    -   [x] In `src/lib/hooks/data-hooks.ts`, create a new mutation hook `useStuckWriterSuggestions`. This hook will use `@tanstack/react-query`'s `useMutation` to call `apiClient.ai.getStuckSuggestions`.
-
-### Phase 2: Frontend Integration & UI
-
-This phase focuses on detecting user inactivity in the editor and displaying the AI-generated suggestions.
-
--   [x] **5. Enhance Journal Editor State (`JournalEditor.tsx`)**
-    -   [x] In `src/components/JournalEditor.tsx`, add new state variables:
-        -   `const [stuckSuggestions, setStuckSuggestions] = useState<string[] | null>(null);`
-        -   `const [showStuckUI, setShowStuckUI] = useState(false);`
-    -   [x] Add a `useRef` for the inactivity timer: `const stuckTimer = useRef<NodeJS.Timeout | null>(null);`.
-    -   [x] Instantiate the new mutation hook: `const stuckSuggestionsMutation = useStuckWriterSuggestions();`.
-
--   [x] **6. Implement Inactivity Detection Logic (`JournalEditor.tsx`)**
-    -   [x] In the main `useEffect` that listens to editor updates (`editor.on('update', ...)`), add the new timer logic.
-    -   [x] On every editor update, clear the `stuckTimer` and hide any existing suggestions (`setStuckSuggestions(null); setShowStuckUI(false);`).
-    -   [x] Set a new `setTimeout` for 7000ms (7 seconds).
-    -   [x] In the timer's callback function, check if the editor has content. If it does, call `stuckSuggestionsMutation.mutate()` with the required payload (`topicTitle`, `editor.getText()`, `activeTargetLanguage`).
-    -   [x] In the `onSuccess` callback of the mutation, update the `stuckSuggestions` state with the response data and set `setShowStuckUI(true)`.
-    -   [x] Ensure the `useEffect` cleanup function clears the `stuckTimer`.
-
--   [x] **7. Create the Stuck Writer Helper UI Component**
-    -   [x] Inside `src/components/JournalEditor.tsx`, create a new functional component named `StuckWriterHelper`.
-    -   [x] This component will accept `suggestions: string[]` and `onDismiss: () => void` as props.
-    -   [x] Design a small, non-intrusive `Card` or `Alert`-style component. It should appear subtly below the editor.
-    -   [x] The component should have a title (e.g., "Need a nudge?") and list the suggestions.
-    -   [x] Add a close (`X`) button that triggers the `onDismiss` function.
-
--   [x] **8. Render the Helper UI Conditionally (`JournalEditor.tsx`)**
-    -   [x] In the main `JournalEditor` component's JSX, add a conditional render block.
-    -   [x] Render the `<StuckWriterHelper />` component only when `showStuckUI` is `true` and `stuckSuggestions` is not null.
-    -   [x] Pass the `stuckSuggestions` state and a dismiss function (`() => setShowStuckUI(false)`) to the component's props.
-    -   [x] Use Tailwind CSS for styling to ensure it's responsive and fits the existing design system.
+### [BASH_COMMANDS]
+```bash
+mkdir -p src/app/about
+touch src/app/about/page.tsx
 ```
+### src/app/about/page.tsx
+```tsx
+
+```
+### src/app/analytics/page.tsx
+```tsx
+```
+### src/app/api/journal/[id]/retry-analysis/route.ts
+```ts
+```
+### src/app/cookies/page.tsx
+```tsx
+
+```
+### src/app/journal/[id]/page.tsx
+```tsx
+```
+### src/app/privacy/page.tsx
+```tsx
+```
+### src/components/FeedbackCard.tsx
+```tsx
+```
+### src/components/JournalEditor.tsx
+```tsx
+```
+### src/components/SignInForm.tsx
+```tsx
+```
+### src/components/SignUpForm.tsx
+```tsx
+```
+### src/components/layout/AppShell.tsx
+```tsx
+```
+### src/lib/stores/auth.store.ts
+```ts
+```
+### docs/phases/phase-l-after-implementation.md
+```md
+### **Final Consolidated Task Plan**
+
+#### **Phase 1: Backend & Core Logic Fixes**
+
+This phase addresses critical backend errors and access control flaws.
+
+-   [x] **1. Fix Unique Constraint Violation with Transaction (`retry-analysis/route.ts`)**
+    -   [x] Open `src/app/api/journal/[id]/retry-analysis/route.ts`.
+    -   [x] Wrap the database operations (delete old analysis, create new one, update language profile) inside a `prisma.$transaction(async (tx) => { ... })` block to ensure atomicity.
+    -   [x] Use the transactional client `tx` for all database calls within the block.
+
+-   [x] **2. Fix Admin Analytics Access Logic (`analytics/page.tsx`)**
+    -   [x] Open `src/app/analytics/page.tsx`.
+    -   [x] Modify the access control check from `if (userData.subscriptionTier !== "PRO")` to `if (!["PRO", "ADMIN"].includes(userData.subscriptionTier))` to correctly grant access to Admin users.
+
+#### **Phase 2: Authentication Flow Enhancement**
+
+This phase ensures a seamless, no-refresh login/signup experience.
+
+-   [x] **3. Enhance Auth Store for Immediate State Updates (`auth.store.ts`)**
+    -   [x] Open `src/lib/stores/auth.store.ts`.
+    -   [x] In both the `signIn` and `signUp` methods, after a successful API response that includes a session, immediately update the client state by calling `set({ user: data.user, loading: false });`.
+
+-   [x] **4. Implement Client-Side Redirection in `SignInForm.tsx` & `SignUpForm.tsx`**
+    -   [x] In both `src/components/SignInForm.tsx` and `src/components/SignUpForm.tsx`, import and use the `useRouter` hook from `next/navigation`.
+    -   [x] In their respective `handleSubmit` functions, after a successful login/signup that returns a session, programmatically redirect the user using `router.push('/dashboard');`.
+
+#### **Phase 3: Frontend UI/UX & Layout Fixes**
+
+This phase fixes all remaining UI bugs and improves the overall layout and user experience.
+
+-   [x] **5. Fix Sticky Footer Layout (`AppShell.tsx`)**
+    -   [x] Open `src/components/layout/AppShell.tsx`.
+    -   [x] Modify the main layout structure to ensure the footer sticks to the bottom of the viewport on short content pages. The `<AppFooter />` should be a sibling of the `<main>` element within the main flex column, not a child of `<main>`.
+
+-   [x] **6. Fix Translator Append Logic (`JournalEditor.tsx`)**
+    -   [x] Open `src/components/JournalEditor.tsx`.
+    -   [x] In the `handleApplyTranslation` function, change the editor command from `setContent(text)` to `insertContent(' ' + text)`.
+
+-   [x] **7. Fix "Stuck Writer" Inactivity Detection (`JournalEditor.tsx`)**
+    -   [x] In the `useEffect` hook that manages inactivity timers, remove `stuckSuggestionsMutation` from the dependency array.
+    -   [x] In the timer's callback, change the trigger condition from `currentText.trim().length > 5` to `currentText.trim().length > 0`.
+
+-   [x] **8. Prevent Duplicate Flashcard Creation**
+    -   [x] **Step 8a: Fetch Data in `journal/[id]/page.tsx`**: Use the `useStudyDeck` hook to fetch the user's existing flashcards and add its loading state to the page's check.
+    -   [x] **Step 8b: Update `FeedbackCard.tsx`**: Add an `isAlreadyInDeck: boolean;` prop. Update the `AddToDeckButton` to render a disabled "Already in Deck" button if this prop is true.
+    -   [x] **Step 8c: Connect Logic in `journal/[id]/page.tsx`**: When rendering `FeedbackCard`s, check if the mistake is already in the fetched `studyDeck` and pass the resulting boolean to the `isAlreadyInDeck` prop.
+
+#### **Phase 4: Content & Compliance**
+
+This phase adds necessary legal and informational pages.
+
+-   [x] **9. Create Privacy Policy Content (`privacy/page.tsx`)**
+    -   [x] Open `src/app/privacy/page.tsx`.
+    -   [x] Replace the placeholder with a comprehensive privacy policy detailing data collection (email, journal content), usage (authentication, AI analysis), third-party sharing (Google Gemini API, Stripe), and user rights (data export, deletion).
+
+-   [x] **10. Create Cookie Policy Content (`cookies/page.tsx`)**
+    -   [x] Open `src/app/cookies/page.tsx`.
+    -   [x] Replace the placeholder with a policy explaining essential cookies (Supabase session), functional storage (`localStorage` for theme/language), and consent management via the cookie banner.
+
+-   [x] **11. Create "About Us" Page (`about/page.tsx`)**
+    -   [x] Create a new route directory: `src/app/about/`.
+    -   [x] Create the page file: `src/app/about/page.tsx`.
+    -   [x] Populate the page with content explaining the app's origin from Poland and introducing the team: a developer who is an experienced polyglot, and a designer who shares a passion for languages. Frame it around the mission of building the language tool they always wanted.
+
+#### **Phase 5: Final Touches & Footer Update**
+
+This final phase connects the new content and updates the footer for better navigation.
+
+-   [x] **12. Update App Footer (`AppShell.tsx`)**
+    -   [x] Open `src/components/layout/AppShell.tsx`.
+    -   [x] Locate the `<AppFooter>` component's JSX.
+    -   [x] In the navigation links section, add two new items:
+        *   A link to the new "About Us" page: `<Link href="/about">About Us</Link>`.
+        *   A direct contact email link: `<a href="mailto:lessay.tech@gmail.com">Contact Us</a>`.
+```
+
+
+### src/app/api/journal/[id]/retry-analysis/route.ts
+```ts
+```
+### src/app/privacy/page.tsx
+```tsx
+```
+

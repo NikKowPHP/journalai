@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
@@ -10,6 +11,7 @@ import {
   useJournalEntry,
   useRetryJournalAnalysis,
   useAnalyzeJournal,
+  useStudyDeck,
 } from "@/lib/hooks/data-hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Spinner from "@/components/ui/Spinner";
@@ -45,6 +47,7 @@ export default function JournalAnalysisPage() {
   const isTourActive = step === "VIEW_ANALYSIS";
 
   const { data: journal, isLoading, error } = useJournalEntry(id);
+  const { data: studyDeck, isLoading: isStudyDeckLoading } = useStudyDeck();
   const retryAnalysisMutation = useRetryJournalAnalysis();
   const analyzeJournalMutation = useAnalyzeJournal();
 
@@ -54,7 +57,9 @@ export default function JournalAnalysisPage() {
     }
   }, [journal, analyzeJournalMutation, id]);
 
-  if (isLoading) {
+  const isPageLoading = isLoading || isStudyDeckLoading;
+
+  if (isPageLoading) {
     return (
       <div className="container mx-auto p-4 space-y-6">
         <Skeleton className="h-8 w-1/3" />
@@ -142,36 +147,44 @@ export default function JournalAnalysisPage() {
                 {journal.analysis.mistakes &&
                 journal.analysis.mistakes.length > 0 ? (
                   journal.analysis.mistakes.map(
-                    (feedback: any, index: number) => (
-                      <div
-                        key={feedback.id}
-                        className="w-full lg:w-2/3 mx-auto"
-                      >
-                        {isTourActive && index === 0 ? (
-                          <GuidedPopover
-                            title="Create a Flashcard"
-                            description="Click 'Add to Study Deck' to save this correction for later practice."
-                          >
+                    (feedback: any, index: number) => {
+                      const isAlreadyInDeck =
+                        studyDeck?.some(
+                          (item: any) => item.mistakeId === feedback.id,
+                        ) ?? false;
+                      return (
+                        <div
+                          key={feedback.id}
+                          className="w-full lg:w-2/3 mx-auto"
+                        >
+                          {isTourActive && index === 0 ? (
+                            <GuidedPopover
+                              title="Create a Flashcard"
+                              description="Click 'Add to Study Deck' to save this correction for later practice."
+                            >
+                              <FeedbackCard
+                                original={feedback.originalText}
+                                suggestion={feedback.correctedText}
+                                explanation={feedback.explanation}
+                                mistakeId={feedback.id}
+                                onOnboardingAddToDeck={() =>
+                                  setStep("CREATE_DECK")
+                                }
+                                isAlreadyInDeck={isAlreadyInDeck}
+                              />
+                            </GuidedPopover>
+                          ) : (
                             <FeedbackCard
                               original={feedback.originalText}
                               suggestion={feedback.correctedText}
                               explanation={feedback.explanation}
                               mistakeId={feedback.id}
-                              onOnboardingAddToDeck={() =>
-                                setStep("CREATE_DECK")
-                              }
+                              isAlreadyInDeck={isAlreadyInDeck}
                             />
-                          </GuidedPopover>
-                        ) : (
-                          <FeedbackCard
-                            original={feedback.originalText}
-                            suggestion={feedback.correctedText}
-                            explanation={feedback.explanation}
-                            mistakeId={feedback.id}
-                          />
-                        )}
-                      </div>
-                    ),
+                          )}
+                        </div>
+                      );
+                    },
                   )
                 ) : (
                   <div className="w-full lg:w-2/3 mx-auto">
