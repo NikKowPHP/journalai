@@ -11,6 +11,10 @@ export interface ProfileData {
   selfAssessedLevel: string;
 }
 
+export type ProfileUpdateData = Partial<ProfileData> & {
+  newTargetLanguage?: string;
+};
+
 export interface OnboardingData extends ProfileData {}
 
 export const apiClient = {
@@ -19,7 +23,7 @@ export const apiClient = {
       const { data } = await axios.get("/api/user/profile");
       return data;
     },
-    update: async (profileData: Partial<ProfileData>) => {
+    update: async (profileData: ProfileUpdateData) => {
       const { data } = await axios.put("/api/user/profile", profileData);
       return data;
     },

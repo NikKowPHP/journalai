@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient, ProfileData } from "../services/api-client.service";
+import { apiClient, ProfileData, ProfileUpdateData } from "../services/api-client.service";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { OnboardingData } from "../services/api-client.service";
 import { useToast } from "@/components/ui/use-toast";
@@ -65,7 +65,7 @@ export const useUpdateProfile = () => {
   const { toast } = useToast();
   const authUser = useAuthStore((state) => state.user);
   return useMutation({
-    mutationFn: (data: Partial<ProfileData>) => apiClient.profile.update(data),
+    mutationFn: (data: ProfileUpdateData) => apiClient.profile.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["userProfile", authUser?.id],

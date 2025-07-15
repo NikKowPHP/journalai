@@ -4,6 +4,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -12,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "./ui/skeleton";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
+import { useState } from "react";
 
 interface ProfileFormProps {
   email?: string;
@@ -21,6 +30,7 @@ interface ProfileFormProps {
   writingPurpose?: string;
   selfAssessedLevel?: string;
   isLoading?: boolean;
+  languageProfiles?: { language: string }[];
 }
 
 const ProfileFormSkeleton = () => (
@@ -55,6 +65,11 @@ const ProfileFormSkeleton = () => (
   </Card>
 );
 
+function getLanguageName(value: string) {
+  const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+  return lang ? lang.name : value;
+}
+
 export function ProfileForm({
   email,
   nativeLanguage,
@@ -63,8 +78,30 @@ export function ProfileForm({
   writingPurpose,
   selfAssessedLevel,
   isLoading,
+  languageProfiles,
 }: ProfileFormProps) {
   const { mutate: updateProfile, isPending } = useUpdateProfile();
+
+  const [isAddLanguageOpen, setIsAddLanguageOpen] = useState(false);
+  const [newLanguage, setNewLanguage] = useState("");
+
+  const availableLanguages = SUPPORTED_LANGUAGES.filter(
+    (lang) => !languageProfiles?.some((p) => p.language === lang.value),
+  );
+
+  const handleAddNewLanguage = () => {
+    if (newLanguage) {
+      updateProfile(
+        { newTargetLanguage: newLanguage },
+        {
+          onSuccess: () => {
+            setIsAddLanguageOpen(false);
+            setNewLanguage("");
+          },
+        },
+      );
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -115,19 +152,58 @@ export function ProfileForm({
           </div>
 
           <div className="space-y-2">
-            <Label>Target Language</Label>
+            <Label>Default Target Language</Label>
             <Select name="targetLanguage" defaultValue={targetLanguage}>
               <SelectTrigger>
                 <SelectValue placeholder="Select language" />
               </SelectTrigger>
               <SelectContent>
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    {lang.name}
+                {languageProfiles?.map((profile) => (
+                  <SelectItem key={profile.language} value={profile.language}>
+                    {getLanguageName(profile.language)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Learn a New Language</Label>
+            <Dialog
+              open={isAddLanguageOpen}
+              onOpenChange={setIsAddLanguageOpen}
+            >
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  Add New Language
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add a new language to learn</DialogTitle>
+                </DialogHeader>
+                <Select onValueChange={setNewLanguage} value={newLanguage}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a new language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableLanguages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <DialogFooter>
+                  <Button
+                    onClick={handleAddNewLanguage}
+                    disabled={!newLanguage || isPending}
+                  >
+                    {isPending ? "Adding..." : "Add Language"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="space-y-2">

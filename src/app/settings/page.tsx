@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import Link from "next/link";
@@ -42,10 +43,11 @@ export default function SettingsPage() {
             isLoading={isLoading}
             email={profile?.email}
             nativeLanguage={profile?.nativeLanguage}
-            targetLanguage={profile?.targetLanguage}
+            targetLanguage={profile?.defaultTargetLanguage}
             writingStyle={profile?.writingStyle}
             writingPurpose={profile?.writingPurpose}
             selfAssessedLevel={profile?.selfAssessedLevel}
+            languageProfiles={profile?.languageProfiles}
           />
         </section>
 
