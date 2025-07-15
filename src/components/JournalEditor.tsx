@@ -1,3 +1,4 @@
+
 import {
   useEditor,
   EditorContent,
@@ -19,6 +20,7 @@ import { Skeleton } from "./ui/skeleton";
 import { Lightbulb } from "lucide-react";
 import { Extension } from "@tiptap/core";
 import { useRouter } from "next/navigation";
+import { useLanguageStore } from "@/lib/stores/language.store";
 
 // --- WritingAids Sub-component ---
 interface WritingAidsProps {
@@ -27,6 +29,9 @@ interface WritingAidsProps {
 }
 
 const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   const {
     data: aids,
     mutate: fetchAids,
@@ -36,15 +41,15 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
       fetch("/api/journal/helpers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, targetLanguage: activeTargetLanguage }),
       }).then((res) => res.json()),
   });
 
   useEffect(() => {
-    if (topicTitle && topicTitle !== "Free Write") {
+    if (topicTitle && topicTitle !== "Free Write" && activeTargetLanguage) {
       fetchAids(topicTitle);
     }
-  }, [topicTitle, fetchAids]);
+  }, [topicTitle, fetchAids, activeTargetLanguage]);
 
   if (topicTitle === "Free Write" || (!isPending && !aids)) {
     return null;

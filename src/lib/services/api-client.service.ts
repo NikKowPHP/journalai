@@ -25,21 +25,25 @@ export const apiClient = {
     },
   },
   analytics: {
-    get: async () => {
-      const { data } = await axios.get("/api/analytics");
+    get: async (params: { targetLanguage: string }) => {
+      const { data } = await axios.get("/api/analytics", { params });
       return data;
     },
   },
   journal: {
-    getAll: async () => {
-      const { data } = await axios.get("/api/journal");
+    getAll: async (params: { targetLanguage: string }) => {
+      const { data } = await axios.get("/api/journal", { params });
       return data;
     },
     getById: async (id: string) => {
       const { data } = await axios.get(`/api/journal/${id}`);
       return data;
     },
-    create: async (payload: { content: string; topicTitle?: string }) => {
+    create: async (payload: {
+      content: string;
+      topicTitle?: string;
+      targetLanguage: string;
+    }) => {
       const { data } = await axios.post("/api/journal", payload);
       return data;
     },
@@ -55,8 +59,8 @@ export const apiClient = {
     },
   },
   srs: {
-    getDeck: async () => {
-      const { data } = await axios.get("/api/srs/deck");
+    getDeck: async (params: { targetLanguage: string }) => {
+      const { data } = await axios.get("/api/srs/deck", { params });
       return data;
     },
     createFromMistake: async (mistakeId: string) => {
@@ -71,8 +75,10 @@ export const apiClient = {
     },
   },
   user: {
-    generateTopics: async () => {
-      const { data } = await axios.get("/api/user/generate-topics");
+    generateTopics: async (params: { targetLanguage: string }) => {
+      const { data } = await axios.get("/api/user/generate-topics", {
+        params,
+      });
       return data;
     },
     delete: async () => {

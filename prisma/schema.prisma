@@ -11,65 +11,77 @@ model User {
   id                    String    @id
   email                 String    @unique
   supabaseAuthId        String    @unique
-  nativeLanguage        String?   // Used for contextual translation
-  targetLanguage        String?
+  nativeLanguage        String?
+  defaultTargetLanguage String?
   writingStyle          String?
   writingPurpose        String?
   selfAssessedLevel     String?
-  aiAssessedProficiency Float     @default(2.0)
-  proficiencySubScores  Json?
   status                String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
   lastUsageReset        DateTime? // Timestamp for resetting daily limits
   onboardingCompleted   Boolean   @default(false)
 
   // Monetization
-  stripeCustomerId   String?   @unique
-  subscriptionTier   String    @default("FREE")
+  stripeCustomerId   String? @unique
+  subscriptionTier   String  @default("FREE")
   subscriptionStatus String?
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  topics         Topic[]
-  journalEntries JournalEntry[]
-  srsItems       SrsReviewItem[]
+  topics           Topic[]
+  journalEntries   JournalEntry[]
+  srsItems         SrsReviewItem[]
+  languageProfiles LanguageProfile[]
+}
+
+model LanguageProfile {
+  id                    String @id @default(cuid())
+  userId                String
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language              String
+  aiAssessedProficiency Float  @default(2.0)
+  proficiencySubScores  Json?
+
+  @@unique([userId, language])
 }
 
 model Topic {
-  id             String   @id @default(cuid())
+  id             String         @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   title          String
-  isMastered     Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  targetLanguage String
+  isMastered     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   journalEntries JournalEntry[]
 
-  @@unique([userId, title])
+  @@unique([userId, title, targetLanguage])
 }
 
 model JournalEntry {
-  id        String   @id @default(cuid())
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  topicId   String
-  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  analysis  Analysis?
+  id             String    @id @default(cuid())
+  authorId       String
+  author         User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topicId        String
+  topic          Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  content        String    @db.Text
+  targetLanguage String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  analysis       Analysis?
 }
 
 model Analysis {
-  id            String    @id @default(cuid())
-  entryId       String    @unique
+  id            String       @id @default(cuid())
+  entryId       String       @unique
   entry         JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   grammarScore  Int
   phrasingScore Int
   vocabScore    Int
   feedbackJson  Json
   rawAiResponse Json
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime     @default(now())
   mistakes      Mistake[]
 }
 
@@ -95,6 +107,7 @@ model SrsReviewItem {
   context        String?
   mistakeId      String?   @unique
   mistake        Mistake?  @relation(fields: [mistakeId], references: [id], onDelete: Cascade)
+  targetLanguage String
   nextReviewAt   DateTime
   lastReviewedAt DateTime?
   interval       Int       @default(1)

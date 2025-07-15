@@ -34,31 +34,29 @@ export async function POST(req: NextRequest) {
         topic: true,
       },
     });
-    // No change needed here, the journalWithTopic handles the topic access.
     if (!journal) {
       return NextResponse.json(
         { error: "Journal not found" },
         { status: 404 },
       );
     }
+    const targetLanguage = journal.targetLanguage;
 
-    // 2. Get user's current proficiency score and target language
-    const userData = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { aiAssessedProficiency: true, targetLanguage: true },
+    // 2. Get user's current proficiency score for the language
+    const languageProfile = await prisma.languageProfile.findUnique({
+      where: {
+        userId_language: { userId: user.id, language: targetLanguage },
+      },
     });
-    const proficiencyScore = userData?.aiAssessedProficiency || 2.0;
+    const proficiencyScore = languageProfile?.aiAssessedProficiency || 2.0;
 
-    // 3. Call the AI service with proficiency context and target language
+    // 3. Call the AI service
     const aiService = getQuestionGenerationService();
     const analysisResult = await aiService.analyzeJournalEntry(
       journal.content,
-      userData?.targetLanguage || undefined,
+      targetLanguage,
       proficiencyScore,
     );
-
-    // 3.5 Generate title if this is a free write entry
-    // To access the topic title, we need to include the topic in the journal entry fetch.
 
     if (journal.topic?.title === "Free Write") {
       const generatedTitle = await aiService.generateTitleForEntry(
@@ -70,7 +68,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. Save the results to the Analysis and Mistake tables
+    // 4. Save the results
     const newAnalysis = await prisma.analysis.create({
       data: {
         entryId: journalId,
@@ -90,11 +88,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Calculate new average proficiency score
+    // 5. Calculate new average proficiency score for the language
     const userAnalyses = await prisma.analysis.findMany({
       where: {
         entry: {
           authorId: user.id,
+          targetLanguage: targetLanguage,
         },
       },
       select: {
@@ -115,9 +114,11 @@ export async function POST(req: NextRequest) {
 
     const averageScore = totalScores / (userAnalyses.length * 3);
 
-    // Update user's proficiency score
-    await prisma.user.update({
-      where: { id: user.id },
+    // Update language profile's proficiency score
+    await prisma.languageProfile.update({
+      where: {
+        userId_language: { userId: user.id, language: targetLanguage },
+      },
       data: { aiAssessedProficiency: averageScore },
     });
 

@@ -7,11 +7,13 @@ import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useOnboardingStore } from '@/lib/stores/onboarding.store';
 import { useUserProfile, useJournalHistory, useStudyDeck, useCompleteOnboarding } from '@/lib/hooks/data-hooks';
+import { useLanguageStore } from '@/lib/stores/language.store';
 
 function StoreInitializer() {
   const { setUserAndLoading } = useAuthStore();
   const setOnboardingStep = useOnboardingStore(state => state.setStep);
   const setOnboardingJournalId = useOnboardingStore(state => state.setOnboardingJournalId);
+  const { activeTargetLanguage, setActiveTargetLanguage } = useLanguageStore();
   const initialized = useRef(false);
   const router = useRouter();
 
@@ -41,9 +43,17 @@ function StoreInitializer() {
   
     if (authLoading || isProfileLoading || isJournalsLoading || isDeckLoading) return;
     
+    if (user && userProfile && !activeTargetLanguage) {
+      if (userProfile.defaultTargetLanguage) {
+        setActiveTargetLanguage(userProfile.defaultTargetLanguage);
+      } else if (userProfile.languageProfiles?.length > 0) {
+        setActiveTargetLanguage(userProfile.languageProfiles[0].language);
+      }
+    }
+
     if (user && userProfile && !userProfile.onboardingCompleted) {
 
-      const profileIsComplete = !!(userProfile.nativeLanguage && userProfile.targetLanguage);
+      const profileIsComplete = !!(userProfile.nativeLanguage && userProfile.defaultTargetLanguage);
       const hasJournals = journals && journals.length > 0;
       const hasSrsItems = (userProfile._count?.srsItems ?? 0) > 0;
 
@@ -104,7 +114,9 @@ function StoreInitializer() {
       isDeckLoading,
       setOnboardingStep, 
       setOnboardingJournalId,
-      completeOnboardingMutation
+      completeOnboardingMutation,
+      activeTargetLanguage,
+      setActiveTargetLanguage
   ]);
 
   return null;

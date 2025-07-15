@@ -10,15 +10,28 @@ export async function GET(req: NextRequest) {
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const url = new URL(req.url);
+  const targetLanguage = url.searchParams.get("targetLanguage");
+  if (!targetLanguage)
+    return NextResponse.json(
+      { error: "targetLanguage is required" },
+      { status: 400 },
+    );
+
   try {
-    // 1. Get all analyses for the user
+    // 1. Get all analyses for the user and language
     const analyses = await prisma.analysis.findMany({
-      where: { entry: { authorId: user.id } },
+      where: {
+        entry: { authorId: user.id, targetLanguage: targetLanguage },
+      },
       include: { entry: true },
       orderBy: { createdAt: "asc" },
     });
 
     const totalAnalyses = analyses.length;
+    const languageProfile = await prisma.languageProfile.findUnique({
+      where: { userId_language: { userId: user.id, language: targetLanguage } },
+    });
 
     if (totalAnalyses === 0) {
       return NextResponse.json({
@@ -41,12 +54,8 @@ export async function GET(req: NextRequest) {
         analyses.reduce((sum, a) => sum + a.vocabScore, 0) / totalAnalyses,
     };
 
-    // 3. Calculate overall average score
-    const averageScore =
-      (subskillScores.grammar +
-        subskillScores.phrasing +
-        subskillScores.vocabulary) /
-      3;
+    // 3. Get overall average score from language profile
+    const averageScore = languageProfile?.aiAssessedProficiency || 0;
 
     // 4. Determine weakest skill
     let weakestSkill = "grammar";
@@ -72,7 +81,7 @@ export async function GET(req: NextRequest) {
 
     // 6. Get recent journal entries
     const recentJournals = await prisma.journalEntry.findMany({
-      where: { authorId: user.id },
+      where: { authorId: user.id, targetLanguage: targetLanguage },
       orderBy: { createdAt: "desc" },
       take: 3,
       include: { topic: true },

@@ -24,6 +24,7 @@ export async function POST(request: Request) {
             entry: {
               select: {
                 authorId: true,
+                targetLanguage: true,
               },
             },
           },
@@ -38,12 +39,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Authorization check
     if (mistake.analysis.entry.authorId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Check if an SRS item for this mistake already exists for this user.
     const existingSrsItem = await prisma.srsReviewItem.findUnique({
       where: { mistakeId: mistakeId },
     });
@@ -52,7 +51,6 @@ export async function POST(request: Request) {
       return NextResponse.json(existingSrsItem);
     }
 
-    // Create the SRS item
     const srsItem = await prisma.srsReviewItem.create({
       data: {
         userId: user.id,
@@ -61,6 +59,7 @@ export async function POST(request: Request) {
         backContent: mistake.correctedText,
         context: mistake.explanation,
         mistakeId: mistake.id,
+        targetLanguage: mistake.analysis.entry.targetLanguage,
         nextReviewAt: new Date(),
       },
     });

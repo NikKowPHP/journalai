@@ -12,8 +12,16 @@ export async function GET(req: NextRequest) {
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const url = new URL(req.url);
+  const targetLanguage = url.searchParams.get("targetLanguage");
+  if (!targetLanguage)
+    return NextResponse.json(
+      { error: "targetLanguage is required" },
+      { status: 400 },
+    );
+
   const journals = await prisma.journalEntry.findMany({
-    where: { authorId: user.id },
+    where: { authorId: user.id, targetLanguage: targetLanguage },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -30,6 +38,7 @@ export async function GET(req: NextRequest) {
 const journalSchema = z.object({
   content: z.string().min(1),
   topicTitle: z.string().optional().default("Free Write"),
+  targetLanguage: z.string(),
 });
 
 export async function POST(req: NextRequest) {
@@ -48,20 +57,22 @@ export async function POST(req: NextRequest) {
     if (!parsed.success)
       return NextResponse.json({ error: parsed.error }, { status: 400 });
 
-    const { content, topicTitle } = parsed.data;
+    const { content, topicTitle, targetLanguage } = parsed.data;
 
     // Find or create the topic for the user
     const topic = await prisma.topic.upsert({
       where: {
-        userId_title: {
+        userId_title_targetLanguage: {
           userId: user.id,
           title: topicTitle,
+          targetLanguage,
         },
       },
       update: {},
       create: {
         userId: user.id,
         title: topicTitle,
+        targetLanguage,
       },
     });
 
@@ -70,6 +81,7 @@ export async function POST(req: NextRequest) {
         content,
         topicId: topic.id,
         authorId: user.id,
+        targetLanguage,
       },
     });
 

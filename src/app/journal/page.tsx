@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState } from "react";
 import { JournalEditor } from "@/components/JournalEditor";
@@ -13,6 +14,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SuggestedTopics } from "@/components/SuggestedTopics";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 function JournalPageSkeleton() {
   return (
@@ -77,7 +79,10 @@ export default function JournalPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold">My Journal</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">My Journal</h1>
+        <LanguageSwitcher />
+      </div>
       <div className="space-y-4">
         <Button
           onClick={handleGenerateTopics}

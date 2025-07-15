@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { getQuestionGenerationService } from "@/lib/ai";
 import { logger } from "@/lib/logger";
+import { NextRequest } from "next/server";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient();
     const {
@@ -15,22 +16,34 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { targetLanguage: true, aiAssessedProficiency: true },
+    const url = new URL(req.url);
+    const targetLanguage = url.searchParams.get("targetLanguage");
+    if (!targetLanguage)
+      return NextResponse.json(
+        { error: "targetLanguage is required" },
+        { status: 400 },
+      );
+
+    const languageProfile = await prisma.languageProfile.findUnique({
+      where: {
+        userId_language: {
+          userId: user.id,
+          language: targetLanguage,
+        },
+      },
     });
 
-    if (!dbUser || !dbUser.targetLanguage) {
+    if (!languageProfile) {
       return NextResponse.json(
-        { error: "User profile is not complete" },
+        { error: "User profile for this language is not complete" },
         { status: 400 },
       );
     }
 
     const aiService = getQuestionGenerationService();
     const topics = await aiService.generateTopics({
-      targetLanguage: dbUser.targetLanguage,
-      proficiency: dbUser.aiAssessedProficiency,
+      targetLanguage: targetLanguage,
+      proficiency: languageProfile.aiAssessedProficiency,
       count: 5,
     });
 

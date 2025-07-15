@@ -6,13 +6,14 @@ import { logger } from "@/lib/logger";
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
-
-  // Await the params to get the journal ID
   const { id: journalId } = await params;
   if (!journalId) {
-    return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Journal ID is required" },
+      { status: 400 },
+    );
   }
 
   const supabase = await createClient();
@@ -22,59 +23,58 @@ export async function POST(
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
- 
-  logger.info(`Retry analysis requested for journal ${journalId} by user ${user.id}`);
+
+  logger.info(
+    `Retry analysis requested for journal ${journalId} by user ${user.id}`,
+  );
 
   try {
-    // Verify journal ownership
     const journal = await prisma.journalEntry.findFirst({
       where: { id: journalId, authorId: user.id },
       include: {
         topic: true,
-        analysis: true
-      }
+        analysis: true,
+      },
     });
 
     if (!journal) {
       return NextResponse.json(
         { error: "Journal not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
+    const targetLanguage = journal.targetLanguage;
 
-    // Delete existing analysis if present
     if (journal.analysis) {
       await prisma.analysis.delete({
-        where: { id: journal.analysis.id }
+        where: { id: journal.analysis.id },
       });
     }
 
-    // Get user's current proficiency score and target language
-    const userData = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { aiAssessedProficiency: true, targetLanguage: true }
+    const languageProfile = await prisma.languageProfile.findUnique({
+      where: {
+        userId_language: { userId: user.id, language: targetLanguage },
+      },
     });
-    const proficiencyScore = userData?.aiAssessedProficiency || 2.0;
+    const proficiencyScore = languageProfile?.aiAssessedProficiency || 2.0;
 
-    // Perform analysis using the AI service
     const aiService = getQuestionGenerationService();
     const analysisResult = await aiService.analyzeJournalEntry(
       journal.content,
-      userData?.targetLanguage || undefined,
-      proficiencyScore
+      targetLanguage,
+      proficiencyScore,
     );
 
-    // Generate title if this is a free write entry
     if (journal.topic?.title === "Free Write") {
-      const generatedTitle = await aiService.generateTitleForEntry(journal.content);
+      const generatedTitle = await aiService.generateTitleForEntry(
+        journal.content,
+      );
       await prisma.topic.update({
         where: { id: journal.topicId },
-        data: { title: generatedTitle }
+        data: { title: generatedTitle },
       });
     }
 
-    // Save the new analysis results
     const newAnalysis = await prisma.analysis.create({
       data: {
         entryId: journalId,
@@ -84,44 +84,54 @@ export async function POST(
         feedbackJson: analysisResult.feedback,
         rawAiResponse: JSON.stringify(analysisResult),
         mistakes: {
-          create: analysisResult.mistakes.map(mistake => ({
+          create: analysisResult.mistakes.map((mistake) => ({
             type: mistake.type,
             originalText: mistake.original,
             correctedText: mistake.corrected,
-            explanation: mistake.explanation
-          }))
-        }
-      }
+            explanation: mistake.explanation,
+          })),
+        },
+      },
     });
 
-    // Update user proficiency score (same logic as analyze route)
     const userAnalyses = await prisma.analysis.findMany({
       where: {
         entry: {
-          authorId: user.id
-        }
+          authorId: user.id,
+          targetLanguage: targetLanguage,
+        },
       },
       select: {
         grammarScore: true,
         phrasingScore: true,
-        vocabScore: true
-      }
+        vocabScore: true,
+      },
     });
 
     const totalScores = userAnalyses.reduce((acc, analysis) => {
-      return acc + analysis.grammarScore + analysis.phrasingScore + analysis.vocabScore;
+      return (
+        acc +
+        analysis.grammarScore +
+        analysis.phrasingScore +
+        analysis.vocabScore
+      );
     }, 0);
 
     const averageScore = totalScores / (userAnalyses.length * 3);
 
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { aiAssessedProficiency: averageScore }
+    await prisma.languageProfile.update({
+      where: {
+        userId_language: { userId: user.id, language: targetLanguage },
+      },
+      data: { aiAssessedProficiency: averageScore },
     });
 
     return NextResponse.json(newAnalysis);
   } catch (error) {
     logger.error(`Error retrying analysis for journal ${journalId}`, error);
-    return NextResponse.json({ error: "Failed to retry analysis" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to retry analysis" },
+      { status: 500 },
+    );
   }
 }

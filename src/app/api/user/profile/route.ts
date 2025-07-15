@@ -18,13 +18,14 @@ export async function GET() {
     select: {
       email: true,
       nativeLanguage: true,
-      targetLanguage: true,
+      defaultTargetLanguage: true,
       writingStyle: true,
       writingPurpose: true,
       selfAssessedLevel: true,
       subscriptionTier: true,
       subscriptionStatus: true,
       onboardingCompleted: true,
+      languageProfiles: true,
       _count: {
         select: {
           srsItems: true,
@@ -52,15 +53,27 @@ export async function PUT(req: Request) {
   try {
     const body = await req.json();
     logger.info(`/api/user/profile - PUT - User: ${user.id}`, body);
+    const { targetLanguage, ...restOfBody } = body;
 
     const updatedUser = await prisma.user.update({
       where: { email: user.email },
       data: {
-        nativeLanguage: body.nativeLanguage,
-        targetLanguage: body.targetLanguage,
-        writingStyle: body.writingStyle,
-        writingPurpose: body.writingPurpose,
-        selfAssessedLevel: body.selfAssessedLevel,
+        ...restOfBody,
+        defaultTargetLanguage: targetLanguage,
+        languageProfiles: targetLanguage
+          ? {
+              upsert: {
+                where: {
+                  userId_language: {
+                    userId: user.id,
+                    language: targetLanguage,
+                  },
+                },
+                create: { language: targetLanguage },
+                update: {},
+              },
+            }
+          : undefined,
       },
     });
 

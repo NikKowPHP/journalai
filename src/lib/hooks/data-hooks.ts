@@ -3,6 +3,7 @@ import { apiClient, ProfileData } from "../services/api-client.service";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { OnboardingData } from "../services/api-client.service";
 import { useToast } from "@/components/ui/use-toast";
+import { useLanguageStore } from "../stores/language.store";
 
 export const useUserProfile = () => {
   const authUser = useAuthStore((state) => state.user);
@@ -15,19 +16,25 @@ export const useUserProfile = () => {
 
 export const useAnalyticsData = () => {
   const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useQuery({
-    queryKey: ["analytics", authUser?.id],
-    queryFn: apiClient.analytics.get,
-    enabled: !!authUser,
+    queryKey: ["analytics", authUser?.id, activeTargetLanguage],
+    queryFn: () => apiClient.analytics.get({ targetLanguage: activeTargetLanguage! }),
+    enabled: !!authUser && !!activeTargetLanguage,
   });
 };
 
 export const useJournalHistory = () => {
   const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useQuery({
-    queryKey: ["journals", authUser?.id],
-    queryFn: apiClient.journal.getAll,
-    enabled: !!authUser,
+    queryKey: ["journals", authUser?.id, activeTargetLanguage],
+    queryFn: () => apiClient.journal.getAll({ targetLanguage: activeTargetLanguage! }),
+    enabled: !!authUser && !!activeTargetLanguage,
   });
 };
 
@@ -41,10 +48,13 @@ export const useJournalEntry = (id: string) => {
 
 export const useStudyDeck = () => {
   const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useQuery({
-    queryKey: ["studyDeck", authUser?.id],
-    queryFn: apiClient.srs.getDeck,
-    enabled: !!authUser,
+    queryKey: ["studyDeck", authUser?.id, activeTargetLanguage],
+    queryFn: () => apiClient.srs.getDeck({ targetLanguage: activeTargetLanguage! }),
+    enabled: !!authUser && !!activeTargetLanguage,
   });
 };
 
@@ -80,10 +90,19 @@ export const useSubmitJournal = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useMutation({
-    mutationFn: apiClient.journal.create,
+    mutationFn: (payload: { content: string; topicTitle?: string }) =>
+      apiClient.journal.create({
+        ...payload,
+        targetLanguage: activeTargetLanguage!,
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["journals", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["journals", authUser?.id, activeTargetLanguage],
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -99,12 +118,19 @@ export const useAnalyzeJournal = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useMutation({
     mutationFn: apiClient.analyze.start,
     onSuccess: (analysis, journalId) => {
       queryClient.invalidateQueries({ queryKey: ["journal", journalId] });
-      queryClient.invalidateQueries({ queryKey: ["journals", authUser?.id] });
-      queryClient.invalidateQueries({ queryKey: ["analytics", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["journals", authUser?.id, activeTargetLanguage],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["analytics", authUser?.id, activeTargetLanguage],
+      });
       queryClient.invalidateQueries({
         queryKey: ["userProfile", authUser?.id],
       });
@@ -149,8 +175,14 @@ export const useRetryJournalAnalysis = () => {
 
 export const useGenerateTopics = () => {
   const { toast } = useToast();
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useMutation({
-    mutationFn: apiClient.user.generateTopics,
+    mutationFn: () =>
+      apiClient.user.generateTopics({
+        targetLanguage: activeTargetLanguage!,
+      }),
     onError: (error: Error) => {
       toast({
         variant: "destructive",
@@ -184,9 +216,17 @@ export const useDeleteAccount = () => {
 
 export const useCreateSrsFromMistake = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useMutation({
     mutationFn: apiClient.srs.createFromMistake,
     onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["studyDeck", authUser?.id, activeTargetLanguage],
+      });
       toast({
         title: "Added to Deck",
         description: "The item has been added to your study deck.",
@@ -206,10 +246,15 @@ export const useReviewSrsItem = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useMutation({
     mutationFn: apiClient.srs.review,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["studyDeck", authUser?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["studyDeck", authUser?.id, activeTargetLanguage],
+      });
     },
     onError: (error: Error) => {
       toast({

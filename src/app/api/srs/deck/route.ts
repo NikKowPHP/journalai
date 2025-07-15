@@ -10,21 +10,30 @@ export async function GET(req: NextRequest) {
   if (!user)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const url = new URL(req.url);
+  const targetLanguage = url.searchParams.get("targetLanguage");
+  if (!targetLanguage)
+    return NextResponse.json(
+      { error: "targetLanguage is required" },
+      { status: 400 },
+    );
+
   const now = new Date();
-  
+
   const srsItems = await prisma.srsReviewItem.findMany({
-    where: { 
+    where: {
       userId: user.id,
+      targetLanguage: targetLanguage,
       nextReviewAt: {
-        lte: now
-      }
+        lte: now,
+      },
     },
     include: {
-      mistake: true
+      mistake: true,
     },
     orderBy: {
-      nextReviewAt: 'asc'
-    }
+      nextReviewAt: "asc",
+    },
   });
 
   return NextResponse.json(srsItems);

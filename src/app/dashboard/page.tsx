@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -12,6 +13,7 @@ import {
 } from "@/lib/hooks/data-hooks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSummary } from "@/components/DashboardSummary";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function DashboardPage() {
   const [generatedTopics, setGeneratedTopics] = useState<string[]>([]);
@@ -68,7 +70,10 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <LanguageSwitcher />
+      </div>
 
       {!hasEntries ? (
         <Card className="text-center p-8">

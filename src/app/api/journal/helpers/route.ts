@@ -15,20 +15,28 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { topic } = await req.json();
+    const { topic, targetLanguage } = await req.json();
 
-    if (!topic) {
-      return NextResponse.json({ error: "Topic is required" }, { status: 400 });
+    if (!topic || !targetLanguage) {
+      return NextResponse.json(
+        { error: "Topic and targetLanguage are required" },
+        { status: 400 },
+      );
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { targetLanguage: true, aiAssessedProficiency: true },
+    const languageProfile = await prisma.languageProfile.findUnique({
+      where: {
+        userId_language: {
+          userId: user.id,
+          language: targetLanguage,
+        },
+      },
+      select: { aiAssessedProficiency: true },
     });
 
-    if (!dbUser || !dbUser.targetLanguage) {
+    if (!languageProfile) {
       return NextResponse.json(
-        { error: "User profile is not complete" },
+        { error: "User profile for this language is not complete" },
         { status: 400 },
       );
     }
@@ -36,8 +44,8 @@ export async function POST(req: Request) {
     const aiService = getQuestionGenerationService();
     const aids = await aiService.generateJournalingAids({
       topic,
-      targetLanguage: dbUser.targetLanguage,
-      proficiency: dbUser.aiAssessedProficiency,
+      targetLanguage: targetLanguage,
+      proficiency: languageProfile.aiAssessedProficiency,
     });
 
     return NextResponse.json(aids);

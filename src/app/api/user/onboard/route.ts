@@ -25,10 +25,24 @@ export async function POST(request: Request) {
       where: { id: user.id },
       data: {
         nativeLanguage,
-        targetLanguage,
         writingStyle,
         writingPurpose,
         selfAssessedLevel,
+        defaultTargetLanguage: targetLanguage,
+        languageProfiles: {
+          upsert: {
+            where: {
+              userId_language: {
+                userId: user.id,
+                language: targetLanguage,
+              },
+            },
+            create: {
+              language: targetLanguage,
+            },
+            update: {},
+          },
+        },
       },
     });
 

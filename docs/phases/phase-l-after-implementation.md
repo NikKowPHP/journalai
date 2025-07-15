@@ -1,3 +1,6 @@
+### docs/phases/phase-l-after-implementation.md
+```markdown
+Of course. Here is a detailed, step-by-step plan to implement the requested features with 100% coverage, considering the existing codebase and best practices.
 
 ### Feature 1: Synchronous Analysis Flow
 
@@ -83,10 +86,10 @@ The goal is to change the journal submission from a background task to a direct,
 
 This is a significant architectural change to scope data by target language.
 
-*   [ ] **1. Update Database Schema (Prisma)**
-    *   [ ] Create a new `LanguageProfile` model to store language-specific proficiency.
-    *   [ ] Add a `targetLanguage` field to all relevant data models.
-    *   [ ] Modify the `User` model to store a `defaultTargetLanguage`.
+*   [x] **1. Update Database Schema (Prisma)**
+    *   [x] Create a new `LanguageProfile` model to store language-specific proficiency.
+    *   [x] Add a `targetLanguage` field to all relevant data models.
+    *   [x] Modify the `User` model to store a `defaultTargetLanguage`.
     *   **File:** `prisma/schema.prisma`
     *   **Action:** Apply the following schema changes:
         ```prisma
@@ -135,10 +138,10 @@ This is a significant architectural change to scope data by target language.
           // ...
         }
         ```
-    *   [ ] Generate and run the migration: `npx prisma migrate dev --name add-language-profiles`
+    *   [x] Generate and run the migration: `npx prisma migrate dev --name add-language-profiles`
 
-*   [ ] **2. Create a Global Language State (Zustand)**
-    *   [ ] Create a new store to manage the currently active language.
+*   [x] **2. Create a Global Language State (Zustand)**
+    *   [x] Create a new store to manage the currently active language.
         *   **File:** `src/lib/stores/language.store.ts`
         *   **Content:**
             ```typescript
@@ -162,7 +165,7 @@ This is a significant architectural change to scope data by target language.
               )
             );
             ```
-    *   [ ] Initialize this state when the app loads.
+    *   [x] Initialize this state when the app loads.
         *   **File:** `src/components/layout/StoreInitializer.tsx`
         *   **Action:** Add a `useEffect` to set the initial language from the user's profile.
             ```typescript
@@ -176,8 +179,8 @@ This is a significant architectural change to scope data by target language.
             }
             ```
 
-*   [ ] **3. Update All Data-Fetching Logic**
-    *   [ ] Modify all backend API routes to accept and filter by `targetLanguage`.
+*   [x] **3. Update All Data-Fetching Logic**
+    *   [x] Modify all backend API routes to accept and filter by `targetLanguage`.
         *   **Files:** `/api/journal/route.ts`, `/api/analytics/route.ts`, `/api/srs/deck/route.ts`, etc.
         *   **Action (Example for `/api/journal/route.ts`):**
             ```typescript
@@ -191,9 +194,9 @@ This is a significant architectural change to scope data by target language.
               // ...
             });
             ```
-    *   [ ] Update the `api-client.service.ts` to pass the language.
+    *   [x] Update the `api-client.service.ts` to pass the language.
         *   **Action:** All relevant methods (`journal.getAll`, `analytics.get`, etc.) must now accept a `targetLanguage` parameter and pass it as a query param.
-    *   [ ] Update the React Query hooks to use the language state.
+    *   [x] Update the React Query hooks to use the language state.
         *   **File:** `src/lib/hooks/data-hooks.ts`
         *   **Action (Example for `useJournalHistory`):**
             ```typescript
@@ -213,11 +216,11 @@ This is a significant architectural change to scope data by target language.
             };
             ```
 
-*   [ ] **4. Create and Integrate the Language Switcher UI**
-    *   [ ] Create the switcher component.
+*   [x] **4. Create and Integrate the Language Switcher UI**
+    *   [x] Create the switcher component.
         *   **File:** `src/components/LanguageSwitcher.tsx`
         *   **Action:** Build a `Select` component that lists the user's available `LanguageProfile`s. On change, it calls `setActiveTargetLanguage` from the Zustand store.
-    *   [ ] Add the switcher to the Dashboard and Journal pages.
+    *   [x] Add the switcher to the Dashboard and Journal pages.
         *   **Files:** `src/app/dashboard/page.tsx`, `src/app/journal/page.tsx`
         *   **Action:** Place the `<LanguageSwitcher />` component prominently near the top of each page.
 
@@ -519,50 +522,3 @@ The goal is to provide immediate, consistent, and user-friendly feedback for eve
                 description: error.message || "Could not open the billing portal.",
               });
             },
-          });
-        };
-        ```
-
-#### **Part 2: Modifying Admin-Facing Data Hooks**
-
-**File:** `src/lib/hooks/admin-hooks.ts`
-
-*   **Step 2.1: Add Imports**
-    *   At the top of the file, import the `useToast` hook.
-        ```typescript
-        import { useToast } from "@/components/ui/use-toast";
-        ```
-
-*   **Step 2.2: Update `useUpdateUserSubscription`**
-    *   **Action:** Add `onSuccess` and `onError` toast notifications.
-    *   **Replace the existing `useUpdateUserSubscription` with this:**
-        ```typescript
-        export const useUpdateUserSubscription = () => {
-          const queryClient = useQueryClient();
-          const { toast } = useToast();
-          return useMutation({
-            mutationFn: ({
-              userId,
-              payload,
-            }: {
-              userId: string;
-              payload: { subscriptionTier: string; subscriptionStatus?: string };
-            }) => apiClient.admin.updateSubscription(userId, payload),
-            onSuccess: () => {
-              queryClient.invalidateQueries({ queryKey: ["admin-users"] });
-              toast({
-                title: "Subscription Updated",
-                description: "The user's subscription has been successfully changed.",
-              });
-            },
-            onError: (error: Error) => {
-              toast({
-                variant: "destructive",
-                title: "Update Failed",
-                description: error.message || "The user's subscription could not be updated.",
-              });
-            },
-          });
-        };
-        ```
-```
