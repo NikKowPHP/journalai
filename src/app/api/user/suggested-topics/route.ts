@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -23,57 +24,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const now = new Date();
-
-    // Fetch SRS items that are due or have a low ease factor for the specific language
-    const srsItems = await prisma.srsReviewItem.findMany({
+    const topics = await prisma.suggestedTopic.findMany({
       where: {
         userId: authUser.id,
         targetLanguage: targetLanguage,
-        OR: [
-          { easeFactor: { lt: 2.5 } },
-          { nextReviewAt: { lte: now } },
-        ],
-        // Ensure we only look at items derived from mistakes, which have topics
-        mistakeId: { not: null },
       },
       select: {
-        mistake: {
-          select: {
-            analysis: {
-              select: {
-                entry: {
-                  select: {
-                    topic: {
-                      select: {
-                        title: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
+        title: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
-    const suggestedTopics: string[] = [];
-    const seenTopics = new Set<string>();
+    const topicTitles = topics.map((t) => t.title);
 
-    srsItems.forEach((item) => {
-      const topicTitle = item.mistake?.analysis?.entry?.topic?.title;
-      if (topicTitle && !seenTopics.has(topicTitle)) {
-        suggestedTopics.push(topicTitle);
-        seenTopics.add(topicTitle);
-      }
-    });
-    
-    // Future enhancement: If no topics are found from SRS items, 
-    // we could call the AI service to generate some generic ones.
-    
-    return NextResponse.json({ topics: suggestedTopics });
-
+    return NextResponse.json({ topics: topicTitles });
   } catch (error) {
     logger.error("Error fetching suggested topics:", error);
     return NextResponse.json(

@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import type { OnboardingData, ProfileUpdateData } from "@/lib/types";
 
@@ -76,6 +77,12 @@ export const apiClient = {
   user: {
     generateTopics: async (params: { targetLanguage: string }) => {
       const { data } = await axios.get("/api/user/generate-topics", {
+        params,
+      });
+      return data;
+    },
+    getSuggestedTopics: async (params: { targetLanguage: string }) => {
+      const { data } = await axios.get("/api/user/suggested-topics", {
         params,
       });
       return data;

@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SuggestedTopics } from "@/components/SuggestedTopics";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useSuggestedTopics } from "@/lib/hooks/data/useSuggestedTopics";
 
 function JournalPageSkeleton() {
   return (
@@ -39,18 +40,18 @@ export default function JournalPage() {
   const searchParams = useSearchParams();
   const topicFromQuery = searchParams.get("topic");
 
-  const [generatedTopics, setGeneratedTopics] = useState<string[]>([]);
   const generateTopicsMutation = useGenerateTopics();
+  const {
+    data: suggestedTopics,
+    isLoading: isTopicsLoading,
+    isFetching,
+  } = useSuggestedTopics();
 
   const handleGenerateTopics = () => {
-    generateTopicsMutation.mutate(undefined, {
-      onSuccess: (data) => {
-        if (data.topics) {
-          setGeneratedTopics(data.topics);
-        }
-      },
-    });
+    generateTopicsMutation.mutate();
   };
+  const isLoadingTopics =
+    isTopicsLoading || isFetching || generateTopicsMutation.isPending;
 
   const {
     data: journals,
@@ -86,15 +87,20 @@ export default function JournalPage() {
       <div className="space-y-4">
         <Button
           onClick={handleGenerateTopics}
-          disabled={generateTopicsMutation.isPending}
+          disabled={isLoadingTopics}
         >
-          {generateTopicsMutation.isPending
-            ? "Generating..."
-            : "Suggest New Topics"}
+          {isLoadingTopics ? "Generating..." : "Suggest New Topics"}
         </Button>
-        {generatedTopics.length > 0 && (
-          <SuggestedTopics topics={generatedTopics} />
-        )}
+        <SuggestedTopics
+          topics={suggestedTopics?.topics || []}
+          isLoading={isLoadingTopics}
+        />
+        {!isLoadingTopics &&
+          (!suggestedTopics || !suggestedTopics.topics || suggestedTopics.topics.length === 0) && (
+            <p className="text-muted-foreground text-sm">
+              No suggestions yet. Click 'Suggest New Topics' to get some ideas!
+            </p>
+          )}
       </div>
       <div className="grid gap-6 md:grid-cols-2">
         <JournalHistoryList journals={mappedJournals} />

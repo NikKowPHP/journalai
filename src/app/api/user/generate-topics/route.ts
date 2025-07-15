@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -45,6 +46,27 @@ export async function GET(req: NextRequest) {
       targetLanguage: targetLanguage,
       proficiency: languageProfile.aiAssessedProficiency,
       count: 5,
+    });
+
+    const newTopicsData = topics.map((title) => ({
+      userId: user.id,
+      title,
+      targetLanguage,
+    }));
+
+    await prisma.$transaction(async (tx) => {
+      await tx.suggestedTopic.deleteMany({
+        where: {
+          userId: user.id,
+          targetLanguage,
+        },
+      });
+      if (newTopicsData.length > 0) {
+        await tx.suggestedTopic.createMany({
+          data: newTopicsData,
+          skipDuplicates: true,
+        });
+      }
     });
 
     return NextResponse.json({ topics });

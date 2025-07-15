@@ -1,6 +1,8 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CheckCircle2, Sparkles, XCircle } from "lucide-react";
 
 /**
  * An interactive flashcard component for spaced repetition study.
@@ -54,27 +56,30 @@ export function Flashcard({
             {backContent}
           </div>
           {context && <div className="text-sm text-gray-600">{context}</div>}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button
-              variant="destructive"
-              className="flex-1 hover:bg-destructive/90"
+              variant="secondary"
+              className="flex-1"
               onClick={() => handleReview(0)}
             >
-              Forgot ❌
-            </Button>
-            <Button
-              variant="default"
-              className="flex-1 hover:bg-primary/90 bg-blue-600"
-              onClick={() => handleReview(3)}
-            >
-              Good ✔️
+              <XCircle className="mr-2 h-4 w-4" />
+              Forgot
             </Button>
             <Button
               variant="secondary"
-              className="flex-1 hover:bg-secondary/90 bg-green-600 text-white"
+              className="flex-1"
+              onClick={() => handleReview(3)}
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Good
+            </Button>
+            <Button
+              variant="secondary"
+              className="flex-1"
               onClick={() => handleReview(5)}
             >
-              Easy 💡
+              <Sparkles className="mr-2 h-4 w-4" />
+              Easy
             </Button>
           </div>
         </div>

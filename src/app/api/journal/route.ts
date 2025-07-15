@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -84,6 +85,16 @@ export async function POST(req: NextRequest) {
         targetLanguage,
       },
     });
+
+    if (topicTitle && topicTitle !== "Free Write") {
+      await prisma.suggestedTopic.deleteMany({
+        where: {
+          userId: user.id,
+          title: topicTitle,
+          targetLanguage: targetLanguage,
+        },
+      });
+    }
 
     return NextResponse.json(newJournal, { status: 201 });
   } catch (error) {

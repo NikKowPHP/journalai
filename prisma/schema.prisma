@@ -32,6 +32,7 @@ model User {
   journalEntries   JournalEntry[]
   srsItems         SrsReviewItem[]
   languageProfiles LanguageProfile[]
+  suggestedTopics  SuggestedTopic[]
 }
 
 model LanguageProfile {
@@ -113,6 +114,17 @@ model SrsReviewItem {
   interval       Int       @default(1)
   easeFactor     Float     @default(2.5)
   createdAt      DateTime  @default(now())
+}
+
+model SuggestedTopic {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  targetLanguage String
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, title, targetLanguage])
 }
 
 model ProcessedWebhook {

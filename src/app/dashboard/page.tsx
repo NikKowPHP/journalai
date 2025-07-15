@@ -14,24 +14,25 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSummary } from "@/components/DashboardSummary";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useSuggestedTopics } from "@/lib/hooks/data/useSuggestedTopics";
 
 export default function DashboardPage() {
-  const [generatedTopics, setGeneratedTopics] = useState<string[]>([]);
-
   const { data: user, isLoading: isUserLoading } = useUserProfile();
-  const { data: analytics, isLoading: isAnalyticsLoading } = useAnalyticsData();
+  const { data: analytics, isLoading: isAnalyticsLoading } =
+    useAnalyticsData();
   const generateTopicsMutation = useGenerateTopics();
+  const {
+    data: suggestedTopics,
+    isLoading: isTopicsLoading,
+    isFetching,
+  } = useSuggestedTopics();
 
   const handleGenerateTopics = () => {
-    generateTopicsMutation.mutate(undefined, {
-      onSuccess: (data) => {
-        if (data.topics) {
-          setGeneratedTopics(data.topics);
-        }
-      },
-    });
+    generateTopicsMutation.mutate();
   };
 
+  const isLoadingTopics =
+    isTopicsLoading || isFetching || generateTopicsMutation.isPending;
   const isLoading =
     isUserLoading || (user && user.onboardingCompleted && isAnalyticsLoading);
 
@@ -106,15 +107,20 @@ export default function DashboardPage() {
       <div className="space-y-4">
         <Button
           onClick={handleGenerateTopics}
-          disabled={generateTopicsMutation.isPending}
+          disabled={isLoadingTopics}
         >
-          {generateTopicsMutation.isPending
-            ? "Generating..."
-            : "Suggest New Topics"}
+          {isLoadingTopics ? "Generating..." : "Suggest New Topics"}
         </Button>
-        {generatedTopics.length > 0 && (
-          <SuggestedTopics topics={generatedTopics} />
-        )}
+        <SuggestedTopics
+          topics={suggestedTopics?.topics || []}
+          isLoading={isLoadingTopics}
+        />
+        {!isLoadingTopics &&
+          (!suggestedTopics || !suggestedTopics.topics || suggestedTopics.topics.length === 0) && (
+            <p className="text-muted-foreground text-sm">
+              No suggestions yet. Click 'Suggest New Topics' to get some ideas!
+            </p>
+          )}
       </div>
     </div>
   );
