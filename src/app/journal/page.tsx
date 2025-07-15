@@ -7,7 +7,7 @@ import {
   useGenerateTopics,
   useJournalHistory,
   useUserProfile,
-} from "@/lib/hooks/data-hooks";
+} from "@/lib/hooks/data";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";

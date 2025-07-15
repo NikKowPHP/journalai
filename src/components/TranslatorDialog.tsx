@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -15,7 +16,7 @@ import {
   useUserProfile,
   useTranslateText,
   useCreateSrsFromTranslation,
-} from "@/lib/hooks/data-hooks";
+} from "@/lib/hooks/data";
 import { useLanguageStore } from "@/lib/stores/language.store";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 import { ArrowRightLeft, Loader2, Check } from "lucide-react";

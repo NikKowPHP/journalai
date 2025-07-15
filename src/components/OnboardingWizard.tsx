@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   Dialog,
@@ -13,16 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOnboardUser } from "@/lib/hooks/data-hooks";
+import { useOnboardUser } from "@/lib/hooks/data";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
-
-interface OnboardingData {
-  nativeLanguage: string;
-  targetLanguage: string;
-  writingStyle: string;
-  writingPurpose: string;
-  selfAssessedLevel: string;
-}
+import type { OnboardingData } from "@/lib/types";
 
 interface OnboardingWizardProps {
   isOpen: boolean;

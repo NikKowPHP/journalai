@@ -1,8 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "../services/api-client.service";
-import { useAuthStore } from "@/lib/stores/auth.store";
 import { useToast } from "@/components/ui/use-toast";
-import { useUserProfile } from "./data-hooks";
+import { useUserProfile } from "./data";
 
 // The profile data will be passed in to determine if the query should run.
 export const useAdminUsers = (

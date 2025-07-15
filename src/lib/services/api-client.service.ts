@@ -1,21 +1,5 @@
 import axios from "axios";
-
-// Define interfaces for payloads and responses for type safety.
-// I'll define them inline for now for simplicity, but in a real project they might be in a separate types file.
-
-export interface ProfileData {
-  nativeLanguage: string;
-  targetLanguage: string;
-  writingStyle: string;
-  writingPurpose: string;
-  selfAssessedLevel: string;
-}
-
-export type ProfileUpdateData = Partial<ProfileData> & {
-  newTargetLanguage?: string;
-};
-
-export interface OnboardingData extends ProfileData {}
+import type { OnboardingData, ProfileUpdateData } from "@/lib/types";
 
 export const apiClient = {
   profile: {

@@ -1,0 +1,16 @@
+import { useQuery } from "@tanstack/react-query";
+import { apiClient } from "@/lib/services/api-client.service";
+import { useAuthStore } from "@/lib/stores/auth.store";
+import { useLanguageStore } from "@/lib/stores/language.store";
+
+export const useAnalyticsData = () => {
+  const authUser = useAuthStore((state) => state.user);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
+  return useQuery({
+    queryKey: ["analytics", authUser?.id, activeTargetLanguage],
+    queryFn: () => apiClient.analytics.get({ targetLanguage: activeTargetLanguage! }),
+    enabled: !!authUser && !!activeTargetLanguage,
+  });
+};

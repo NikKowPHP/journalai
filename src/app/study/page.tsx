@@ -1,8 +1,9 @@
+
 "use client";
 import { StudySession } from "@/components/StudySession";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useStudyDeck } from "@/lib/hooks/data-hooks";
+import { useStudyDeck } from "@/lib/hooks/data";
 
 const GuidedPopover = ({ children, title, description }: { children: React.ReactNode, title: string, description: string }) => (
   <div className="relative">

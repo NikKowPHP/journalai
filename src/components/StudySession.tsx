@@ -1,7 +1,8 @@
+
 "use client";
 import { useState } from "react";
 import { Flashcard } from "@/components/Flashcard";
-import { useReviewSrsItem } from "@/lib/hooks/data-hooks";
+import { useReviewSrsItem } from "@/lib/hooks/data";
 
 /**
  * Manages a study session with a deck of flashcards, tracking progress through the deck.

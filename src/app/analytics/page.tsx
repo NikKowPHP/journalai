@@ -3,7 +3,7 @@
 import { ProficiencyChart } from "@/components/ProficiencyChart";
 import { SubskillScores } from "@/components/SubskillScores";
 import { PricingTable } from "@/components/PricingTable";
-import { useAnalyticsData, useUserProfile } from "@/lib/hooks/data-hooks";
+import { useAnalyticsData, useUserProfile } from "@/lib/hooks/data";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsPage() {

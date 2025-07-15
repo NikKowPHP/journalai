@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useUserProfile } from '@/lib/hooks/data-hooks';
+import { useUserProfile } from '@/lib/hooks/data';
 import { useLanguageStore } from '@/lib/stores/language.store';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Skeleton } from './ui/skeleton';

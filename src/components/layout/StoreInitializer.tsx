@@ -1,3 +1,4 @@
+
 // src/components/layout/StoreInitializer.tsx
 'use client';
 
@@ -6,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useAuthStore } from '@/lib/stores/auth.store';
 import { useOnboardingStore } from '@/lib/stores/onboarding.store';
-import { useUserProfile, useJournalHistory, useStudyDeck, useCompleteOnboarding } from '@/lib/hooks/data-hooks';
+import { useUserProfile, useJournalHistory, useStudyDeck, useCompleteOnboarding } from '@/lib/hooks/data';
 import { useLanguageStore } from '@/lib/stores/language.store';
 
 function StoreInitializer() {

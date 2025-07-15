@@ -10,7 +10,7 @@ import {
   useUserProfile,
   useAnalyticsData,
   useGenerateTopics,
-} from "@/lib/hooks/data-hooks";
+} from "@/lib/hooks/data";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSummary } from "@/components/DashboardSummary";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";

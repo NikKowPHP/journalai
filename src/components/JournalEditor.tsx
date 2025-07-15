@@ -10,11 +10,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import {
-  useSubmitJournal,
-  useAutocomplete,
-  useStuckWriterSuggestions,
-} from "@/lib/hooks/data-hooks";
+import { useSubmitJournal } from "@/lib/hooks/data";
+import { useStuckWriterEffect, useAutocompleteEffect } from "@/lib/hooks/editor";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { Lightbulb, Languages, X } from "lucide-react";
@@ -190,117 +187,49 @@ export function JournalEditor({
   onOnboardingSubmit,
 }: JournalEditorProps) {
   const [statusMessage, setStatusMessage] = useState("");
-  const [suggestion, setSuggestion] = useState<string | null>(null);
   const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
-  const [stuckSuggestions, setStuckSuggestions] = useState<string[] | null>(
-    null,
-  );
-  const [showStuckUI, setShowStuckUI] = useState(false);
-  const stuckTimer = useRef<NodeJS.Timeout | null>(null);
-  const autocompleteMutation = useAutocomplete();
-  const stuckSuggestionsMutation = useStuckWriterSuggestions();
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
-  const activeTargetLanguage = useLanguageStore(
-    (state) => state.activeTargetLanguage,
-  );
 
-  const editor = useEditor(
-    {
-      extensions: [
-        StarterKit,
-        Placeholder.configure({
-          placeholder:
-            topicTitle && topicTitle !== "Free Write"
-              ? `Start writing about "${topicTitle}"...`
-              : "Start with a free write entry...",
-        }),
-        TabHandler.configure({
-          onTab: () => {
-            if (suggestion) {
-              editor?.chain().focus().insertContent(suggestion).run();
-              setSuggestion(null);
-              return true; // prevent default tab behavior
-            }
-            return false;
-          },
-        }),
-      ],
-      content: "",
-      editorProps: {
-        attributes: {
-          class:
-            "prose dark:prose-invert prose-sm sm:prose-lg mx-auto focus:outline-none p-4 min-h-[200px] bg-background text-foreground",
-        },
+  const onTabRef = useRef(() => false);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder:
+          topicTitle && topicTitle !== "Free Write"
+            ? `Start writing about "${topicTitle}"...`
+            : "Start with a free write entry...",
+      }),
+      TabHandler.configure({
+        onTab: () => onTabRef.current(),
+      }),
+    ],
+    content: "",
+    editorProps: {
+      attributes: {
+        class:
+          "prose dark:prose-invert prose-sm sm:prose-lg mx-auto focus:outline-none p-4 min-h-[200px] bg-background text-foreground",
       },
     },
-    [topicTitle, suggestion], // Reconfigure on suggestion change for keyboard shortcut
-  );
+  });
+
+  const { suggestion, setSuggestion } = useAutocompleteEffect(editor);
+  const { stuckSuggestions, showStuckUI, setShowStuckUI } =
+    useStuckWriterEffect(editor, topicTitle);
 
   const submitJournalMutation = useSubmitJournal();
 
   useEffect(() => {
-    if (!editor) return;
-
-    const handleUpdate = () => {
-      // Autocomplete logic
-      setSuggestion(null);
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
+    onTabRef.current = () => {
+      if (suggestion) {
+        editor?.chain().focus().insertContent(suggestion).run();
+        setSuggestion(null);
+        return true;
       }
-      debounceTimer.current = setTimeout(() => {
-        const text = editor.getText();
-        if (text.trim().length > 10) {
-          autocompleteMutation.mutate(
-            { text },
-            {
-              onSuccess: (data) => setSuggestion(data.completedText),
-            },
-          );
-        }
-      }, 1500);
-
-      // Stuck writer logic
-      setStuckSuggestions(null);
-      setShowStuckUI(false);
-      if (stuckTimer.current) {
-        clearTimeout(stuckTimer.current);
-      }
-      stuckTimer.current = setTimeout(() => {
-        const currentText = editor.getText();
-        if (currentText.trim().length > 0 && activeTargetLanguage) {
-          // check if editor has content
-          stuckSuggestionsMutation.mutate(
-            {
-              topic: topicTitle,
-              currentText,
-              targetLanguage: activeTargetLanguage,
-            },
-            {
-              onSuccess: (data) => {
-                if (data?.suggestions?.length > 0) {
-                  setStuckSuggestions(data.suggestions);
-                  setShowStuckUI(true);
-                }
-              },
-            },
-          );
-        }
-      }, 7000);
+      return false;
     };
-
-    editor.on("update", handleUpdate);
-
-    return () => {
-      editor.off("update", handleUpdate);
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-      if (stuckTimer.current) {
-        clearTimeout(stuckTimer.current);
-      }
-    };
-  }, [editor, autocompleteMutation, topicTitle, activeTargetLanguage]);
+  }, [suggestion, editor, setSuggestion]);
 
   const handleSubmit = async () => {
     if (!editor) return;

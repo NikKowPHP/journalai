@@ -1,3 +1,4 @@
+
 "use client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useDeleteAccount, useUserProfile } from "@/lib/hooks/data-hooks";
+import { useDeleteAccount, useUserProfile } from "@/lib/hooks/data";
 
 export function AccountDeletion() {
   const router = useRouter();

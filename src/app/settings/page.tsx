@@ -11,7 +11,7 @@ import { ArrowUpRight, ChevronsRight, LogOut, Mail } from "lucide-react";
 import {
   useCreatePortalSession,
   useUserProfile,
-} from "@/lib/hooks/data-hooks";
+} from "@/lib/hooks/data";
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {

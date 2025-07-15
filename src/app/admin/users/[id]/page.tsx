@@ -10,12 +10,7 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { JournalEntry, Topic, Analysis, Mistake } from "@prisma/client";
-
-type JournalEntryWithRelations = JournalEntry & {
-  topic: Topic | null;
-  analysis: (Analysis & { mistakes: Mistake[] }) | null;
-};
+import type { JournalEntryWithRelations } from "@/lib/types";
 
 // Define props interface for clarity and type safety
 interface UserDetailPageProps {

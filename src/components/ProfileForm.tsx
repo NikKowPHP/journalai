@@ -1,4 +1,5 @@
-import { useUpdateProfile } from "@/lib/hooks/data-hooks";
+
+import { useUpdateProfile } from "@/lib/hooks/data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";

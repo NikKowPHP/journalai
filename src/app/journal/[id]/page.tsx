@@ -12,7 +12,7 @@ import {
   useRetryJournalAnalysis,
   useAnalyzeJournal,
   useStudyDeck,
-} from "@/lib/hooks/data-hooks";
+} from "@/lib/hooks/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Spinner from "@/components/ui/Spinner";
 

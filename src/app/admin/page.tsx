@@ -1,7 +1,8 @@
+
 "use client";
 import { AdminDashboard } from "@/components/AdminDashboard";
 import { useAdminUsers } from "@/lib/hooks/admin-hooks";
-import { useUserProfile } from "@/lib/hooks/data-hooks";
+import { useUserProfile } from "@/lib/hooks/data";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminSettings } from "@/components/AdminSettings";
