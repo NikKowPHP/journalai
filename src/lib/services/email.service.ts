@@ -1,3 +1,4 @@
+
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 
@@ -15,6 +16,9 @@ export async function sendProgressReport(userId: string) {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        languageProfiles: true, // Include the language profiles
+      },
     });
 
     if (!user || !user.email) {
@@ -22,9 +26,21 @@ export async function sendProgressReport(userId: string) {
       return;
     }
 
+    if (!user.defaultTargetLanguage) {
+      console.log(
+        `Skipping weekly report for user ${userId}: no default language set.`,
+      );
+      return;
+    }
+
+    const languageProfile = user.languageProfiles.find(
+      (lp) => lp.language === user.defaultTargetLanguage,
+    );
+
     const journalEntriesCount = await prisma.journalEntry.count({
       where: {
         authorId: userId,
+        targetLanguage: user.defaultTargetLanguage,
         createdAt: {
           gte: sevenDaysAgo,
         },
@@ -35,6 +51,7 @@ export async function sendProgressReport(userId: string) {
       where: {
         entry: {
           authorId: userId,
+          targetLanguage: user.defaultTargetLanguage,
         },
         createdAt: {
           gte: sevenDaysAgo,
@@ -47,7 +64,7 @@ export async function sendProgressReport(userId: string) {
 
     const mistakesCorrected = analysesLastWeek.reduce(
       (acc, analysis) => acc + analysis.mistakes.length,
-      0
+      0,
     );
 
     // Note: The concepts of 'newWords' and 'proficiencyChange' are not in the current schema.
@@ -58,14 +75,22 @@ export async function sendProgressReport(userId: string) {
       proficiencyChange: 0,
     };
 
+    const proficiencyScoreHtml = languageProfile
+      ? `<li>Current Proficiency Score: ${languageProfile.aiAssessedProficiency.toFixed(
+          1,
+        )}</li>`
+      : "<li>Current Proficiency Score: Not yet calculated.</li>";
+
     const emailHtml = `
       <h1>Your Weekly LinguaScribe Progress Report</h1>
       <p>Hello Language Learner,</p>
-      <p>Here's your weekly progress summary:</p>
+      <p>Here's your weekly progress summary for ${
+        user.defaultTargetLanguage
+      }:</p>
       <ul>
         <li>Journal entries: ${reportData.journalEntries}</li>
         <li>Mistakes corrected: ${reportData.mistakesCorrected}</li>
-        <li>Current Proficiency Score: ${user.aiAssessedProficiency.toFixed(1)}</li>
+        ${proficiencyScoreHtml}
       </ul>
       <p>Keep up the great work!</p>
       <p>The LinguaScribe Team</p>
