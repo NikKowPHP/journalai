@@ -22,12 +22,21 @@ export async function ensureUserInDb(
     return dbUser;
   }
 
+  // Check if early adopter mode is on
+  const earlyAdopterModeSetting = await prisma.systemSetting.findUnique({
+    where: { key: "earlyAdopterModeEnabled" },
+  });
+
+  const isEarlyAdopterMode =
+    (earlyAdopterModeSetting?.value as { enabled: boolean })?.enabled ?? false;
+
   // User not in our DB, so create them.
   const newUser = await prisma.user.create({
     data: {
       id: supabaseUser.id,
       email: supabaseUser.email!,
       supabaseAuthId: supabaseUser.id,
+      subscriptionTier: isEarlyAdopterMode ? "PRO" : "FREE",
     },
   });
 

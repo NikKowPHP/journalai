@@ -4,6 +4,7 @@ import { useAdminUsers } from "@/lib/hooks/admin-hooks";
 import { useUserProfile } from "@/lib/hooks/data-hooks";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminSettings } from "@/components/AdminSettings";
 
 const PAGE_LIMIT = 20;
 
@@ -69,6 +70,9 @@ export default function AdminPage() {
   return (
     <div className="container mx-auto p-8 space-y-6">
       <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+
+      <AdminSettings />
+
       <div className="p-6 border rounded-lg bg-background">
         <AdminDashboard
           users={data?.users || []}

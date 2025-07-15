@@ -20,6 +20,16 @@ async function main() {
   // });
   // console.log(`Created user with id: ${user.id}`);
 
+  await prisma.systemSetting.upsert({
+    where: { key: "earlyAdopterModeEnabled" },
+    update: {},
+    create: {
+      key: "earlyAdopterModeEnabled",
+      value: { enabled: false },
+    },
+  });
+  console.log("Seeded initial system settings.");
+
   console.log("Database seeding setup is complete.");
 }
 

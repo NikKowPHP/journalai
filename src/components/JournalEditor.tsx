@@ -1,15 +1,25 @@
-import { useEditor, EditorContent, BubbleMenu } from "@tiptap/react";
+import {
+  useEditor,
+  EditorContent,
+  BubbleMenu,
+  FloatingMenu,
+} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useMutation } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { useSubmitJournal, useAnalyzeJournal } from "@/lib/hooks/data-hooks";
+import {
+  useSubmitJournal,
+  useAnalyzeJournal,
+  useAutocomplete,
+} from "@/lib/hooks/data-hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { Lightbulb } from "lucide-react";
+import { Extension } from "@tiptap/core";
 
-// --- New WritingAids Sub-component ---
+// --- WritingAids Sub-component ---
 interface WritingAidsProps {
   topicTitle: string;
   editor: any; // TipTap Editor instance
@@ -110,6 +120,21 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
   );
 };
 
+// --- TipTap Extension for Tab Key ---
+const TabHandler = Extension.create({
+  name: "tabHandler",
+  addOptions() {
+    return {
+      onTab: () => false,
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => this.options.onTab(),
+    };
+  },
+});
+
 // --- Modified JournalEditor Component ---
 interface JournalEditorProps {
   topicTitle?: string;
@@ -123,6 +148,9 @@ export function JournalEditor({
   onOnboardingSubmit,
 }: JournalEditorProps) {
   const [statusMessage, setStatusMessage] = useState("");
+  const [suggestion, setSuggestion] = useState<string | null>(null);
+  const autocompleteMutation = useAutocomplete();
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const editor = useEditor(
     {
@@ -134,6 +162,16 @@ export function JournalEditor({
               ? `Start writing about "${topicTitle}"...`
               : "Start with a free write entry...",
         }),
+        TabHandler.configure({
+          onTab: () => {
+            if (suggestion) {
+              editor?.chain().focus().insertContent(suggestion).run();
+              setSuggestion(null);
+              return true; // prevent default tab behavior
+            }
+            return false;
+          },
+        }),
       ],
       content: "",
       editorProps: {
@@ -143,11 +181,43 @@ export function JournalEditor({
         },
       },
     },
-    [topicTitle],
+    [topicTitle, suggestion], // Reconfigure on suggestion change for keyboard shortcut
   );
 
   const submitJournalMutation = useSubmitJournal();
   const analyzeJournalMutation = useAnalyzeJournal();
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleUpdate = () => {
+      setSuggestion(null);
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+
+      debounceTimer.current = setTimeout(() => {
+        const text = editor.getText();
+        if (text.trim().length > 10) {
+          autocompleteMutation.mutate(
+            { text },
+            {
+              onSuccess: (data) => setSuggestion(data.completedText),
+            },
+          );
+        }
+      }, 1500);
+    };
+
+    editor.on("update", handleUpdate);
+
+    return () => {
+      editor.off("update", handleUpdate);
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [editor, autocompleteMutation]);
 
   const handleSubmit = async () => {
     if (!editor) return;
@@ -205,6 +275,28 @@ export function JournalEditor({
               </button>
             </div>
           </BubbleMenu>
+        )}
+        {editor && suggestion && (
+          <FloatingMenu
+            editor={editor}
+            shouldShow={() => suggestion !== null}
+            tippyOptions={{ duration: 100, placement: "bottom-start" }}
+          >
+            <div className="bg-background border rounded-lg p-2 shadow-lg text-sm">
+              <span className="text-muted-foreground">{suggestion}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2"
+                onClick={() => {
+                  editor.chain().focus().insertContent(suggestion).run();
+                  setSuggestion(null);
+                }}
+              >
+                Accept (Tab)
+              </Button>
+            </div>
+          </FloatingMenu>
         )}
         <EditorContent editor={editor} />
         <div className="p-4 border-t flex items-center justify-between min-h-[68px]">

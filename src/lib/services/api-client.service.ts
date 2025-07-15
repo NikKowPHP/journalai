@@ -107,6 +107,14 @@ export const apiClient = {
       );
       return data;
     },
+    getSettings: async () => {
+      const { data } = await axios.get("/api/admin/settings");
+      return data;
+    },
+    updateSetting: async (payload: { key: string; value: any }) => {
+      const { data } = await axios.put("/api/admin/settings", payload);
+      return data;
+    },
   },
   billing: {
     createCheckoutSession: async (priceId: string) => {
@@ -115,6 +123,12 @@ export const apiClient = {
     },
     createPortalSession: async () => {
       const { data } = await axios.post("/api/billing/portal");
+      return data;
+    },
+  },
+  ai: {
+    autocomplete: async (payload: { text: string }) => {
+      const { data } = await axios.post("/api/ai/autocomplete", payload);
       return data;
     },
   },

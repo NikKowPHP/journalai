@@ -165,3 +165,9 @@ export const useCreatePortalSession = () => {
     mutationFn: apiClient.billing.createPortalSession,
   });
 };
+
+export const useAutocomplete = () => {
+  return useMutation({
+    mutationFn: apiClient.ai.autocomplete,
+  });
+};

@@ -1,13 +1,18 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { JournalEditor } from "@/components/JournalEditor";
 import { JournalHistoryList } from "@/components/JournalHistoryList";
-import { useJournalHistory, useUserProfile } from "@/lib/hooks/data-hooks";
+import {
+  useGenerateTopics,
+  useJournalHistory,
+  useUserProfile,
+} from "@/lib/hooks/data-hooks";
 import { useSearchParams } from "next/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { SuggestedTopics } from "@/components/SuggestedTopics";
 
 function JournalPageSkeleton() {
   return (
@@ -31,6 +36,19 @@ function JournalPageSkeleton() {
 export default function JournalPage() {
   const searchParams = useSearchParams();
   const topicFromQuery = searchParams.get("topic");
+
+  const [generatedTopics, setGeneratedTopics] = useState<string[]>([]);
+  const generateTopicsMutation = useGenerateTopics();
+
+  const handleGenerateTopics = () => {
+    generateTopicsMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        if (data.topics) {
+          setGeneratedTopics(data.topics);
+        }
+      },
+    });
+  };
 
   const {
     data: journals,
@@ -60,6 +78,19 @@ export default function JournalPage() {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-2xl font-bold">My Journal</h1>
+      <div className="space-y-4">
+        <Button
+          onClick={handleGenerateTopics}
+          disabled={generateTopicsMutation.isPending}
+        >
+          {generateTopicsMutation.isPending
+            ? "Generating..."
+            : "Suggest New Topics"}
+        </Button>
+        {generatedTopics.length > 0 && (
+          <SuggestedTopics topics={generatedTopics} />
+        )}
+      </div>
       <div className="grid gap-6 md:grid-cols-2">
         <JournalHistoryList journals={mappedJournals} />
         <div className="relative">
