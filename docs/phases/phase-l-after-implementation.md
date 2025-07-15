@@ -1,51 +1,9 @@
 ### [BASH_COMMANDS]
 ```bash
-touch src/lib/ai/prompts/journalAnalysis.prompt.test.ts
-touch src/lib/ai/prompts/answerEvaluation.prompt.test.ts
-touch src/lib/ai/prompts/audioAnswerEvaluation.prompt.test.ts
-touch src/lib/ai/prompts/journalingAids.prompt.test.ts
-touch src/lib/ai/prompts/questionGeneration.prompt.test.ts
-touch src/lib/ai/prompts/roleRefinement.prompt.test.ts
-touch src/lib/ai/prompts/sentenceCompletion.prompt.test.ts
-touch src/lib/ai/prompts/stuckWriter.prompt.test.ts
-touch src/lib/ai/prompts/textTranslation.prompt.test.ts
-touch src/lib/ai/prompts/titleGeneration.prompt.test.ts
-touch src/lib/ai/prompts/topicGeneration.prompt.test.ts
+touch src/lib/hooks/editor/useStuckWriterEffect.test.ts
 ```
-### src/lib/ai/prompts/answerEvaluation.prompt.test.ts
+### src/lib/hooks/editor/useStuckWriterEffect.test.ts
 ```ts
-```
-### src/lib/ai/prompts/audioAnswerEvaluation.prompt.test.ts
-```ts
-```
-### src/lib/ai/prompts/journalAnalysis.prompt.test.ts
-```ts
-```
-### src/lib/ai/prompts/journalingAids.prompt.test.ts
-```ts
-```
-
-### src/lib/ai/prompts/roleRefinement.prompt.test.ts
-```ts
-
-```
-### src/lib/ai/prompts/sentenceCompletion.prompt.test.ts
-```ts
-```
-### src/lib/ai/prompts/stuckWriter.prompt.test.ts
-```ts
-
-```
-### src/lib/ai/prompts/textTranslation.prompt.test.ts
-```ts
-
-```
-### src/lib/ai/prompts/titleGeneration.prompt.test.ts
-```ts
-```
-### src/lib/ai/prompts/topicGeneration.prompt.test.ts
-```ts
-
 ```
 ### docs/phases/phase-l-after-implementation.md
 ```md
@@ -89,34 +47,34 @@ touch src/lib/ai/prompts/topicGeneration.prompt.test.ts
 
 **Goal:** To test our custom React hooks, ensuring they manage state, handle side effects, and interact with services correctly. We will use `renderHook` from React Testing Library and mock API/service dependencies.
 
--   [ ] **4. Test Data-Fetching Hooks (e.g., `useUserProfile`)**
-    -   [ ] Create `src/lib/hooks/data/useUserProfile.test.ts`.
-    -   [ ] Use `jest.mock('@/lib/services/api-client.service')` to mock the entire API client.
-    -   [ ] **Happy Path:**
-        -   Mock `apiClient.profile.get` to resolve with a sample user profile.
-        -   Use `renderHook` to render `useUserProfile`.
-        -   Use `waitFor` to assert that the hook's state transitions from `isLoading: true` to `isLoading: false` and that the `data` property contains the mocked user profile.
-    -   [ ] **Error State:**
-        -   Mock `apiClient.profile.get` to `reject` with an error.
-        -   Render the hook and assert that `isLoading` becomes `false` and the `error` property is populated.
+-   [x] **4. Test Data-Fetching Hooks (e.g., `useUserProfile`)**
+    -   [x] Create `src/lib/hooks/data/useUserProfile.test.ts`.
+    -   [x] Use `jest.mock('@/lib/services/api-client.service')` to mock the entire API client.
+    -   [x] **Happy Path:**
+        -   [x] Mock `apiClient.profile.get` to resolve with a sample user profile.
+        -   [x] Use `renderHook` to render `useUserProfile`.
+        -   [x] Use `waitFor` to assert that the hook's state transitions from `isLoading: true` to `isLoading: false` and that the `data` property contains the mocked user profile.
+    -   [x] **Error State:**
+        -   [x] Mock `apiClient.profile.get` to `reject` with an error.
+        -   [x] Render the hook and assert that `isLoading` becomes `false` and the `error` property is populated.
 
--   [ ] **5. Test Mutation Hooks (e.g., `useSubmitJournal`)**
-    -   [ ] Create `src/lib/hooks/data/useSubmitJournal.test.ts`.
-    -   [ ] Mock the API client and the `useQueryClient` hook to provide a mock `invalidateQueries` function.
-    -   [ ] Render the `useSubmitJournal` hook.
-    -   [ ] Get the `mutate` function from the hook's result.
-    -   [ ] Call `mutate` with a sample payload.
-    -   [ ] Assert that `apiClient.journal.create` was called with the exact payload.
-    -   [ ] Assert that upon success, the mocked `invalidateQueries` function was called with the correct query key (`['journals', ...]`).
+-   [x] **5. Test Mutation Hooks (e.g., `useSubmitJournal`)**
+    -   [x] Create `src/lib/hooks/data/useSubmitJournal.test.ts`.
+    -   [x] Mock the API client and the `useQueryClient` hook to provide a mock `invalidateQueries` function.
+    -   [x] Render the `useSubmitJournal` hook.
+    -   [x] Get the `mutate` function from the hook's result.
+    -   [x] Call `mutate` with a sample payload.
+    -   [x] Assert that `apiClient.journal.create` was called with the exact payload.
+    -   [x] Assert that upon success, the mocked `invalidateQueries` function was called with the correct query key (`['journals', ...]`).
 
--   [ ] **6. Test Custom Editor Hooks (e.g., `useStuckWriterEffect`)**
-    -   [ ] Create `src/lib/hooks/editor/useStuckWriterEffect.test.ts`.
-    -   [ ] Use `jest.useFakeTimers()` to control `setTimeout`.
-    -   [ ] Mock the `useStuckWriterSuggestions` mutation hook it depends on.
-    -   [ ] Render the `useStuckWriterEffect` hook with a mock editor instance.
-    -   [ ] **Test Case 1 (No trigger):** Simulate an editor update, then use `jest.advanceTimersByTime(6999)` and assert that the mock mutation was *not* called.
-    -   [ ] **Test Case 2 (Trigger):** Simulate an editor update, use `jest.advanceTimersByTime(7000)`, and assert that the mock mutation *was* called.
-    -   [ ] **Test Case 3 (Reset):** Simulate an update, advance time by 3000ms, simulate another update, advance by another 6999ms, and assert the mutation was *not* called (proving the timer was correctly reset).
+-   [x] **6. Test Custom Editor Hooks (e.g., `useStuckWriterEffect`)**
+    -   [x] Create `src/lib/hooks/editor/useStuckWriterEffect.test.ts`.
+    -   [x] Use `jest.useFakeTimers()` to control `setTimeout`.
+    -   [x] Mock the `useStuckWriterSuggestions` mutation hook it depends on.
+    -   [x] Render the `useStuckWriterEffect` hook with a mock editor instance.
+    -   [x] **Test Case 1 (No trigger):** Simulate an editor update, then use `jest.advanceTimersByTime(6999)` and assert that the mock mutation was *not* called.
+    -   [x] **Test Case 2 (Trigger):** Simulate an editor update, use `jest.advanceTimersByTime(7000)`, and assert that the mock mutation *was* called.
+    -   [x] **Test Case 3 (Reset):** Simulate an update, advance time by 3000ms, simulate another update, advance by another 6999ms, and assert the mutation was *not* called (proving the timer was correctly reset).
 
 ### **Phase 3: Backend API Route Integration Tests**
 
