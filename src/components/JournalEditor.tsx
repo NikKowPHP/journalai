@@ -249,6 +249,10 @@ export function JournalEditor({
     });
   };
 
+  const handleApplyTranslation = (text: string) => {
+    editor?.chain().focus().setContent(text).run();
+  };
+
   if (!editor) {
     return null;
   }
@@ -330,6 +334,7 @@ export function JournalEditor({
       <TranslatorDialog
         open={isTranslatorOpen}
         onOpenChange={setIsTranslatorOpen}
+        onApplyTranslation={handleApplyTranslation}
       />
     </div>
   );

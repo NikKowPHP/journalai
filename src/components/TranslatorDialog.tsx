@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -25,6 +24,7 @@ import Spinner from "./ui/Spinner";
 interface TranslatorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onApplyTranslation?: (text: string) => void;
 }
 
 function getLanguageName(value: string | null | undefined): string {
@@ -33,11 +33,20 @@ function getLanguageName(value: string | null | undefined): string {
   return lang ? lang.name : value;
 }
 
-export function TranslatorDialog({ open, onOpenChange }: TranslatorDialogProps) {
+export function TranslatorDialog({
+  open,
+  onOpenChange,
+  onApplyTranslation,
+}: TranslatorDialogProps) {
   const { data: userProfile } = useUserProfile();
   const { activeTargetLanguage } = useLanguageStore();
   const translateMutation = useTranslateText();
-  const addToDeckMutation = useCreateSrsFromTranslation();
+  const {
+    mutate: addToDeck,
+    reset: resetAddToDeck,
+    isPending: isAddingToDeck,
+    isSuccess: isAddedToDeck,
+  } = useCreateSrsFromTranslation();
 
   const [sourceLang, setSourceLang] = useState<string | null>(null);
   const [targetLang, setTargetLang] = useState<string | null>(null);
@@ -51,9 +60,9 @@ export function TranslatorDialog({ open, onOpenChange }: TranslatorDialogProps) 
       setTargetLang(activeTargetLanguage);
       setSourceText("");
       setTranslatedText("");
-      addToDeckMutation.reset();
+      resetAddToDeck();
     }
-  }, [open, userProfile, activeTargetLanguage, addToDeckMutation]);
+  }, [open, userProfile, activeTargetLanguage, resetAddToDeck]);
 
   const handleTranslate = () => {
     if (sourceText.trim() && sourceLang && targetLang) {
@@ -66,7 +75,7 @@ export function TranslatorDialog({ open, onOpenChange }: TranslatorDialogProps) 
         {
           onSuccess: (data) => {
             setTranslatedText(data.translatedText);
-            addToDeckMutation.reset(); // Allow adding new translation to deck
+            resetAddToDeck(); // Allow adding new translation to deck
           },
         },
       );
@@ -85,7 +94,7 @@ export function TranslatorDialog({ open, onOpenChange }: TranslatorDialogProps) 
 
   const handleAddToDeck = () => {
     if (sourceText && translatedText && targetLang) {
-      addToDeckMutation.mutate({
+      addToDeck({
         frontContent: sourceText,
         backContent: translatedText,
         targetLanguage: targetLang,
@@ -93,8 +102,15 @@ export function TranslatorDialog({ open, onOpenChange }: TranslatorDialogProps) 
     }
   };
 
+  const handleApplyToJournal = () => {
+    if (onApplyTranslation && translatedText) {
+      onApplyTranslation(translatedText);
+      onOpenChange(false);
+    }
+  };
+
   const isAddToDeckDisabled =
-    !translatedText || addToDeckMutation.isPending || addToDeckMutation.isSuccess;
+    !translatedText || isAddingToDeck || isAddedToDeck;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,20 +156,29 @@ export function TranslatorDialog({ open, onOpenChange }: TranslatorDialogProps) 
             </Button>
           </div>
         </div>
-        <DialogFooter className="gap-2 sm:justify-between">
-          <Button
-            onClick={handleAddToDeck}
-            disabled={isAddToDeckDisabled}
-            variant="secondary"
-          >
-            {addToDeckMutation.isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+          <div className="flex gap-2">
+            <Button
+              onClick={handleAddToDeck}
+              disabled={isAddToDeckDisabled}
+              variant="secondary"
+            >
+              {isAddingToDeck && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isAddedToDeck && <Check className="mr-2 h-4 w-4" />}
+              {isAddedToDeck ? "Added!" : "Add to Deck"}
+            </Button>
+            {onApplyTranslation && (
+              <Button
+                onClick={handleApplyToJournal}
+                disabled={!translatedText}
+                variant="outline"
+              >
+                Apply to Journal
+              </Button>
             )}
-            {addToDeckMutation.isSuccess && (
-              <Check className="mr-2 h-4 w-4" />
-            )}
-            {addToDeckMutation.isSuccess ? "Added!" : "Add to Deck"}
-          </Button>
+          </div>
           <Button
             onClick={handleTranslate}
             disabled={!sourceText || translateMutation.isPending}
