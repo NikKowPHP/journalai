@@ -6,6 +6,7 @@ import { Providers } from "@/providers";
 import { CookieBanner } from "@/components/CookieBanner";
 import { AppShell } from "@/components/layout/AppShell";
 import StoreInitializer from "@/components/layout/StoreInitializer";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,6 +50,7 @@ export default function RootLayout({
           <StoreInitializer />
           <AppShell>{children}</AppShell>
           <CookieBanner />
+          <Toaster />
         </Providers>
       </body>
     </html>
