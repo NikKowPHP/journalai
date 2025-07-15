@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const {
     data: { user: authUser },
@@ -12,26 +13,40 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const url = new URL(req.url);
+  const targetLanguage = url.searchParams.get("targetLanguage");
+  if (!targetLanguage) {
+    return NextResponse.json(
+      { error: "targetLanguage query parameter is required" },
+      { status: 400 },
+    );
+  }
+
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: authUser.id },
+    const now = new Date();
+
+    // Fetch SRS items that are due or have a low ease factor for the specific language
+    const srsItems = await prisma.srsReviewItem.findMany({
+      where: {
+        userId: authUser.id,
+        targetLanguage: targetLanguage,
+        OR: [
+          { easeFactor: { lt: 2.5 } },
+          { nextReviewAt: { lte: now } },
+        ],
+        // Ensure we only look at items derived from mistakes, which have topics
+        mistakeId: { not: null },
+      },
       select: {
-        aiAssessedProficiency: true,
-        srsItems: {
+        mistake: {
           select: {
-            easeFactor: true,
-            nextReviewAt: true,
-            mistake: {
+            analysis: {
               select: {
-                analysis: {
+                entry: {
                   select: {
-                    entry: {
+                    topic: {
                       select: {
-                        topic: {
-                          select: {
-                            title: true,
-                          },
-                        },
+                        title: true,
                       },
                     },
                   },
@@ -43,36 +58,27 @@ export async function GET() {
       },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
     const suggestedTopics: string[] = [];
     const seenTopics = new Set<string>();
 
-    // Suggest topics from SRS items with low easeFactor or due for review
-    user.srsItems.forEach((item) => {
-      if (
-        item.easeFactor < 2.5 ||
-        (item.nextReviewAt && new Date(item.nextReviewAt) <= new Date())
-      ) {
-        const topicTitle = item.mistake?.analysis?.entry?.topic?.title;
-        if (topicTitle && !seenTopics.has(topicTitle)) {
-          suggestedTopics.push(topicTitle);
-          seenTopics.add(topicTitle);
-        }
+    srsItems.forEach((item) => {
+      const topicTitle = item.mistake?.analysis?.entry?.topic?.title;
+      if (topicTitle && !seenTopics.has(topicTitle)) {
+        suggestedTopics.push(topicTitle);
+        seenTopics.add(topicTitle);
       }
     });
+    
+    // Future enhancement: If no topics are found from SRS items, 
+    // we could call the AI service to generate some generic ones.
+    
+    return NextResponse.json({ topics: suggestedTopics });
 
-    // TODO: Potentially add logic to suggest topics based on aiAssessedProficiency sub-scores
-    // if a more granular breakdown of proficiency by topic/skill becomes available.
-
-    return NextResponse.json(suggestedTopics);
   } catch (error) {
-    console.error("Error fetching suggested topics:", error);
+    logger.error("Error fetching suggested topics:", error);
     return NextResponse.json(
       { error: "Failed to fetch suggested topics" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

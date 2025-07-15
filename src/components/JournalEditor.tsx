@@ -11,12 +11,12 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import {
   useSubmitJournal,
-  useAnalyzeJournal,
   useAutocomplete,
+  useStuckWriterSuggestions,
 } from "@/lib/hooks/data-hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { Lightbulb, Languages } from "lucide-react";
+import { Lightbulb, Languages, X } from "lucide-react";
 import { Extension } from "@tiptap/core";
 import { useRouter } from "next/navigation";
 import { useLanguageStore } from "@/lib/stores/language.store";
@@ -126,6 +126,41 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
   );
 };
 
+// --- Stuck Writer Helper UI ---
+const StuckWriterHelper = ({
+  suggestions,
+  onDismiss,
+}: {
+  suggestions: string[];
+  onDismiss: () => void;
+}) => {
+  return (
+    <Card className="mt-4 p-4 border-primary/50 bg-secondary/30 relative animate-in fade-in duration-500">
+      <CardHeader className="p-0 pb-2 flex-row justify-between items-center">
+        <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 text-primary" />
+          Need a nudge?
+        </CardTitle>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={onDismiss}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
+          {suggestions.map((suggestion, index) => (
+            <li key={index}>{suggestion}</li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+};
+
 // --- TipTap Extension for Tab Key ---
 const TabHandler = Extension.create({
   name: "tabHandler",
@@ -156,9 +191,18 @@ export function JournalEditor({
   const [statusMessage, setStatusMessage] = useState("");
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
+  const [stuckSuggestions, setStuckSuggestions] = useState<string[] | null>(
+    null,
+  );
+  const [showStuckUI, setShowStuckUI] = useState(false);
+  const stuckTimer = useRef<NodeJS.Timeout | null>(null);
   const autocompleteMutation = useAutocomplete();
+  const stuckSuggestionsMutation = useStuckWriterSuggestions();
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
 
   const editor = useEditor(
     {
@@ -198,11 +242,11 @@ export function JournalEditor({
     if (!editor) return;
 
     const handleUpdate = () => {
+      // Autocomplete logic
       setSuggestion(null);
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
-
       debounceTimer.current = setTimeout(() => {
         const text = editor.getText();
         if (text.trim().length > 10) {
@@ -214,6 +258,34 @@ export function JournalEditor({
           );
         }
       }, 1500);
+
+      // Stuck writer logic
+      setStuckSuggestions(null);
+      setShowStuckUI(false);
+      if (stuckTimer.current) {
+        clearTimeout(stuckTimer.current);
+      }
+      stuckTimer.current = setTimeout(() => {
+        const currentText = editor.getText();
+        if (currentText.trim().length > 5 && activeTargetLanguage) {
+          // check if editor has content
+          stuckSuggestionsMutation.mutate(
+            {
+              topic: topicTitle,
+              currentText,
+              targetLanguage: activeTargetLanguage,
+            },
+            {
+              onSuccess: (data) => {
+                if (data?.suggestions?.length > 0) {
+                  setStuckSuggestions(data.suggestions);
+                  setShowStuckUI(true);
+                }
+              },
+            },
+          );
+        }
+      }, 7000);
     };
 
     editor.on("update", handleUpdate);
@@ -223,8 +295,17 @@ export function JournalEditor({
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
+      if (stuckTimer.current) {
+        clearTimeout(stuckTimer.current);
+      }
     };
-  }, [editor, autocompleteMutation]);
+  }, [
+    editor,
+    autocompleteMutation,
+    stuckSuggestionsMutation,
+    topicTitle,
+    activeTargetLanguage,
+  ]);
 
   const handleSubmit = async () => {
     if (!editor) return;
@@ -331,6 +412,12 @@ export function JournalEditor({
           )}
         </div>
       </div>
+      {showStuckUI && stuckSuggestions && (
+        <StuckWriterHelper
+          suggestions={stuckSuggestions}
+          onDismiss={() => setShowStuckUI(false)}
+        />
+      )}
       <TranslatorDialog
         open={isTranslatorOpen}
         onOpenChange={setIsTranslatorOpen}

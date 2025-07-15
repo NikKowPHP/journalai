@@ -56,6 +56,12 @@ export interface JournalingAids {
   suggestedVocab: string[];
 }
 
+export interface StuckWriterContext {
+  topic: string;
+  currentText: string;
+  targetLanguage: string;
+}
+
 export interface QuestionGenerationService {
   /**
    * Generates questions based on given topics and difficulty
@@ -126,6 +132,15 @@ export interface QuestionGenerationService {
     proficiency: number;
     count: number;
   }): Promise<string[]>;
+
+  /**
+   * Generates suggestions for a user who is stuck while writing.
+   * @param context Object containing topic, current text, and target language.
+   * @returns Promise resolving to an object with an array of suggestions.
+   */
+  generateStuckWriterSuggestions(
+    context: StuckWriterContext,
+  ): Promise<{ suggestions: string[] }>;
 }
 
 /**

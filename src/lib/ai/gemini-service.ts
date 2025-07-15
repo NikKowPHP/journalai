@@ -8,6 +8,7 @@ import {
   RoleSuggestion,
   JournalAnalysisResult,
   JournalingAids,
+  StuckWriterContext,
 } from "./generation-service";
 import {
   GoogleGenAI,
@@ -543,6 +544,56 @@ export class GeminiQuestionGenerationService
       return topics;
     } catch (error) {
       console.error("Error generating topics with Gemini:", error);
+      throw error;
+    }
+  }
+
+  async generateStuckWriterSuggestions(
+    context: StuckWriterContext,
+  ): Promise<{ suggestions: string[] }> {
+    const { topic, currentText, targetLanguage } = context;
+    const prompt = `
+      You are a supportive and creative writing coach. A user writing a journal entry in ${targetLanguage} seems to be stuck.
+      Their topic is "${topic}" and they have written the following so far: "${currentText}".
+
+      Your task is to generate 2-3 open-ended, thought-provoking questions in ${targetLanguage} to help them continue writing. The questions should be directly related to their topic and what they've already written.
+      
+      Your response MUST be a single raw JSON object with this exact structure:
+      {
+        "suggestions": ["question 1 in target language", "question 2 in target language"]
+      }
+
+      Example for topic "My favorite vacation" and text "I went to the beach.":
+      {
+        "suggestions": ["What was the most memorable moment on the beach?", "How did the sound of the waves make you feel?", "Who were you with and what did you do together?"]
+      }
+
+      Now, generate suggestions for the given context.
+    `;
+
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const text = result.text || "";
+      if (!text) {
+        throw new Error(
+          "Empty response from Gemini API for stuck writer suggestions",
+        );
+      }
+      const cleanedText = this.cleanJsonString(text);
+      if (!cleanedText) {
+        throw new Error(
+          "Failed to get a valid response from the AI for stuck writer suggestions.",
+        );
+      }
+      return JSON.parse(cleanedText) as { suggestions: string[] };
+    } catch (error) {
+      console.error(
+        "Error generating stuck writer suggestions with Gemini:",
+        error,
+      );
       throw error;
     }
   }

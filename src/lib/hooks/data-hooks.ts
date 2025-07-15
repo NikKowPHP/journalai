@@ -353,6 +353,13 @@ export const useTranslateText = () => {
   });
 };
 
+export const useStuckWriterSuggestions = () => {
+  return useMutation({
+    mutationFn: apiClient.ai.getStuckSuggestions,
+    // No onSuccess or onError toast needed for this feature as it's non-critical
+  });
+};
+
 export const useCreateSrsFromTranslation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
