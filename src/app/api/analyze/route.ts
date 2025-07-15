@@ -42,6 +42,16 @@ export async function POST(req: NextRequest) {
     }
     const targetLanguage = journal.targetLanguage;
 
+    if (!targetLanguage) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot analyze entry: target language not set for this legacy journal entry.",
+        },
+        { status: 400 },
+      );
+    }
+
     // 2. Get user's current proficiency score for the language
     const languageProfile = await prisma.languageProfile.findUnique({
       where: {

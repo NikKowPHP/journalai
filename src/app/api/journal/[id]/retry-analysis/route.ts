@@ -45,6 +45,16 @@ export async function POST(
     }
     const targetLanguage = journal.targetLanguage;
 
+    if (!targetLanguage) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot retry analysis: target language not set for this legacy journal entry.",
+        },
+        { status: 400 },
+      );
+    }
+
     if (journal.analysis) {
       await prisma.analysis.delete({
         where: { id: journal.analysis.id },

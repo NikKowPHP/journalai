@@ -43,6 +43,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    if (!mistake.analysis.entry.targetLanguage) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot create review item: target language not set for this legacy journal entry.",
+        },
+        { status: 400 },
+      );
+    }
+
     const existingSrsItem = await prisma.srsReviewItem.findUnique({
       where: { mistakeId: mistakeId },
     });

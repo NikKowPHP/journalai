@@ -522,3 +522,6 @@ The goal is to provide immediate, consistent, and user-friendly feedback for eve
                 description: error.message || "Could not open the billing portal.",
               });
             },
+
+
+
