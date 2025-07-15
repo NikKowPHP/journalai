@@ -1,103 +1,99 @@
 
-### **Final Refactoring Plan: Codebase Health & Best Practices**
 
-**Guiding Principles:**
-*   **Single Responsibility Principle (SRP):** Each file and module should do one thing well.
-*   **Don't Repeat Yourself (DRY):** Abstract and reuse common logic and configuration.
-*   **Decoupling & Co-location:** Keep related logic together (e.g., a hook with its own logic) and separate from unrelated concerns (e.g., AI prompts from API calls).
+### **Comprehensive Testing Plan: Ensuring Codebase Reliability**
+
+**Testing Philosophy:** We will follow the principles of the "Testing Pyramid." Our focus will be on creating a large base of fast, reliable **Unit Tests** for isolated logic, a significant number of **Integration Tests** to ensure our hooks and services work together correctly, and we will leave full **End-to-End (E2E)** tests as a future consideration.
+
+**Tools:**
+*   **Test Runner:** Jest (already configured).
+*   **Testing Library:** React Testing Library (for hooks and components).
+*   **Mocking:** Jest's built-in mocking capabilities (`jest.fn()`, `jest.mock()`).
 
 ---
 
-#### **Phase 1: Decoupling AI Prompts from Logic**
+### **Phase 1: Unit Tests (The Foundation)**
 
-**Goal:** Clean up `gemini-service.ts` by externalizing all prompt templates, making them easier to manage and version.
+**Goal:** To test pure functions and isolated logic in the `lib` directory. These tests are fast, easy to write, and provide immediate feedback on core logic.
 
--   [x] **1. Create a Centralized Prompt Directory**
-    -   [x] Create a new directory: `src/lib/ai/prompts`.
-    -   [x] Inside this directory, create a new `index.ts` for barrel exports.
+-   [ ] **1. Test Validation Utilities**
+    -   [ ] Create `src/lib/validation.test.ts`.
+    -   [ ] **For `validateEmail`:** Write test cases for a valid email, an email without an "@", and an email without a top-level domain.
+    -   [ ] **For `validatePassword`:** Write test cases for a strong password, a password that's too short, and passwords missing each of the required character types (uppercase, lowercase, number, special character).
+    -   [ ] **For `calculatePasswordStrength`:** Test that it returns the correct strength score (0-5) for various password complexities.
 
--   [x] **2. Externalize Each Prompt into Its Own Module**
-    -   [x] For each method in `gemini-service.ts` that contains a large prompt string, create a corresponding file in `src/lib/ai/prompts`. Examples:
-        -   `journalAnalysis.prompt.ts`
-        -   `stuckWriter.prompt.ts`
-        -   `titleGeneration.prompt.ts`
-    -   [x] In each new file, export a function that takes the required context (e.g., `journalContent`, `targetLanguage`) and returns the formatted prompt string.
+-   [ ] **2. Test Rate Limiting Logic**
+    -   [ ] Create `src/lib/rateLimiter.test.ts`.
+    -   [ ] Use `beforeEach` to clear the `memoryStore` to ensure tests are isolated.
+    -   [ ] **For `authRateLimiter`:**
+        -   Test that it allows requests under the limit.
+        -   Test that it blocks requests that exceed the limit (e.g., the 11th request in a minute).
+        -   Test that it returns a valid `retryAfter` value when blocked.
+    -   [ ] **For `tieredRateLimiter`:**
+        -   Test that a "FREE" user is blocked after 5 requests.
+        -   Test that a "PRO" user is *not* blocked after 5 requests.
 
--   [x] **3. Refactor `gemini-service.ts` to Use Prompt Functions**
-    -   [x] Modify `gemini-service.ts` to import the new prompt-generating functions.
-    -   [x] Replace the inline template literals in each method with a call to its corresponding prompt function.
+-   [ ] **3. Test AI Prompt Generators**
+    -   [ ] Create `src/lib/ai/prompts/journalAnalysis.prompt.test.ts` (and similar files for other prompts).
+    -   [ ] For each prompt-generating function, write a simple test to ensure it returns a non-empty string and correctly injects the context variables (e.g., `targetLanguage`, `journalContent`) into the prompt. We are testing the *construction* of the prompt, not its AI-effectiveness.
 
-#### **Phase 2: Refactoring Data Hooks (SRP)**
+### **Phase 2: Integration Tests for Custom Hooks**
 
-**Goal:** Break down the monolithic `data-hooks.ts` into individual, self-contained hook files for improved modularity and discoverability.
+**Goal:** To test our custom React hooks, ensuring they manage state, handle side effects, and interact with services correctly. We will use `renderHook` from React Testing Library and mock API/service dependencies.
 
--   [x] **4. Create a New Directory for Data Hooks**
-    -   [x] Create a new directory: `src/lib/hooks/data`.
+-   [ ] **4. Test Data-Fetching Hooks (e.g., `useUserProfile`)**
+    -   [ ] Create `src/lib/hooks/data/useUserProfile.test.ts`.
+    -   [ ] Use `jest.mock('@/lib/services/api-client.service')` to mock the entire API client.
+    -   [ ] **Happy Path:**
+        -   Mock `apiClient.profile.get` to resolve with a sample user profile.
+        -   Use `renderHook` to render `useUserProfile`.
+        -   Use `waitFor` to assert that the hook's state transitions from `isLoading: true` to `isLoading: false` and that the `data` property contains the mocked user profile.
+    -   [ ] **Error State:**
+        -   Mock `apiClient.profile.get` to `reject` with an error.
+        -   Render the hook and assert that `isLoading` becomes `false` and the `error` property is populated.
 
--   [x] **5. Migrate Each Hook to Its Own File**
-    -   [x] For every exported hook in `src/lib/hooks/data-hooks.ts` (e.g., `useUserProfile`, `useAnalyticsData`, `useSubmitJournal`), create a new file inside `src/lib/hooks/data`.
-    -   [x] Name the files logically: `useUserProfile.ts`, `useAnalyticsData.ts`, `useSubmitJournal.ts`, etc.
-    -   [x] Cut the logic for each hook from the original file and paste it into its new, dedicated file.
+-   [ ] **5. Test Mutation Hooks (e.g., `useSubmitJournal`)**
+    -   [ ] Create `src/lib/hooks/data/useSubmitJournal.test.ts`.
+    -   [ ] Mock the API client and the `useQueryClient` hook to provide a mock `invalidateQueries` function.
+    -   [ ] Render the `useSubmitJournal` hook.
+    -   [ ] Get the `mutate` function from the hook's result.
+    -   [ ] Call `mutate` with a sample payload.
+    -   [ ] Assert that `apiClient.journal.create` was called with the exact payload.
+    -   [ ] Assert that upon success, the mocked `invalidateQueries` function was called with the correct query key (`['journals', ...]`).
 
--   [x] **6. Create an Aggregator (Barrel File)**
-    -   [x] Delete the now-empty `src/lib/hooks/data-hooks.ts` file.
-    -   [x] In the new `src/lib/hooks/data` directory, create an `index.ts` file.
-    -   [x] Populate this `index.ts` with `export * from './...'` statements for every new hook file. This allows you to maintain a single, clean import path for all data hooks.
-        *   **Example `index.ts` content:**
-            ```typescript
-            export * from './useUserProfile';
-            export * from './useAnalyticsData';
-            // ... etc for all hooks
-            ```
+-   [ ] **6. Test Custom Editor Hooks (e.g., `useStuckWriterEffect`)**
+    -   [ ] Create `src/lib/hooks/editor/useStuckWriterEffect.test.ts`.
+    -   [ ] Use `jest.useFakeTimers()` to control `setTimeout`.
+    -   [ ] Mock the `useStuckWriterSuggestions` mutation hook it depends on.
+    -   [ ] Render the `useStuckWriterEffect` hook with a mock editor instance.
+    -   [ ] **Test Case 1 (No trigger):** Simulate an editor update, then use `jest.advanceTimersByTime(6999)` and assert that the mock mutation was *not* called.
+    -   [ ] **Test Case 2 (Trigger):** Simulate an editor update, use `jest.advanceTimersByTime(7000)`, and assert that the mock mutation *was* called.
+    -   [ ] **Test Case 3 (Reset):** Simulate an update, advance time by 3000ms, simulate another update, advance by another 6999ms, and assert the mutation was *not* called (proving the timer was correctly reset).
 
--   [x] **7. Update All Imports Across the Application**
-    -   [x] Perform a project-wide search for the old import path: `from "@/lib/hooks/data-hooks"`.
-    -   [x] Replace it with the new, clean import path: `from "@/lib/hooks/data"`.
+### **Phase 3: Backend API Route Integration Tests**
 
-#### **Phase 3: Abstracting Component Logic into Custom Hooks**
+**Goal:** To test the API routes themselves, ensuring they handle requests, authentication, and service calls correctly. We will mock the database and AI service layers.
 
-**Goal:** Clean up the `JournalEditor` component by extracting complex state and effect logic into reusable custom hooks.
+-   [ ] **7. Test an Authenticated API Route (e.g., `stuck-helper`)**
+    -   [ ] Create `src/app/api/ai/stuck-helper/route.test.ts`.
+    -   [ ] Mock the `prisma` client, the `getQuestionGenerationService`, and the `createClient` from Supabase.
+    -   [ ] **Happy Path (200 OK):**
+        -   Mock the Supabase client to return a valid user.
+        -   Mock the AI service to return sample suggestions.
+        -   Create a mock `Request` object with a valid body.
+        -   Call the `POST` handler and assert that the response status is `200` and the body contains the mocked suggestions.
+    -   [ ] **Unauthorized (401):**
+        -   Mock the Supabase client to return a `null` user.
+        -   Call the `POST` handler and assert that the response status is `401`.
+    -   [ ] **Bad Request (400):**
+        -   Mock a valid user but create a mock `Request` with an invalid body (e.g., missing a required field).
+        -   Call the `POST` handler and assert that the response status is `400`.
 
--   [x] **8. Create Custom Hooks for Editor Effects**
-    -   [x] Create a new directory: `src/lib/hooks/editor-hooks`.
-    -   [x] Create `useAutocompleteEffect.ts`: Encapsulate the autocomplete timer logic. It should take the `editor` instance as an argument and return the `suggestion` state.
-    -   [x] Create `useStuckWriterEffect.ts`: Encapsulate the 7-second inactivity timer logic. It should take the `editor` and `topicTitle` and return the `stuckSuggestions` and `showStuckUI` states.
+### **Phase 4: Finalization & CI Integration**
 
--   [x] **9. Refactor `JournalEditor.tsx` to Use Custom Hooks**
-    -   [x] Open `src/components/JournalEditor.tsx`.
-    -   [x] Remove the large `useEffect` that handles both features and their related state variables.
-    -   [x] Import and call the new custom hooks to manage the logic, making the component body cleaner and more declarative.
+-   [ ] **8. Configure and Run Code Coverage**
+    -   [ ] Add a new script to `package.json`: `"test:coverage": "jest --coverage"`.
+    -   [ ] Run the script and review the coverage report to identify any critical, untested logic. Aim for high coverage in the `lib` directory.
 
-#### **Phase 4: Centralizing Configuration & Types**
-
-**Goal:** Apply the DRY principle to configuration and establish a single source of truth for shared types.
-
--   [x] **10. Centralize Pricing Configuration**
-    -   [x] Create a new file: `src/lib/config/pricing.ts`.
-    -   [x] Move the `tiers` array from `src/components/PricingTable.tsx` into this new file and export it.
-    -   [x] Import the `tiers` configuration back into `PricingTable.tsx`.
-
--   [x] **11. Centralize Shared Type Definitions**
-    -   [x] Create a new file: `src/lib/types/index.ts`.
-    -   [x] Move shared interfaces (e.g., `ProfileData`, `OnboardingData`, `JournalEntryWithRelations`, AI context types) into this file and export them.
-    -   [x] Update all relevant files (API routes, components, hooks) to import these shared types from the central location.
-
-#### **Phase 5: Validation & Final Polish**
-
-**Goal:** Ensure the refactoring process did not introduce regressions and that the codebase is left in a clean state.
-
--   [x] **12. Run Code Quality Checks**
-    -   [x] Execute `npm run lint -- --fix` to catch and automatically fix any linting errors.
-    -   [x] Execute `npm run build` to perform a full type-check across the entire project and ensure there are no new TypeScript errors.
-
--   [x] **13. Perform a Manual Smoke Test**
-    -   [x] After all changes are complete, run the application locally.
-    -   [x] Test the critical user flows:
-        *   Login and Signup.
-        *   Submitting a journal entry.
-        *   Verify the "Stuck Writer" helper appears after 7 seconds of inactivity.
-        *   Verify the autocomplete suggestion appears.
-        *   Verify the pricing table still renders correctly.
-        *   Verify that data-fetching on the dashboard and other pages still works.
-```
-
+-   [ ] **9. Integrate into CI/CD Pipeline**
+    -   [ ] If using GitHub Actions, create a `.github/workflows/ci.yml` file.
+    -   [ ] Add a job that runs on every pull request, which checks out the code, installs dependencies (`npm ci`), and runs the test suite (`npm test`). This ensures no new code is merged without passing all tests.

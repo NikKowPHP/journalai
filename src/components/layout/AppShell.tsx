@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -23,7 +22,7 @@ import Spinner from "../ui/Spinner";
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
-import { useCompleteOnboarding } from "@/lib/hooks/data-hooks";
+import { useCompleteOnboarding } from "@/lib/hooks/data";
 
 function AppFooter() {
   return (
