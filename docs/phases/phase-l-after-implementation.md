@@ -1,8 +1,8 @@
 ### [BASH_COMMANDS]
 ```bash
-touch src/lib/hooks/editor/useStuckWriterEffect.test.ts
+touch src/app/api/ai/stuck-helper/route.test.ts
 ```
-### src/lib/hooks/editor/useStuckWriterEffect.test.ts
+### src/app/api/ai/stuck-helper/route.test.ts
 ```ts
 ```
 ### docs/phases/phase-l-after-implementation.md
@@ -80,20 +80,20 @@ touch src/lib/hooks/editor/useStuckWriterEffect.test.ts
 
 **Goal:** To test the API routes themselves, ensuring they handle requests, authentication, and service calls correctly. We will mock the database and AI service layers.
 
--   [ ] **7. Test an Authenticated API Route (e.g., `stuck-helper`)**
-    -   [ ] Create `src/app/api/ai/stuck-helper/route.test.ts`.
-    -   [ ] Mock the `prisma` client, the `getQuestionGenerationService`, and the `createClient` from Supabase.
-    -   [ ] **Happy Path (200 OK):**
-        -   Mock the Supabase client to return a valid user.
-        -   Mock the AI service to return sample suggestions.
-        -   Create a mock `Request` object with a valid body.
-        -   Call the `POST` handler and assert that the response status is `200` and the body contains the mocked suggestions.
-    -   [ ] **Unauthorized (401):**
-        -   Mock the Supabase client to return a `null` user.
-        -   Call the `POST` handler and assert that the response status is `401`.
-    -   [ ] **Bad Request (400):**
-        -   Mock a valid user but create a mock `Request` with an invalid body (e.g., missing a required field).
-        -   Call the `POST` handler and assert that the response status is `400`.
+-   [x] **7. Test an Authenticated API Route (e.g., `stuck-helper`)**
+    -   [x] Create `src/app/api/ai/stuck-helper/route.test.ts`.
+    -   [x] Mock the `prisma` client, the `getQuestionGenerationService`, and the `createClient` from Supabase.
+    -   [x] **Happy Path (200 OK):**
+        -   [x] Mock the Supabase client to return a valid user.
+        -   [x] Mock the AI service to return sample suggestions.
+        -   [x] Create a mock `Request` object with a valid body.
+        -   [x] Call the `POST` handler and assert that the response status is `200` and the body contains the mocked suggestions.
+    -   [x] **Unauthorized (401):**
+        -   [x] Mock the Supabase client to return a `null` user.
+        -   [x] Call the `POST` handler and assert that the response status is `401`.
+    -   [x] **Bad Request (400):**
+        -   [x] Mock a valid user but create a mock `Request` with an invalid body (e.g., missing a required field).
+        -   [x] Call the `POST` handler and assert that the response status is `400`.
 
 ### **Phase 4: Finalization & CI Integration**
 
