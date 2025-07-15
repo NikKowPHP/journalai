@@ -1,5 +1,5 @@
-### src/components/StudySession.tsx
-```tsx
+### src/app/api/srs/deck/route.ts
+```ts
 ```
 ### docs/phases/phase-l-after-implementation.md
 ```md
@@ -111,7 +111,7 @@ Here is a revised, more comprehensive plan that incorporates these missing lifec
 
 #### **Phase 3: Future-Proofing and Advanced Optimization**
 
-*   [ ] **Task 3.1: Paginate the Deck API.**
+*   [x] **Task 3.1: Paginate the Deck API.**
     *   **File:** `src/app/api/srs/deck/route.ts`
     *   **Action:** Modify the API to accept a `limit` parameter. This prevents fetching hundreds of cards at once. A limit of 20-30 is a good starting point.
     *   **Implementation:**
@@ -124,7 +124,7 @@ Here is a revised, more comprehensive plan that incorporates these missing lifec
         });
         ```
 
-*   [ ] **Task 3.2: Update the Client to Use the Paginated API.**
+*   [x] **Task 3.2: Update the Client to Use the Paginated API.**
     *   **File:** `src/lib/hooks/data/useStudyDeck.ts`
     *   **Action:** Pass the `limit` parameter from the client. (Note: For this initial fix, we can hardcode the limit on the API side as a safety measure).
     *   **Goal:** Ensures the initial page load of `/study` is always fast, regardless of how many cards are due.
