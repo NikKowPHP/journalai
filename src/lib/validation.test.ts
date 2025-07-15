@@ -84,12 +84,12 @@ describe("validation utilities", () => {
       expect(calculatePasswordStrength("abcABC")).toBe(2);
     });
 
-    it("should return 3 for having lowercase, uppercase, and numbers", () => {
-      expect(calculatePasswordStrength("abcABC123")).toBe(3);
+    it("should return 4 for having lowercase, uppercase, and numbers, plus length", () => {
+      expect(calculatePasswordStrength("abcABC123")).toBe(4);
     });
 
-    it("should return 4 for having lowercase, uppercase, numbers, and special chars", () => {
-      expect(calculatePasswordStrength("abcABC123!@#")).toBe(4);
+    it("should return 5 for having all criteria", () => {
+      expect(calculatePasswordStrength("abcABC123!@#")).toBe(5);
     });
 
     it("should get an additional point for being long enough", () => {

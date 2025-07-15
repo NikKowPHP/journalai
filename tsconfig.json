@@ -31,8 +31,7 @@
       "@/services/*": ["src/services/*"],
       "@/prisma/*": ["prisma/*"],
       "@/public/*": ["public/*"],
-      "@/assets/*": ["src/assets/*"],
-     
+      "@/assets/*": ["src/assets/*"]
     },
     "plugins": [
       {

@@ -1,3 +1,5 @@
+
+/** @jest-environment node */
 import { POST } from './route';
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
@@ -8,13 +10,19 @@ import { logger } from '@/lib/logger';
 
 // Mock dependencies
 jest.mock('@/lib/supabase/server');
-jest.mock('@/lib/db');
+jest.mock('@/lib/db', () => ({
+  __esModule: true,
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+    },
+  },
+}));
 jest.mock('@/lib/ai');
 jest.mock('@/lib/rateLimiter');
 jest.mock('@/lib/logger');
 
 const mockedCreateClient = createClient as jest.Mock;
-const mockedPrismaUserFindUnique = prisma.user.findUnique as jest.Mock;
 const mockedGetQGS = getQuestionGenerationService as jest.Mock;
 const mockedTieredRateLimiter = tieredRateLimiter as jest.Mock;
 
@@ -41,6 +49,7 @@ describe('API Route: /api/ai/stuck-helper', () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
+    (prisma.user.findUnique as jest.Mock).mockClear();
     mockedTieredRateLimiter.mockReturnValue({ allowed: true });
   });
 
@@ -59,7 +68,7 @@ describe('API Route: /api/ai/stuck-helper', () => {
       };
 
       mockGetUser(mockUser);
-      mockedPrismaUserFindUnique.mockResolvedValue(mockDbUser);
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockDbUser);
       mockedGetQGS.mockReturnValue({
         generateStuckWriterSuggestions: jest
           .fn()
@@ -102,7 +111,7 @@ describe('API Route: /api/ai/stuck-helper', () => {
       // Arrange
       const mockUser = { id: 'user-123' };
       mockGetUser(mockUser);
-      mockedPrismaUserFindUnique.mockResolvedValue({ subscriptionTier: 'FREE' });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ subscriptionTier: 'FREE' });
 
       // Missing 'topic' field
       const invalidRequestBody = {

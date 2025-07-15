@@ -1,4 +1,5 @@
 
+/** @jest-environment jsdom */
 import { renderHook, act } from '@testing-library/react';
 import { useStuckWriterEffect } from './useStuckWriterEffect';
 import { useStuckWriterSuggestions } from '@/lib/hooks/data';
