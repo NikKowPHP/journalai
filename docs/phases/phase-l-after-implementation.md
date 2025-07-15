@@ -101,10 +101,3 @@
         *   Verify that data-fetching on the dashboard and other pages still works.
 ```
 
-
-### src/lib/ai/gemini-service.ts
-```typescript
-```
-### src/components/JournalEditor.tsx
-```typescript
-```

@@ -1,4 +1,3 @@
-
 import {
   useEditor,
   EditorContent,
@@ -190,7 +189,7 @@ export function JournalEditor({
   const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
   const router = useRouter();
 
-  const onTabRef = useRef(() => false);
+  const onTabRef = useRef<() => boolean>(() => false);
 
   const editor = useEditor({
     extensions: [

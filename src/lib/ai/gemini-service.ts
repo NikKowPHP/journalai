@@ -1,4 +1,3 @@
-
 import { QuestionGenerationService } from "./generation-service";
 import type {
   GeneratedQuestion,
@@ -74,6 +73,7 @@ export class GeminiQuestionGenerationService
         vocabularyScore: Number(analysis.vocabularyScore) || 0,
         feedback: analysis.feedback || "",
         mistakes: analysis.mistakes || [],
+        highlights: analysis.highlights || [],
       };
     } catch (error) {
       console.error("Error analyzing journal entry with Gemini:", error);

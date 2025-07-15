@@ -56,6 +56,11 @@ export interface JournalAnalysisResult {
     corrected: string;
     explanation: string;
   }>;
+  highlights: Array<{
+    start: number;
+    end: number;
+    type: "grammar" | "phrasing" | "vocabulary";
+  }>;
 }
 export interface JournalingAids {
   sentenceStarter: string;
