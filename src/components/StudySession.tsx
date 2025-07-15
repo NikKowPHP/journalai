@@ -1,6 +1,6 @@
 
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Flashcard } from "@/components/Flashcard";
 import { useReviewSrsItem } from "@/lib/hooks/data";
 
@@ -27,40 +27,51 @@ interface StudySessionProps {
 }
 
 export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const currentCard = cards[currentCardIndex];
+  const [sessionCards, setSessionCards] = useState<StudyCard[]>([]);
+  const [initialCardCount, setInitialCardCount] = useState(0);
+
+  useEffect(() => {
+    setSessionCards(cards);
+    if (cards.length > 0) {
+      setInitialCardCount(cards.length);
+    }
+  }, [cards]);
 
   const reviewMutation = useReviewSrsItem();
+  const currentCard = sessionCards[0];
 
   const handleReview = (quality: number) => {
-    reviewMutation.mutate({ srsItemId: currentCard.id, quality });
-    handleNextCard();
-  };
+    if (!currentCard) return;
 
-  const handleNextCard = () => {
-    setCurrentCardIndex(currentCardIndex + 1);
+    // Perform the mutation in the background
+    reviewMutation.mutate({ srsItemId: currentCard.id, quality });
+    
+    // Instantly remove the card from the local session deck
+    setSessionCards(prevCards => prevCards.slice(1));
   };
 
   return (
     <div className="space-y-6">
-      {currentCardIndex < cards.length ? (
+      {currentCard ? (
         <>
           <div className="text-xl font-semibold text-muted-foreground">
-            Card {currentCardIndex + 1} of {cards.length}
+            Card {initialCardCount - sessionCards.length + 1} of {initialCardCount}
           </div>
-          <Flashcard
-            frontContent={currentCard.frontContent}
-            backContent={currentCard.backContent}
-            context={currentCard.context}
-            onReview={handleReview}
-            onOnboardingReview={onOnboardingReview}
-          />
+          <div key={currentCard.id} className="animate-in fade-in duration-300">
+            <Flashcard
+              frontContent={currentCard.frontContent}
+              backContent={currentCard.backContent}
+              context={currentCard.context}
+              onReview={handleReview}
+              onOnboardingReview={onOnboardingReview}
+            />
+          </div>
         </>
       ) : (
         <div className="text-center p-6 border rounded-lg bg-muted/20">
           <h2 className="text-xl font-semibold mb-2">Session Complete!</h2>
-          <p className="text-gray-600">
-            You've reviewed all cards in this deck.
+          <p className="text-gray-600 mb-4">
+            You reviewed {initialCardCount} cards. Great job!
           </p>
         </div>
       )}
