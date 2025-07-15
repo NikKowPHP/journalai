@@ -1,15 +1,13 @@
 
-Of course. Here is a detailed, step-by-step plan to implement the requested features with 100% coverage, considering the existing codebase and best practices.
-
 ### Feature 1: Synchronous Analysis Flow
 
 The goal is to change the journal submission from a background task to a direct, user-facing flow where the user is redirected to the entry's page to see the analysis progress.
 
-*   [ ] **1. Modify Journal Submission Logic**
-    *   [ ] Open the journal editor component file.
+*   [x] **1. Modify Journal Submission Logic**
+    *   [x] Open the journal editor component file.
         *   **File:** `src/components/JournalEditor.tsx`
-    *   [ ] Import `useRouter` from `next/navigation`.
-    *   [ ] In the `handleSubmit` function, modify the `onSuccess` callback of the `submitJournalMutation`.
+    *   [x] Import `useRouter` from `next/navigation`.
+    *   [x] In the `handleSubmit` function, modify the `onSuccess` callback of the `submitJournalMutation`.
         *   **Current Logic:** It calls `onOnboardingSubmit` or sets a status message.
         *   **New Logic:** It should redirect the user to the newly created journal entry's page. The `analyzeJournalMutation` call should be removed from here.
             ```typescript
@@ -28,11 +26,11 @@ The goal is to change the journal submission from a background task to a direct,
             });
             ```
 
-*   [ ] **2. Trigger Analysis on Journal Page Load**
-    *   [ ] Open the specific journal entry page file.
+*   [x] **2. Trigger Analysis on Journal Page Load**
+    *   [x] Open the specific journal entry page file.
         *   **File:** `src/app/journal/[id]/page.tsx`
-    *   [ ] Import `useEffect` from React and the `useAnalyzeJournal` hook.
-    *   [ ] Add logic to automatically trigger the analysis if it doesn't exist when the page loads.
+    *   [x] Import `useEffect` from React and the `useAnalyzeJournal` hook.
+    *   [x] Add logic to automatically trigger the analysis if it doesn't exist when the page loads.
         ```typescript
         // Inside JournalAnalysisPage component
         const analyzeJournalMutation = useAnalyzeJournal();
@@ -45,10 +43,10 @@ The goal is to change the journal submission from a background task to a direct,
         }, [journal, analyzeJournalMutation]);
         ```
 
-*   [ ] **3. Enhance the "Analysis Pending" UI**
-    *   [ ] On the journal entry page, improve the display for when analysis is in progress.
+*   [x] **3. Enhance the "Analysis Pending" UI**
+    *   [x] On the journal entry page, improve the display for when analysis is in progress.
         *   **File:** `src/app/journal/[id]/page.tsx`
-    *   [ ] The polling logic via `useQuery` with `refetchInterval` is good. Now, explicitly render a loading state.
+    *   [x] The polling logic via `useQuery` with `refetchInterval` is good. Now, explicitly render a loading state.
         ```tsx
         // In the return statement of JournalAnalysisPage
         if (isLoading) { /* ... skeleton ... */ }
@@ -229,17 +227,17 @@ This is a significant architectural change to scope data by target language.
 
 The goal is to provide consistent, Apple HIG-style feedback for all asynchronous operations using toasts.
 
-*   [ ] **1. Install and Configure shadcn/ui Toast**
-    *   [ ] Run the command: `npx shadcn-ui@latest add toast`. This will add `toast.tsx`, `toaster.tsx`, and `use-toast.ts` to `src/components/ui`.
-    *   [ ] Add the `Toaster` component to the root layout so it's globally available.
+*   [x] **1. Install and Configure shadcn/ui Toast**
+    *   [x] Run the command: `npx shadcn-ui@latest add toast`. This will add `toast.tsx`, `toaster.tsx`, and `use-toast.ts` to `src/components/ui`.
+    *   [x] Add the `Toaster` component to the root layout so it's globally available.
         *   **File:** `src/app/layout.tsx`
         *   **Action:** Place `<Toaster />` inside the `<body>` tag, likely within the `Providers` component.
 
-*   [ ] **2. Systematically Add Toasts to All Mutations**
-    *   [ ] Go to the data hooks file.
+*   [x] **2. Systematically Add Toasts to All Mutations**
+    *   [x] Go to the data hooks file.
         *   **File:** `src/lib/hooks/data-hooks.ts`
-    *   [ ] Import `useToast` from ` "@/components/ui/use-toast"`.
-    *   [ ] For **every single `useMutation` hook**, add `onSuccess` and `onError` callbacks that trigger a toast.
+    *   [x] Import `useToast` from ` "@/components/ui/use-toast"`.
+    *   [x] For **every single `useMutation` hook**, add `onSuccess` and `onError` callbacks that trigger a toast.
         *   **Action (Example for `useUpdateProfile`):**
             ```typescript
             export const useUpdateProfile = () => {
@@ -266,7 +264,7 @@ The goal is to provide consistent, Apple HIG-style feedback for all asynchronous
               });
             };
             ```
-    *   [ ] Repeat this pattern for all other mutations: `useSubmitJournal`, `useOnboardUser`, `useDeleteAccount`, `useUpdateUserSubscription`, etc. Ensure each has a clear, user-friendly success and error message.
+    *   [x] Repeat this pattern for all other mutations: `useSubmitJournal`, `useOnboardUser`, `useDeleteAccount`, `useUpdateUserSubscription`, etc. Ensure each has a clear, user-friendly success and error message.
 ### **Task: Implement Standardized UI Toasts for All Mutations**
 
 The goal is to provide immediate, consistent, and user-friendly feedback for every background action (success or failure) by modifying the mutation hooks in `src/lib/hooks/data-hooks.ts` and `src/lib/hooks/admin-hooks.ts`.
@@ -567,3 +565,4 @@ The goal is to provide immediate, consistent, and user-friendly feedback for eve
           });
         };
         ```
+```

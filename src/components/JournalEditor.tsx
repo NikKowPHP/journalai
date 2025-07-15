@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { Lightbulb } from "lucide-react";
 import { Extension } from "@tiptap/core";
+import { useRouter } from "next/navigation";
 
 // --- WritingAids Sub-component ---
 interface WritingAidsProps {
@@ -151,6 +152,7 @@ export function JournalEditor({
   const [suggestion, setSuggestion] = useState<string | null>(null);
   const autocompleteMutation = useAutocomplete();
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
 
   const editor = useEditor(
     {
@@ -185,7 +187,6 @@ export function JournalEditor({
   );
 
   const submitJournalMutation = useSubmitJournal();
-  const analyzeJournalMutation = useAnalyzeJournal();
 
   useEffect(() => {
     if (!editor) return;
@@ -236,12 +237,8 @@ export function JournalEditor({
         if (isOnboarding && onOnboardingSubmit) {
           onOnboardingSubmit(journal.id);
         } else {
-          setStatusMessage("Analyzing in background...");
+          router.push(`/journal/${journal.id}`);
         }
-        analyzeJournalMutation.mutate(journal.id);
-      },
-      onError: () => {
-        setStatusMessage("Failed to save your journal");
       },
     });
   };
