@@ -8,10 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "test": "jest",
-    "prisma:seed": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' prisma/seed.ts"
+    "prisma:seed": "ts-node prisma/seed.cts"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options '{\\\"module\\\":\\\"commonjs\\\"}' prisma/seed.ts"
+    "seed": "ts-node prisma/seed.cts"
   },
   "dependencies": {
     "@google-cloud/speech": "^7.1.0",
