@@ -77,6 +77,17 @@ export const apiClient = {
       const { data } = await axios.post("/api/srs/review", payload);
       return data;
     },
+    createFromTranslation: async (payload: {
+      frontContent: string;
+      backContent: string;
+      targetLanguage: string;
+    }) => {
+      const { data } = await axios.post(
+        "/api/srs/create-from-translation",
+        payload,
+      );
+      return data;
+    },
   },
   user: {
     generateTopics: async (params: { targetLanguage: string }) => {
@@ -139,6 +150,14 @@ export const apiClient = {
   ai: {
     autocomplete: async (payload: { text: string }) => {
       const { data } = await axios.post("/api/ai/autocomplete", payload);
+      return data;
+    },
+    translate: async (payload: {
+      text: string;
+      sourceLanguage: string;
+      targetLanguage: string;
+    }) => {
+      const { data } = await axios.post("/api/ai/translate", payload);
       return data;
     },
   },

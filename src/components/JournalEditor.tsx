@@ -1,4 +1,3 @@
-
 import {
   useEditor,
   EditorContent,
@@ -17,10 +16,11 @@ import {
 } from "@/lib/hooks/data-hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { Lightbulb } from "lucide-react";
+import { Lightbulb, Languages } from "lucide-react";
 import { Extension } from "@tiptap/core";
 import { useRouter } from "next/navigation";
 import { useLanguageStore } from "@/lib/stores/language.store";
+import { TranslatorDialog } from "./TranslatorDialog";
 
 // --- WritingAids Sub-component ---
 interface WritingAidsProps {
@@ -155,6 +155,7 @@ export function JournalEditor({
 }: JournalEditorProps) {
   const [statusMessage, setStatusMessage] = useState("");
   const [suggestion, setSuggestion] = useState<string | null>(null);
+  const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
   const autocompleteMutation = useAutocomplete();
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
@@ -301,22 +302,35 @@ export function JournalEditor({
           </FloatingMenu>
         )}
         <EditorContent editor={editor} />
-        <div className="p-4 border-t flex items-center justify-between min-h-[68px]">
-          <div>
+        <div className="p-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-h-[68px]">
+          <div className="flex items-center gap-2">
             <Button
               onClick={handleSubmit}
               disabled={submitJournalMutation.isPending}
             >
-              Submit for Analysis
+              {submitJournalMutation.isPending
+                ? "Submitting..."
+                : "Submit for Analysis"}
             </Button>
-            {statusMessage && (
-              <div className="mt-2 text-sm text-muted-foreground">
-                {statusMessage}
-              </div>
-            )}
+            <Button
+              variant="outline"
+              onClick={() => setIsTranslatorOpen(true)}
+            >
+              <Languages className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Translate</span>
+            </Button>
           </div>
+          {statusMessage && (
+            <p className="mt-2 sm:mt-0 text-sm text-muted-foreground">
+              {statusMessage}
+            </p>
+          )}
         </div>
       </div>
+      <TranslatorDialog
+        open={isTranslatorOpen}
+        onOpenChange={setIsTranslatorOpen}
+      />
     </div>
   );
 }
