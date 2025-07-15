@@ -1,12 +1,5 @@
-### [BASH_COMMANDS]
-```bash
-touch /dev/null
-```
 ### src/components/StudySession.tsx
 ```tsx
-```
-### src/lib/hooks/data/useReviewSrsItem.ts
-```ts
 ```
 ### docs/phases/phase-l-after-implementation.md
 ```md
@@ -81,7 +74,7 @@ Here is a revised, more comprehensive plan that incorporates these missing lifec
 
 #### **Phase 2: Manage the Session Lifecycle (The Missing Piece)**
 
-*   [ ] **Task 2.1: Implement a "Session Complete" State.**
+*   [x] **Task 2.1: Implement a "Session Complete" State.**
     *   **File:** `src/components/StudySession.tsx`
     *   **Action:** When the `sessionCards` array becomes empty, display a summary view instead of a flashcard.
     *   **Implementation:**
@@ -100,7 +93,7 @@ Here is a revised, more comprehensive plan that incorporates these missing lifec
         }
         ```
 
-*   [ ] **Task 2.2: Add a "Study More" Button to Manually Refetch Cards.**
+*   [x] **Task 2.2: Add a "Study More" Button to Manually Refetch Cards.**
     *   **File:** `src/components/StudySession.tsx`
     *   **Action:** In the "Session Complete" view, add a button that allows the user to fetch the next batch of due cards.
     *   **Implementation:**

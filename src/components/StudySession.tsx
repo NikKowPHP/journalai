@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Flashcard } from "@/components/Flashcard";
 import { useReviewSrsItem } from "@/lib/hooks/data";
+import { useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 
 /**
  * Manages a study session with a deck of flashcards, tracking progress through the deck.
@@ -37,6 +39,7 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
     }
   }, [cards]);
 
+  const queryClient = useQueryClient();
   const reviewMutation = useReviewSrsItem();
   const currentCard = sessionCards[0];
 
@@ -45,9 +48,13 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
 
     // Perform the mutation in the background
     reviewMutation.mutate({ srsItemId: currentCard.id, quality });
-    
+
     // Instantly remove the card from the local session deck
-    setSessionCards(prevCards => prevCards.slice(1));
+    setSessionCards((prevCards) => prevCards.slice(1));
+  };
+
+  const handleStudyMore = () => {
+    queryClient.invalidateQueries({ queryKey: ["studyDeck"] });
   };
 
   return (
@@ -55,7 +62,8 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
       {currentCard ? (
         <>
           <div className="text-xl font-semibold text-muted-foreground">
-            Card {initialCardCount - sessionCards.length + 1} of {initialCardCount}
+            Card {initialCardCount - sessionCards.length + 1} of{" "}
+            {initialCardCount}
           </div>
           <div key={currentCard.id} className="animate-in fade-in duration-300">
             <Flashcard
@@ -73,6 +81,7 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
           <p className="text-gray-600 mb-4">
             You reviewed {initialCardCount} cards. Great job!
           </p>
+          <Button onClick={handleStudyMore}>Study More Cards</Button>
         </div>
       )}
     </div>
