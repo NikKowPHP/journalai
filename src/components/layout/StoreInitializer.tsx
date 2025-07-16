@@ -90,7 +90,7 @@ function StoreInitializer() {
 
       if (latestJournal && !latestJournal.analysis) {
         setOnboardingJournalId(latestJournal.id);
-        setOnboardingStep("AWAITING_ANALYSIS");
+        setOnboardingStep("VIEW_ANALYSIS");
         return;
       }
 

@@ -18,13 +18,10 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 import { JournalEditor } from "../JournalEditor";
-import { useQuery } from "@tanstack/react-query";
-import Spinner from "../ui/Spinner";
 import { Button } from "../ui/button";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { useCompleteOnboarding } from "@/lib/hooks/data";
-import { apiClient } from "@/lib/services/api-client.service";
 
 function AppFooter() {
   return (
@@ -61,43 +58,6 @@ function AppFooter() {
     </footer>
   );
 }
-
-const AwaitingAnalysisModal = () => {
-  const onboardingJournalId = useOnboardingStore(
-    (state) => state.onboardingJournalId,
-  );
-  const setStep = useOnboardingStore((state) => state.setStep);
-
-  const { data: journal } = useQuery({
-    queryKey: ["journal", onboardingJournalId],
-    queryFn: () => apiClient.journal.getById(onboardingJournalId!),
-    enabled: !!onboardingJournalId,
-    refetchInterval: 3000, // Poll every 3 seconds
-  });
-
-  useEffect(() => {
-    if (journal?.analysis) {
-      setStep("VIEW_ANALYSIS");
-    }
-  }, [journal, setStep]);
-
-  return (
-    <Dialog open={true}>
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>Analysis in Progress</DialogTitle>
-          <DialogDescription>
-            We're analyzing your journal entry. This may take a moment. Please
-            wait...
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex justify-center items-center py-8">
-          <Spinner size="lg" />
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 const GlobalSpinner = () => (
   <div
@@ -185,7 +145,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   isOnboarding={true}
                   onOnboardingSubmit={(id) => {
                     setOnboardingJournalId(id);
-                    setStep("AWAITING_ANALYSIS");
+                    setStep("VIEW_ANALYSIS"); // Pre-emptively set the step
+                    router.push(`/journal/${id}`); // Redirect to the analysis page
                   }}
                 />
               </div>
@@ -193,19 +154,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Dialog>
         );
 
-      case "AWAITING_ANALYSIS":
-        return <AwaitingAnalysisModal />;
-
       case "VIEW_ANALYSIS":
+        // This logic handles showing a prompt to the user if they navigate away
+        // from the journal page before finishing the tour.
         if (pathname.startsWith("/journal/")) return null;
         return (
           <Dialog open={true}>
             <DialogContent showCloseButton={false}>
               <DialogHeader>
-                <DialogTitle>Analysis Complete!</DialogTitle>
+                <DialogTitle>Let's Review Your Feedback</DialogTitle>
                 <DialogDescription>
-                  Your first journal entry has been analyzed. Let's review the
-                  feedback together.
+                  Your first journal entry has been analyzed. Let's check out
+                  the feedback together.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>

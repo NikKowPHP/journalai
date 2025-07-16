@@ -4,7 +4,6 @@ import { create } from "zustand";
 type OnboardingStep =
   | "PROFILE_SETUP"
   | "FIRST_JOURNAL"
-  | "AWAITING_ANALYSIS"
   | "VIEW_ANALYSIS"
   | "CREATE_DECK"
   | "STUDY_INTRO"
