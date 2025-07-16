@@ -153,7 +153,7 @@ export default function TranslatorPage() {
                 variant="ghost"
                 size="icon"
                 onClick={handleSwapLanguages}
-                disabled={!fullTranslation}
+                
               >
                 <ArrowRightLeft className="h-4 w-4" />
               </Button>
