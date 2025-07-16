@@ -1,3 +1,4 @@
+
 import {
   LineChart,
   Line,
@@ -42,9 +43,9 @@ export function ProficiencyChart({ data }: ProficiencyChartProps) {
           <Line
             type="monotone"
             dataKey="score"
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--chart-1))"
             strokeWidth={2}
-            dot={{ fill: "hsl(var(--primary))" }}
+            dot={{ fill: "hsl(var(--chart-1))" }}
           />
         </LineChart>
       </ResponsiveContainer>

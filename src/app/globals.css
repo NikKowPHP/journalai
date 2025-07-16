@@ -1,3 +1,4 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -84,11 +85,11 @@
   --ring: oklch(0.65 0.2 265);
 
   /* Charts */
-  --chart-1: oklch(0.65 0.2 265); /* Blue */
-  --chart-2: oklch(0.7 0.2 130); /* Green */
-  --chart-3: oklch(0.7 0.25 50); /* Orange */
-  --chart-4: oklch(0.7 0.22 15); /* Red */
-  --chart-5: oklch(0.65 0.2 300); /* Purple */
+  --chart-1: oklch(0.7 0.22 265); /* Brighter Blue */
+  --chart-2: oklch(0.75 0.22 130); /* Brighter Green */
+  --chart-3: oklch(0.78 0.25 50); /* Brighter Orange */
+  --chart-4: oklch(0.75 0.24 15); /* Brighter Red */
+  --chart-5: oklch(0.72 0.22 300); /* Brighter Purple */
 
   /* Sidebar (Desktop) */
   --sidebar: oklch(0.05 0 0);

@@ -1,3 +1,4 @@
+
 export * from "./journalAnalysis.prompt";
 export * from "./questionGeneration.prompt";
 export * from "./answerEvaluation.prompt";
@@ -9,3 +10,4 @@ export * from "./journalingAids.prompt";
 export * from "./roleRefinement.prompt";
 export * from "./topicGeneration.prompt";
 export * from "./stuckWriter.prompt";
+export * from "./paragraphBreakdown.prompt";

@@ -1,3 +1,4 @@
+
 import {
   BarChart,
   Bar,
@@ -42,7 +43,7 @@ export function SubskillScores({ data }: SubskillScoresProps) {
             }}
           />
           <Legend />
-          <Bar dataKey="score" fill="hsl(var(--primary))" />
+          <Bar dataKey="score" fill="hsl(var(--chart-1))" />
         </BarChart>
       </ResponsiveContainer>
     </div>

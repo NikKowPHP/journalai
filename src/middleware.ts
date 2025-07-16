@@ -1,5 +1,4 @@
 
-// src/middleware.ts
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -72,7 +71,7 @@ export async function middleware(request: NextRequest) {
     "/dashboard",
     "/journal",
     "/study",
-    "/analytics",
+    "/translator",
     "/settings",
     "/admin",
   ];

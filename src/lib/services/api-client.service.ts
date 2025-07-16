@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import type { OnboardingData, ProfileUpdateData } from "@/lib/types";
 
@@ -156,6 +157,17 @@ export const apiClient = {
       targetLanguage: string;
     }) => {
       const { data } = await axios.post("/api/ai/stuck-helper", payload);
+      return data;
+    },
+    translateAndBreakdown: async (payload: {
+      text: string;
+      sourceLanguage: string;
+      targetLanguage: string;
+    }) => {
+      const { data } = await axios.post(
+        "/api/ai/translate-breakdown",
+        payload,
+      );
       return data;
     },
   },

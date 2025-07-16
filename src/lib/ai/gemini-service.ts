@@ -1,3 +1,4 @@
+
 import { QuestionGenerationService } from "./generation-service";
 import type {
   GeneratedQuestion,
@@ -27,6 +28,7 @@ import {
   getRoleRefinementPrompt,
   getTopicGenerationPrompt,
   getStuckWriterPrompt,
+  getParagraphBreakdownPrompt,
 } from "./prompts";
 
 export class GeminiQuestionGenerationService
@@ -396,6 +398,32 @@ export class GeminiQuestionGenerationService
         "Error generating stuck writer suggestions with Gemini:",
         error,
       );
+      throw error;
+    }
+  }
+
+  async translateAndBreakdown(
+    text: string,
+    sourceLang: string,
+    targetLang: string,
+  ): Promise<{ fullTranslation: string; segments: { source: string; translation: string }[] }> {
+    const prompt = getParagraphBreakdownPrompt(text, sourceLang, targetLang);
+    try {
+      const result = await this.genAI.models.generateContent({
+        model: this.model,
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+      });
+      const responseText = result.text || "";
+      if (!responseText) {
+        throw new Error("Empty response from Gemini API for paragraph breakdown");
+      }
+      const cleanedText = this.cleanJsonString(responseText);
+      if (!cleanedText) {
+        throw new Error("Failed to get a valid response from the AI for paragraph breakdown.");
+      }
+      return JSON.parse(cleanedText);
+    } catch (error) {
+      console.error("Error breaking down paragraph with Gemini:", error);
       throw error;
     }
   }

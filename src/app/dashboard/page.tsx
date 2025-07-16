@@ -1,5 +1,6 @@
+
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardSummary } from "@/components/DashboardSummary";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useSuggestedTopics } from "@/lib/hooks/data/useSuggestedTopics";
+import { ProficiencyChart } from "@/components/ProficiencyChart";
+import { SubskillScores } from "@/components/SubskillScores";
+import { PricingTable } from "@/components/PricingTable";
 
 export default function DashboardPage() {
   const { data: user, isLoading: isUserLoading } = useUserProfile();
@@ -67,6 +71,13 @@ export default function DashboardPage() {
       date: new Date(j.createdAt).toLocaleDateString(),
     })) || [];
 
+  const skillBreakdown = analytics?.subskillScores
+    ? Object.entries(analytics.subskillScores).map(([skill, score]) => ({
+        skill: skill.charAt(0).toUpperCase() + skill.slice(1),
+        score: Number(score),
+      }))
+    : [];
+
   return (
     <div className="container mx-auto p-4 space-y-8">
       <div className="flex justify-between items-center">
@@ -96,6 +107,36 @@ export default function DashboardPage() {
             averageScore={analytics.averageScore}
             weakestSkill={analytics.weakestSkill}
           />
+
+          {user && ["PRO", "ADMIN"].includes(user.subscriptionTier) ? (
+            <div className="grid gap-8 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Proficiency Over Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ProficiencyChart data={analytics.proficiencyOverTime} />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Skill Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SubskillScores data={skillBreakdown} />
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Upgrade to Pro for Detailed Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PricingTable />
+              </CardContent>
+            </Card>
+          )}
 
           <h2 className="text-xl font-semibold">Recent Activity</h2>
           <JournalHistoryList journals={mappedJournals} />

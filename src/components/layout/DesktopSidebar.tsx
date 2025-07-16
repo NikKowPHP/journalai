@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Book, Brain, BarChart2, Settings, LogOut } from "lucide-react";
+import { Home, Book, Brain, Settings, LogOut, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/stores/auth.store";
 
@@ -10,7 +11,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/journal", label: "Journal", icon: Book },
   { href: "/study", label: "Study", icon: Brain },
-  { href: "/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/translator", label: "Translator", icon: Languages },
 ];
 
 export function DesktopSidebar() {

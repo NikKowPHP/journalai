@@ -1,3 +1,4 @@
+
 import type {
   GeneratedQuestion,
   GenerationContext,
@@ -92,4 +93,20 @@ export interface QuestionGenerationService {
   generateStuckWriterSuggestions(
     context: StuckWriterContext,
   ): Promise<{ suggestions: string[] }>;
+
+  /**
+   * Translates a paragraph and breaks it down into sentence segments.
+   * @param text The text to translate.
+   * @param sourceLang The source language.
+   * @param targetLang The target language.
+   * @returns Promise resolving to an object with the full translation and an array of segments.
+   */
+  translateAndBreakdown(
+    text: string,
+    sourceLang: string,
+    targetLang: string,
+  ): Promise<{
+    fullTranslation: string;
+    segments: { source: string; translation: string }[];
+  }>;
 }
