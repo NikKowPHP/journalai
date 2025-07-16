@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import { JournalEditor } from "@/components/JournalEditor";
@@ -85,10 +84,7 @@ export default function JournalPage() {
         <LanguageSwitcher />
       </div>
       <div className="space-y-4">
-        <Button
-          onClick={handleGenerateTopics}
-          disabled={isLoadingTopics}
-        >
+        <Button onClick={handleGenerateTopics} disabled={isLoadingTopics}>
           {isLoadingTopics ? "Generating..." : "Suggest New Topics"}
         </Button>
         <SuggestedTopics
@@ -96,7 +92,9 @@ export default function JournalPage() {
           isLoading={isLoadingTopics}
         />
         {!isLoadingTopics &&
-          (!suggestedTopics || !suggestedTopics.topics || suggestedTopics.topics.length === 0) && (
+          (!suggestedTopics ||
+            !suggestedTopics.topics ||
+            suggestedTopics.topics.length === 0) && (
             <p className="text-muted-foreground text-sm">
               No suggestions yet. Click 'Suggest New Topics' to get some ideas!
             </p>
@@ -106,7 +104,9 @@ export default function JournalPage() {
         <JournalHistoryList journals={mappedJournals} />
         <div className="relative">
           <div
-            className={!onboardingCompleted ? "blur-sm pointer-events-none" : ""}
+            className={
+              !onboardingCompleted ? "blur-sm pointer-events-none" : ""
+            }
           >
             <JournalEditor topicTitle={topicFromQuery || undefined} />
           </div>

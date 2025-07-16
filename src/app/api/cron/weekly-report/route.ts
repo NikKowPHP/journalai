@@ -15,23 +15,22 @@ export async function POST(req: Request) {
     });
 
     const results = await Promise.allSettled(
-      users.map(user => sendProgressReport(user.id))
+      users.map((user) => sendProgressReport(user.id)),
     );
 
-    const successful = results.filter(r => r.status === "fulfilled").length;
-    const errors = results.filter(r => r.status === "rejected").length;
+    const successful = results.filter((r) => r.status === "fulfilled").length;
+    const errors = results.filter((r) => r.status === "rejected").length;
 
     return NextResponse.json({
       message: "Weekly reports processing completed",
       successful,
       errors,
     });
-    
   } catch (error) {
     console.error("Error processing weekly reports:", error);
     return NextResponse.json(
       { error: "Failed to process weekly reports" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

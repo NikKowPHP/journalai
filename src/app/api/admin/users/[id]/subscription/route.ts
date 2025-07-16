@@ -42,10 +42,7 @@ export async function PUT(
     return NextResponse.json(updatedUser);
   } catch (error: any) {
     const { id } = await params;
-    logger.error(
-      `Error in /api/admin/users/${id}/subscription PUT`,
-      error,
-    );
+    logger.error(`Error in /api/admin/users/${id}/subscription PUT`, error);
     if (error.message === "Unauthorized") {
       return new NextResponse("Unauthorized", { status: 401 });
     }

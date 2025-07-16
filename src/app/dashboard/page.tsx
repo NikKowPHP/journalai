@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -18,8 +17,7 @@ import { useSuggestedTopics } from "@/lib/hooks/data/useSuggestedTopics";
 
 export default function DashboardPage() {
   const { data: user, isLoading: isUserLoading } = useUserProfile();
-  const { data: analytics, isLoading: isAnalyticsLoading } =
-    useAnalyticsData();
+  const { data: analytics, isLoading: isAnalyticsLoading } = useAnalyticsData();
   const generateTopicsMutation = useGenerateTopics();
   const {
     data: suggestedTopics,
@@ -105,10 +103,7 @@ export default function DashboardPage() {
       )}
 
       <div className="space-y-4">
-        <Button
-          onClick={handleGenerateTopics}
-          disabled={isLoadingTopics}
-        >
+        <Button onClick={handleGenerateTopics} disabled={isLoadingTopics}>
           {isLoadingTopics ? "Generating..." : "Suggest New Topics"}
         </Button>
         <SuggestedTopics
@@ -116,7 +111,9 @@ export default function DashboardPage() {
           isLoading={isLoadingTopics}
         />
         {!isLoadingTopics &&
-          (!suggestedTopics || !suggestedTopics.topics || suggestedTopics.topics.length === 0) && (
+          (!suggestedTopics ||
+            !suggestedTopics.topics ||
+            suggestedTopics.topics.length === 0) && (
             <p className="text-muted-foreground text-sm">
               No suggestions yet. Click 'Suggest New Topics' to get some ideas!
             </p>

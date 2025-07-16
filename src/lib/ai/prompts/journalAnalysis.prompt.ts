@@ -7,8 +7,8 @@ export const getJournalAnalysisPrompt = (
     proficiencyScore < 30
       ? "beginner"
       : proficiencyScore < 70
-      ? "intermediate"
-      : "advanced";
+        ? "intermediate"
+        : "advanced";
 
   return `
       You are an expert AI language tutor. Your task is to analyze a user's journal entry in ${targetLanguage} and provide structured, helpful feedback. The user's proficiency level is ${proficiencyScore}/100 (${proficiencyDescription}).

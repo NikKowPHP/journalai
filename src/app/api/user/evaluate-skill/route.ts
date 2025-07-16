@@ -6,8 +6,10 @@ import { logger } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -15,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { text } = await req.json();
-    
+
     if (!text) {
       return new NextResponse("Missing text field", { status: 400 });
     }
@@ -24,11 +26,11 @@ export async function POST(req: NextRequest) {
     const analysisResult = await aiService.analyzeJournalEntry(text);
 
     // Calculate average score from the analysis
-    const averageScore = (
-      analysisResult.grammarScore + 
-      analysisResult.phrasingScore + 
-      analysisResult.vocabularyScore
-    ) / 3;
+    const averageScore =
+      (analysisResult.grammarScore +
+        analysisResult.phrasingScore +
+        analysisResult.vocabularyScore) /
+      3;
 
     return NextResponse.json({ score: averageScore });
   } catch (error) {

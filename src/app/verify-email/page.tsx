@@ -6,10 +6,10 @@ import Link from "next/link";
 export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ token?: string }>;  // Updated typing
+  searchParams: Promise<{ token?: string }>; // Updated typing
 }) {
-  const params = await searchParams;  // Await the Promise
-  const { token } = params;  // Destructure safely (token may be undefined)
+  const params = await searchParams; // Await the Promise
+  const { token } = params; // Destructure safely (token may be undefined)
 
   if (!token) {
     return (

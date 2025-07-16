@@ -1,19 +1,28 @@
+"use client";
 
-'use client';
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useAuth } from './auth-context';
-import { useCompleteOnboarding, useUserProfile, useJournalHistory } from './hooks/data';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { useAuth } from "./auth-context";
+import {
+  useCompleteOnboarding,
+  useUserProfile,
+  useJournalHistory,
+} from "./hooks/data";
 
 type OnboardingStep =
-  | 'PROFILE_SETUP'
-  | 'FIRST_JOURNAL'
-  | 'AWAITING_ANALYSIS'
-  | 'VIEW_ANALYSIS'
-  | 'CREATE_DECK'
-  | 'STUDY_INTRO'
-  | 'COMPLETED'
-  | 'INACTIVE';
+  | "PROFILE_SETUP"
+  | "FIRST_JOURNAL"
+  | "AWAITING_ANALYSIS"
+  | "VIEW_ANALYSIS"
+  | "CREATE_DECK"
+  | "STUDY_INTRO"
+  | "COMPLETED"
+  | "INACTIVE";
 
 interface OnboardingContextType {
   step: OnboardingStep;
@@ -24,26 +33,29 @@ interface OnboardingContextType {
   completeOnboarding: () => void;
 }
 
-const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
+const OnboardingContext = createContext<OnboardingContextType | undefined>(
+  undefined,
+);
 
 export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
   const { user: authUser, loading: authLoading } = useAuth();
-  const [step, setStep] = useState<OnboardingStep>('INACTIVE');
-  const [onboardingJournalId, setOnboardingJournalId] = useState<string | null>(null);
+  const [step, setStep] = useState<OnboardingStep>("INACTIVE");
+  const [onboardingJournalId, setOnboardingJournalId] = useState<string | null>(
+    null,
+  );
 
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
   const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
   const completeOnboardingMutation = useCompleteOnboarding();
 
-
   const completeOnboarding = () => {
-    if (step !== 'COMPLETED') {
-        setStep('COMPLETED');
+    if (step !== "COMPLETED") {
+      setStep("COMPLETED");
     }
     completeOnboardingMutation.mutate(undefined, {
-        onSuccess: () => {
-            setStep('INACTIVE');
-        }
+      onSuccess: () => {
+        setStep("INACTIVE");
+      },
     });
   };
 
@@ -63,13 +75,13 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
         !userProfile.selfAssessedLevel;
 
       if (isProfileIncomplete) {
-        setStep('PROFILE_SETUP');
+        setStep("PROFILE_SETUP");
         return;
       }
 
       // Case 2: The user's profile is complete, but they have not written any entries.
       if (!journals || journals.length === 0) {
-        setStep('FIRST_JOURNAL');
+        setStep("FIRST_JOURNAL");
         return;
       }
 
@@ -79,15 +91,15 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
       if (latestJournal && !latestJournal.analysis) {
         // Their latest entry is awaiting analysis.
         setOnboardingJournalId(latestJournal.id);
-        setStep('AWAITING_ANALYSIS');
+        setStep("AWAITING_ANALYSIS");
       } else if (latestJournal && latestJournal.analysis) {
         // Their entry has been analyzed; guide them to view it.
         setOnboardingJournalId(latestJournal.id);
-        setStep('VIEW_ANALYSIS');
+        setStep("VIEW_ANALYSIS");
       }
     } else {
       // The user is either logged out or has already finished onboarding.
-      setStep('INACTIVE');
+      setStep("INACTIVE");
     }
   }, [
     authUser,
@@ -97,11 +109,10 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
     isProfileLoading,
     isJournalsLoading,
     setStep,
-    setOnboardingJournalId
+    setOnboardingJournalId,
   ]);
 
-
-  const isActive = step !== 'INACTIVE' && step !== 'COMPLETED';
+  const isActive = step !== "INACTIVE" && step !== "COMPLETED";
 
   const value = {
     step,
@@ -122,7 +133,7 @@ export const OnboardingProvider = ({ children }: { children: ReactNode }) => {
 export const useOnboarding = () => {
   const context = useContext(OnboardingContext);
   if (context === undefined) {
-    throw new Error('useOnboarding must be used within an OnboardingProvider');
+    throw new Error("useOnboarding must be used within an OnboardingProvider");
   }
   return context;
 };

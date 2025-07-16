@@ -75,8 +75,7 @@ export const useUpdateAdminSetting = () => {
       toast({
         variant: "destructive",
         title: "Update Failed",
-        description:
-          error.message || "The system setting could not be saved.",
+        description: error.message || "The system setting could not be saved.",
       });
     },
   });

@@ -56,16 +56,16 @@ graph TD
 
 ## 3. Core Tech Stack
 
-| Component          | Technology                   | Rationale                                                                                                                    |
-| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| **Framework**      | **Next.js 15+ (App Router)** | Unified frontend/backend, server components for performance, file-based routing, and a first-class developer experience.     |
-| **Database**       | **PostgreSQL**               | Robust, reliable, and scalable SQL database with strong support for JSONB to store rich AI results.                          |
-| **ORM**            | **Prisma**                   | Provides ultimate type-safety between the database and application logic, auto-generated clients, and simplified migrations. |
-| **Auth & Storage** | **Supabase (Auth & Bucket)** | Offloads complex user management and file storage, providing secure, scalable, and easy-to-use SDKs.                         |
-| **Payments**       | **Stripe**                   | Industry leader for payment processing and subscription management with excellent developer tools and security.              |
+| Component          | Technology                   | Rationale                                                                                                                                                                                                                                                                                         |
+| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**      | **Next.js 15+ (App Router)** | Unified frontend/backend, server components for performance, file-based routing, and a first-class developer experience.                                                                                                                                                                          |
+| **Database**       | **PostgreSQL**               | Robust, reliable, and scalable SQL database with strong support for JSONB to store rich AI results.                                                                                                                                                                                               |
+| **ORM**            | **Prisma**                   | Provides ultimate type-safety between the database and application logic, auto-generated clients, and simplified migrations.                                                                                                                                                                      |
+| **Auth & Storage** | **Supabase (Auth & Bucket)** | Offloads complex user management and file storage, providing secure, scalable, and easy-to-use SDKs.                                                                                                                                                                                              |
+| **Payments**       | **Stripe**                   | Industry leader for payment processing and subscription management with excellent developer tools and security.                                                                                                                                                                                   |
 | **AI/LLM**         | **Google Gemini API**        | Provides the advanced reasoning and language capabilities required for contextual translation, analysis, and autocomplete. The `getQuestionGenerationService` factory in `src/lib/ai/index.ts` abstracts the AI provider implementation, enabling easy switching between different LLM providers. |
-| **Styling**        | **Tailwind CSS + shadcn/ui** | Utility-first CSS for rapid development. `shadcn/ui` provides unstyled, accessible, and composable components.               |
-| **Deployment**     | **Vercel**                   | Native hosting for Next.js, offering seamless CI/CD, serverless functions, and global CDN.                                   |
+| **Styling**        | **Tailwind CSS + shadcn/ui** | Utility-first CSS for rapid development. `shadcn/ui` provides unstyled, accessible, and composable components.                                                                                                                                                                                    |
+| **Deployment**     | **Vercel**                   | Native hosting for Next.js, offering seamless CI/CD, serverless functions, and global CDN.                                                                                                                                                                                                        |
 
 ## 4. Key NPM Libraries & Tooling
 
@@ -261,7 +261,7 @@ model ProcessedWebhook {
   - **SRS Reviews:**
     - Free users: 10 card reviews per day (`srsReviewRateLimiter`)
     - Pro users: Unlimited
-  All daily limits reset at midnight UTC. Rate limits are enforced via dedicated functions in `src/lib/rateLimiter.ts`.
+      All daily limits reset at midnight UTC. Rate limits are enforced via dedicated functions in `src/lib/rateLimiter.ts`.
 - **LS-SYS-005: AI Analysis Retry Logic:** If an AI analysis call fails, the system will automatically retry with backoff. The entry will be marked "Analysis Pending" in the UI.
 - **LS-SYS-006: Failed Analysis User Notification:** If analysis fails permanently, the user sees a notification with an option to manually trigger it again.
 - **LS-SYS-007: Stripe Webhook Idempotency:** The backend handles webhooks idempotently to prevent duplicate processing.

@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, Suspense } from "react";  // Added Suspense
-import { useSearchParams } from "next/navigation";  // Import the hook
+import React, { useState, Suspense } from "react"; // Added Suspense
+import { useSearchParams } from "next/navigation"; // Import the hook
 import { supabase } from "@/lib/supabase/client";
 import AuthErrorDisplay from "@/components/AuthErrorDisplay";
 import { validatePassword } from "@/lib/validation";
@@ -9,8 +9,8 @@ import Link from "next/link";
 // No need for a props interface anymore, as we're not using searchParams prop
 
 function ResetPasswordContent() {
-  const searchParams = useSearchParams();  // Use the hook to get search params
-  const token = searchParams?.get("token");  // Safely get 'token' (returns string or null)
+  const searchParams = useSearchParams(); // Use the hook to get search params
+  const token = searchParams?.get("token"); // Safely get 'token' (returns string or null)
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -59,7 +59,8 @@ function ResetPasswordContent() {
     }
   };
 
-  if (!token) {  // Now checking the token from the hook
+  if (!token) {
+    // Now checking the token from the hook
     return (
       <div className="max-w-md mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Password Reset</h1>

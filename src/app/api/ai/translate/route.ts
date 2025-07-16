@@ -6,7 +6,7 @@ import { tieredRateLimiter } from "@/lib/rateLimiter";
 import { logger } from "@/lib/logger";
 
 const geminiService = new GeminiQuestionGenerationService(
-  process.env.GEMINI_API_KEY!
+  process.env.GEMINI_API_KEY!,
 );
 
 export const POST = async (req: NextRequest) => {
@@ -29,7 +29,7 @@ export const POST = async (req: NextRequest) => {
   // Rate limit based on user's subscription tier
   const rateLimitResult = tieredRateLimiter(
     user.id,
-    dbUser?.subscriptionTier || "FREE"
+    dbUser?.subscriptionTier || "FREE",
   );
 
   if (!rateLimitResult.allowed) {
@@ -51,7 +51,7 @@ export const POST = async (req: NextRequest) => {
     const translatedText = await geminiService.translateText(
       text,
       sourceLanguage,
-      targetLanguage
+      targetLanguage,
     );
 
     return NextResponse.json({ translatedText });

@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useEffect } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
@@ -198,10 +197,7 @@ export default function JournalAnalysisPage() {
                           this entry. You're on the right track!
                         </p>
                         {isTourActive && (
-                          <Button
-                            onClick={completeOnboarding}
-                            className="mt-4"
-                          >
+                          <Button onClick={completeOnboarding} className="mt-4">
                             Continue Onboarding
                           </Button>
                         )}

@@ -227,7 +227,11 @@ export class GeminiQuestionGenerationService
     sourceLanguage: string,
     targetLanguage: string,
   ): Promise<string> {
-    const prompt = getTextTranslationPrompt(text, sourceLanguage, targetLanguage);
+    const prompt = getTextTranslationPrompt(
+      text,
+      sourceLanguage,
+      targetLanguage,
+    );
 
     try {
       const result = await this.genAI.models.generateContent({

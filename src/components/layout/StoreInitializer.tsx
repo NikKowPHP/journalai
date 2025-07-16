@@ -1,19 +1,25 @@
-
 // src/components/layout/StoreInitializer.tsx
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useOnboardingStore } from '@/lib/stores/onboarding.store';
-import { useUserProfile, useJournalHistory, useStudyDeck, useCompleteOnboarding } from '@/lib/hooks/data';
-import { useLanguageStore } from '@/lib/stores/language.store';
+import { useEffect, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { useAuthStore } from "@/lib/stores/auth.store";
+import { useOnboardingStore } from "@/lib/stores/onboarding.store";
+import {
+  useUserProfile,
+  useJournalHistory,
+  useStudyDeck,
+  useCompleteOnboarding,
+} from "@/lib/hooks/data";
+import { useLanguageStore } from "@/lib/stores/language.store";
 
 function StoreInitializer() {
   const { setUserAndLoading } = useAuthStore();
-  const setOnboardingStep = useOnboardingStore(state => state.setStep);
-  const setOnboardingJournalId = useOnboardingStore(state => state.setOnboardingJournalId);
+  const setOnboardingStep = useOnboardingStore((state) => state.setStep);
+  const setOnboardingJournalId = useOnboardingStore(
+    (state) => state.setOnboardingJournalId,
+  );
   const { activeTargetLanguage, setActiveTargetLanguage } = useLanguageStore();
   const initialized = useRef(false);
   const router = useRouter();
@@ -24,26 +30,26 @@ function StoreInitializer() {
       const supabase = createClient();
       supabase.auth.onAuthStateChange(async (event, session) => {
         setUserAndLoading(session?.user ?? null, false);
-        if(event === 'SIGNED_OUT') {
-            router.push('/');
+        if (event === "SIGNED_OUT") {
+          router.push("/");
         }
       });
       initialized.current = true;
     }
   }, [setUserAndLoading, router]);
-  
+
   // Onboarding logic
-  const user = useAuthStore(state => state.user);
-  const authLoading = useAuthStore(state => state.loading);
+  const user = useAuthStore((state) => state.user);
+  const authLoading = useAuthStore((state) => state.loading);
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
   const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
   const { data: studyDeck, isLoading: isDeckLoading } = useStudyDeck();
   const completeOnboardingMutation = useCompleteOnboarding();
 
   useEffect(() => {
-  
-    if (authLoading || isProfileLoading || isJournalsLoading || isDeckLoading) return;
-    
+    if (authLoading || isProfileLoading || isJournalsLoading || isDeckLoading)
+      return;
+
     if (user && userProfile && !activeTargetLanguage) {
       if (userProfile.defaultTargetLanguage) {
         setActiveTargetLanguage(userProfile.defaultTargetLanguage);
@@ -53,8 +59,9 @@ function StoreInitializer() {
     }
 
     if (user && userProfile && !userProfile.onboardingCompleted) {
-
-      const profileIsComplete = !!(userProfile.nativeLanguage && userProfile.defaultTargetLanguage);
+      const profileIsComplete = !!(
+        userProfile.nativeLanguage && userProfile.defaultTargetLanguage
+      );
       const hasJournals = journals && journals.length > 0;
       const hasSrsItems = (userProfile._count?.srsItems ?? 0) > 0;
 
@@ -67,15 +74,15 @@ function StoreInitializer() {
         // Exit early and let the component re-render with the updated profile.
         return;
       }
-      
+
       // If self-healing didn't trigger, proceed with the normal state machine.
       if (!profileIsComplete) {
-        setOnboardingStep('PROFILE_SETUP');
+        setOnboardingStep("PROFILE_SETUP");
         return;
       }
 
       if (!hasJournals) {
-        setOnboardingStep('FIRST_JOURNAL');
+        setOnboardingStep("FIRST_JOURNAL");
         return;
       }
 
@@ -83,41 +90,38 @@ function StoreInitializer() {
 
       if (latestJournal && !latestJournal.analysis) {
         setOnboardingJournalId(latestJournal.id);
-        setOnboardingStep('AWAITING_ANALYSIS');
+        setOnboardingStep("AWAITING_ANALYSIS");
         return;
       }
-      
+
       if (latestJournal && latestJournal.analysis) {
         setOnboardingJournalId(latestJournal.id);
-        
+
         if (!hasSrsItems) {
-          setOnboardingStep('VIEW_ANALYSIS');
+          setOnboardingStep("VIEW_ANALYSIS");
           return;
-        } 
-        else {
-          setOnboardingStep('STUDY_INTRO');
+        } else {
+          setOnboardingStep("STUDY_INTRO");
           return;
         }
       }
-
     } else {
-      setOnboardingStep('INACTIVE');
+      setOnboardingStep("INACTIVE");
     }
-
   }, [
-      user, 
-      userProfile, 
-      journals, 
-      studyDeck,
-      authLoading, 
-      isProfileLoading, 
-      isJournalsLoading, 
-      isDeckLoading,
-      setOnboardingStep, 
-      setOnboardingJournalId,
-      completeOnboardingMutation,
-      activeTargetLanguage,
-      setActiveTargetLanguage
+    user,
+    userProfile,
+    journals,
+    studyDeck,
+    authLoading,
+    isProfileLoading,
+    isJournalsLoading,
+    isDeckLoading,
+    setOnboardingStep,
+    setOnboardingJournalId,
+    completeOnboardingMutation,
+    activeTargetLanguage,
+    setActiveTargetLanguage,
   ]);
 
   return null;

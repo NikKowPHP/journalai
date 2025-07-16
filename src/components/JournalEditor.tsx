@@ -10,7 +10,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { useSubmitJournal } from "@/lib/hooks/data";
-import { useStuckWriterEffect, useAutocompleteEffect } from "@/lib/hooks/editor";
+import {
+  useStuckWriterEffect,
+  useAutocompleteEffect,
+} from "@/lib/hooks/editor";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { Lightbulb, Languages, X } from "lucide-react";
@@ -254,7 +257,11 @@ export function JournalEditor({
   };
 
   const handleApplyTranslation = (text: string) => {
-    editor?.chain().focus().insertContent(" " + text).run();
+    editor
+      ?.chain()
+      .focus()
+      .insertContent(" " + text)
+      .run();
   };
 
   if (!editor) {
@@ -320,10 +327,7 @@ export function JournalEditor({
                 ? "Submitting..."
                 : "Submit for Analysis"}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setIsTranslatorOpen(true)}
-            >
+            <Button variant="outline" onClick={() => setIsTranslatorOpen(true)}>
               <Languages className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Translate</span>
             </Button>

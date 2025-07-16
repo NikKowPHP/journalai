@@ -1,21 +1,24 @@
-
-'use client';
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import AuthErrorDisplay from './AuthErrorDisplay';
-import { validateEmail, validatePassword, calculatePasswordStrength } from '../lib/validation';
-import Spinner from './ui/Spinner';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { useRouter } from 'next/navigation';
+"use client";
+import React from "react";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "@/lib/stores/auth.store";
+import AuthErrorDisplay from "./AuthErrorDisplay";
+import {
+  validateEmail,
+  validatePassword,
+  calculatePasswordStrength,
+} from "../lib/validation";
+import Spinner from "./ui/Spinner";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function SignUpForm() {
   const { signUp, error, loading, clearError } = useAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -53,11 +56,11 @@ export default function SignUpForm() {
     }
 
     if (data?.session) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     } else if (data?.user?.confirmation_sent_at) {
       setVerificationSent(true);
-      setEmail('');
-      setPassword('');
+      setEmail("");
+      setPassword("");
       setPasswordStrength(0);
     }
   };
@@ -71,10 +74,9 @@ export default function SignUpForm() {
         {error && <AuthErrorDisplay error={error} />}
         {verificationSent ? (
           <div className="mt-4 p-4 bg-blue-50 text-blue-700 rounded-lg text-center">
-            <h3 className='text-lg font-semibold'>Verification Email Sent</h3>
+            <h3 className="text-lg font-semibold">Verification Email Sent</h3>
             <p className="mt-2 text-sm">
-              Please check your inbox and click the link to verify your
-              account.
+              Please check your inbox and click the link to verify your account.
             </p>
           </div>
         ) : (
@@ -92,7 +94,9 @@ export default function SignUpForm() {
                 onChange={(e) => {
                   setEmail(e.target.value);
                   const validation = validateEmail(e.target.value);
-                  setEmailError(validation.valid ? undefined : validation.message);
+                  setEmailError(
+                    validation.valid ? undefined : validation.message,
+                  );
                 }}
               />
               {emailError && (
@@ -112,8 +116,12 @@ export default function SignUpForm() {
                 onChange={(e) => {
                   setPassword(e.target.value);
                   const validation = validatePassword(e.target.value);
-                  setPasswordError(validation.valid ? undefined : validation.message);
-                  setPasswordStrength(calculatePasswordStrength(e.target.value));
+                  setPasswordError(
+                    validation.valid ? undefined : validation.message,
+                  );
+                  setPasswordStrength(
+                    calculatePasswordStrength(e.target.value),
+                  );
                 }}
                 minLength={8}
               />
@@ -124,11 +132,11 @@ export default function SignUpForm() {
                     className={`flex-1 rounded-full ${
                       passwordStrength >= i
                         ? passwordStrength >= 4
-                          ? 'bg-green-500'
+                          ? "bg-green-500"
                           : passwordStrength >= 2
-                          ? 'bg-yellow-500'
-                          : 'bg-red-500'
-                        : 'bg-gray-200'
+                            ? "bg-yellow-500"
+                            : "bg-red-500"
+                        : "bg-gray-200"
                     }`}
                   />
                 ))}
@@ -148,7 +156,7 @@ export default function SignUpForm() {
                   <Spinner size="sm" /> Signing up...
                 </span>
               ) : (
-                'Sign up'
+                "Sign up"
               )}
             </Button>
           </form>

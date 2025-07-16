@@ -1,4 +1,3 @@
-
 export default function PrivacyPage() {
   return (
     <div className="container mx-auto p-4 md:p-8 prose dark:prose-invert max-w-4xl">
@@ -7,8 +6,8 @@ export default function PrivacyPage() {
 
       <p>
         LinguaScribe ("we," "our," or "us") is committed to protecting your
-        privacy. This Privacy Policy explains how we collect, use, disclose,
-        and safeguard your information when you use our application.
+        privacy. This Privacy Policy explains how we collect, use, disclose, and
+        safeguard your information when you use our application.
       </p>
 
       <h2>1. Information We Collect</h2>
@@ -30,9 +29,10 @@ export default function PrivacyPage() {
           you access the app.
         </li>
         <li>
-          <strong>Financial Data:</strong> We do not collect or store any payment
-          information. All financial data is collected and stored by our payment
-          processor, Stripe. We encourage you to review their privacy policy.
+          <strong>Financial Data:</strong> We do not collect or store any
+          payment information. All financial data is collected and stored by our
+          payment processor, Stripe. We encourage you to review their privacy
+          policy.
         </li>
       </ul>
 
@@ -73,8 +73,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Authentication and Storage:</strong> We use Supabase for user
-          authentication and database hosting. Your email and encrypted
-          password hash are managed by Supabase.
+          authentication and database hosting. Your email and encrypted password
+          hash are managed by Supabase.
         </li>
         <li>
           <strong>Payment Processing:</strong> We use Stripe for payment
@@ -100,8 +100,8 @@ export default function PrivacyPage() {
         </li>
         <li>
           <strong>Data Export:</strong> You have the right to request an export
-          of your user-generated content (journal entries and analyses). This can
-          be done from your account settings page.
+          of your user-generated content (journal entries and analyses). This
+          can be done from your account settings page.
         </li>
         <li>
           <strong>Data Deletion:</strong> You can request the deletion of your
@@ -112,12 +112,12 @@ export default function PrivacyPage() {
 
       <h2>5. Security of Your Information</h2>
       <p>
-        We use administrative, technical, and physical security measures to
-        help protect your personal information. While we have taken reasonable
-        steps to secure the personal information you provide to us, please be
-        aware that no security measures are perfect or impenetrable, and no
-        method of data transmission can be guaranteed against any interception
-        or other type of misuse.
+        We use administrative, technical, and physical security measures to help
+        protect your personal information. While we have taken reasonable steps
+        to secure the personal information you provide to us, please be aware
+        that no security measures are perfect or impenetrable, and no method of
+        data transmission can be guaranteed against any interception or other
+        type of misuse.
       </p>
     </div>
   );

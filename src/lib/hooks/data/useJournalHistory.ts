@@ -10,7 +10,8 @@ export const useJournalHistory = () => {
   );
   return useQuery({
     queryKey: ["journals", authUser?.id, activeTargetLanguage],
-    queryFn: () => apiClient.journal.getAll({ targetLanguage: activeTargetLanguage! }),
+    queryFn: () =>
+      apiClient.journal.getAll({ targetLanguage: activeTargetLanguage! }),
     enabled: !!authUser && !!activeTargetLanguage,
   });
 };

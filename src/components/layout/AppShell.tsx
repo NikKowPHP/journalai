@@ -127,8 +127,13 @@ const GlobalSpinner = () => (
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuthStore();
-  const { step, isActive, setOnboardingJournalId, onboardingJournalId, setStep } =
-    useOnboardingStore();
+  const {
+    step,
+    isActive,
+    setOnboardingJournalId,
+    onboardingJournalId,
+    setStep,
+  } = useOnboardingStore();
   const completeOnboardingMutation = useCompleteOnboarding();
   const pathname = usePathname();
   const router = useRouter();

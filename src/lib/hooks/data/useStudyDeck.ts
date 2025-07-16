@@ -10,7 +10,8 @@ export const useStudyDeck = () => {
   );
   return useQuery({
     queryKey: ["studyDeck", authUser?.id, activeTargetLanguage],
-    queryFn: () => apiClient.srs.getDeck({ targetLanguage: activeTargetLanguage! }),
+    queryFn: () =>
+      apiClient.srs.getDeck({ targetLanguage: activeTargetLanguage! }),
     enabled: !!authUser && !!activeTargetLanguage,
   });
 };

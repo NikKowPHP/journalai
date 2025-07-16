@@ -23,9 +23,13 @@ export function JournalHistoryList({ journals }: JournalHistoryListProps) {
               <CardContent className="p-4">
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-medium line-clamp-1">{entry.title}</h3>
-                  <time className="text-xs text-muted-foreground whitespace-nowrap">{entry.date}</time>
+                  <time className="text-xs text-muted-foreground whitespace-nowrap">
+                    {entry.date}
+                  </time>
                 </div>
-                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{entry.snippet}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                  {entry.snippet}
+                </p>
               </CardContent>
             </Card>
           </Link>

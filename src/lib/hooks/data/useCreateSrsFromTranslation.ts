@@ -8,7 +8,9 @@ export const useCreateSrsFromTranslation = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const authUser = useAuthStore((state) => state.user);
-  const activeTargetLanguage = useLanguageStore((state) => state.activeTargetLanguage);
+  const activeTargetLanguage = useLanguageStore(
+    (state) => state.activeTargetLanguage,
+  );
   return useMutation({
     mutationFn: apiClient.srs.createFromTranslation,
     onSuccess: () => {

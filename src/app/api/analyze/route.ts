@@ -35,10 +35,7 @@ export async function POST(req: NextRequest) {
       },
     });
     if (!journal) {
-      return NextResponse.json(
-        { error: "Journal not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journal not found" }, { status: 404 });
     }
     const targetLanguage = journal.targetLanguage;
 

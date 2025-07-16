@@ -1,4 +1,3 @@
-
 import {
   validateEmail,
   validatePassword,
@@ -37,7 +36,9 @@ describe("validation utilities", () => {
     it("should return invalid for a password that's too short", () => {
       const result = validatePassword("Shrt1@");
       expect(result.valid).toBe(false);
-      expect(result.message).toBe("Password must be at least 8 characters long");
+      expect(result.message).toBe(
+        "Password must be at least 8 characters long",
+      );
     });
 
     it("should return invalid for a password without an uppercase letter", () => {

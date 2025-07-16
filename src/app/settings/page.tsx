@@ -1,4 +1,3 @@
-
 "use client";
 import React from "react";
 import Link from "next/link";
@@ -8,10 +7,7 @@ import { AccountDeletion } from "@/components/AccountDeletion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUpRight, ChevronsRight, LogOut, Mail } from "lucide-react";
-import {
-  useCreatePortalSession,
-  useUserProfile,
-} from "@/lib/hooks/data";
+import { useCreatePortalSession, useUserProfile } from "@/lib/hooks/data";
 import { useRouter } from "next/navigation";
 
 export default function SettingsPage() {

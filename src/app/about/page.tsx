@@ -49,9 +49,9 @@ export default function AboutPage() {
               dedicated, personal tutor that's available 24/7.
             </p>
             <blockquote className="border-l-4 border-primary pl-4 italic">
-              "Our mission is to help you find your own voice in a new
-              language. We believe that true mastery comes from practice,
-              expression, and the confidence to make mistakes."
+              "Our mission is to help you find your own voice in a new language.
+              We believe that true mastery comes from practice, expression, and
+              the confidence to make mistakes."
             </blockquote>
             <p>
               We are just getting started. Every feature, from the AI-powered

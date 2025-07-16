@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import type { OnboardingData, ProfileUpdateData } from "@/lib/types";
 

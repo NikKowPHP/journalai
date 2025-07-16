@@ -1,4 +1,3 @@
-
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
 

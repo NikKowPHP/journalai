@@ -3,7 +3,7 @@ export const SUPPORTED_LANGUAGES = [
   { name: "Spanish", value: "spanish" },
   { name: "French", value: "french" },
   { name: "German", value: "german" },
-    { name: "Polish", value: "polish" },
+  { name: "Polish", value: "polish" },
   { name: "Italian", value: "italian" },
   { name: "Portuguese", value: "portuguese" },
   { name: "Russian", value: "russian" },

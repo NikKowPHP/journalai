@@ -1,7 +1,5 @@
-
-
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface LanguageState {
   activeTargetLanguage: string | null;
@@ -12,11 +10,11 @@ export const useLanguageStore = create<LanguageState>()(
   persist(
     (set) => ({
       activeTargetLanguage: null,
-      setActiveTargetLanguage: (language) => set({ activeTargetLanguage: language }),
+      setActiveTargetLanguage: (language) =>
+        set({ activeTargetLanguage: language }),
     }),
     {
-      name: 'linguascribe-language-storage', // key in localStorage
-    }
-  )
+      name: "linguascribe-language-storage", // key in localStorage
+    },
+  ),
 );
-

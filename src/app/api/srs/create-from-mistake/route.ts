@@ -33,10 +33,7 @@ export async function POST(request: Request) {
     });
 
     if (!mistake) {
-      return NextResponse.json(
-        { error: "Mistake not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Mistake not found" }, { status: 404 });
     }
 
     if (mistake.analysis.entry.authorId !== user.id) {

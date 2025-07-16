@@ -1,21 +1,20 @@
-
-'use client';
-import React from 'react';
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import AuthErrorDisplay from './AuthErrorDisplay';
-import Link from 'next/link';
-import Spinner from './ui/Spinner';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
-import { Button } from './ui/button';
-import { useRouter } from 'next/navigation';
+"use client";
+import React from "react";
+import { useState, useEffect } from "react";
+import { useAuthStore } from "@/lib/stores/auth.store";
+import AuthErrorDisplay from "./AuthErrorDisplay";
+import Link from "next/link";
+import Spinner from "./ui/Spinner";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function SignInForm() {
   const { signIn, error, loading, clearError } = useAuthStore();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -28,7 +27,7 @@ export default function SignInForm() {
     e.preventDefault();
     const { error } = await signIn(email, password);
     if (!error) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   };
 
@@ -74,18 +73,13 @@ export default function SignInForm() {
               Forgot your password?
             </Link>
           </div>
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full"
-            size="lg"
-          >
+          <Button type="submit" disabled={loading} className="w-full" size="lg">
             {loading ? (
               <span className="flex items-center gap-2">
                 <Spinner size="sm" /> Signing in...
               </span>
             ) : (
-              'Sign In'
+              "Sign In"
             )}
           </Button>
         </form>

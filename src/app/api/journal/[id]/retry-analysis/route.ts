@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -40,10 +39,7 @@ export async function POST(
     });
 
     if (!journal) {
-      return NextResponse.json(
-        { error: "Journal not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Journal not found" }, { status: 404 });
     }
     const targetLanguage = journal.targetLanguage;
 
@@ -70,11 +66,9 @@ export async function POST(
       targetLanguage,
       proficiencyScore,
     );
-    
+
     if (journal.topic?.title === "Free Write") {
-      generatedTitle = await aiService.generateTitleForEntry(
-        journal.content,
-      );
+      generatedTitle = await aiService.generateTitleForEntry(journal.content);
     }
 
     const newAnalysis = await prisma.$transaction(async (tx) => {

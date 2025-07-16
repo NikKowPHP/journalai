@@ -1,20 +1,19 @@
-
 /** @jest-environment jsdom */
-import { renderHook, act } from '@testing-library/react';
-import { useStuckWriterEffect } from './useStuckWriterEffect';
-import { useStuckWriterSuggestions } from '@/lib/hooks/data';
-import { useLanguageStore } from '@/lib/stores/language.store';
+import { renderHook, act } from "@testing-library/react";
+import { useStuckWriterEffect } from "./useStuckWriterEffect";
+import { useStuckWriterSuggestions } from "@/lib/hooks/data";
+import { useLanguageStore } from "@/lib/stores/language.store";
 
 // Set up fake timers to control setTimeout
 jest.useFakeTimers();
 
 // Mock the dependencies
-jest.mock('@/lib/hooks/data', () => ({
+jest.mock("@/lib/hooks/data", () => ({
   // We need to keep other exports from this module, so we use requireActual
-  ...jest.requireActual('@/lib/hooks/data'),
+  ...jest.requireActual("@/lib/hooks/data"),
   useStuckWriterSuggestions: jest.fn(),
 }));
-jest.mock('@/lib/stores/language.store');
+jest.mock("@/lib/stores/language.store");
 
 const mockMutate = jest.fn();
 const mockedUseStuckWriterSuggestions = useStuckWriterSuggestions as jest.Mock;
@@ -28,17 +27,17 @@ const createMockEditor = () => {
       listeners[event] = callback;
     }),
     off: jest.fn(),
-    getText: jest.fn(() => 'Some text has been written.'),
+    getText: jest.fn(() => "Some text has been written."),
     // We'll use this to simulate the 'update' event
     simulateUpdate: () => {
-      if (listeners['update']) {
-        listeners['update']();
+      if (listeners["update"]) {
+        listeners["update"]();
       }
     },
   };
 };
 
-describe('useStuckWriterEffect', () => {
+describe("useStuckWriterEffect", () => {
   let mockEditor: ReturnType<typeof createMockEditor>;
 
   beforeEach(() => {
@@ -47,12 +46,14 @@ describe('useStuckWriterEffect', () => {
     mockedUseStuckWriterSuggestions.mockReturnValue({
       mutate: mockMutate,
     });
-    mockedUseLanguageStore.mockImplementation(selector => selector({ activeTargetLanguage: 'english' }));
+    mockedUseLanguageStore.mockImplementation((selector) =>
+      selector({ activeTargetLanguage: "english" }),
+    );
     mockEditor = createMockEditor(); // Create a fresh mock editor for each test
   });
 
-  it('should not call the mutation if the timer has not reached 7 seconds (Test Case 1)', () => {
-    renderHook(() => useStuckWriterEffect(mockEditor as any, 'Test Topic'));
+  it("should not call the mutation if the timer has not reached 7 seconds (Test Case 1)", () => {
+    renderHook(() => useStuckWriterEffect(mockEditor as any, "Test Topic"));
 
     // Simulate user typing
     act(() => {
@@ -67,8 +68,8 @@ describe('useStuckWriterEffect', () => {
     expect(mockMutate).not.toHaveBeenCalled();
   });
 
-  it('should call the mutation after 7 seconds of inactivity (Test Case 2)', () => {
-    renderHook(() => useStuckWriterEffect(mockEditor as any, 'Test Topic'));
+  it("should call the mutation after 7 seconds of inactivity (Test Case 2)", () => {
+    renderHook(() => useStuckWriterEffect(mockEditor as any, "Test Topic"));
 
     // Simulate user typing
     act(() => {
@@ -83,16 +84,16 @@ describe('useStuckWriterEffect', () => {
     expect(mockMutate).toHaveBeenCalledTimes(1);
     expect(mockMutate).toHaveBeenCalledWith(
       {
-        topic: 'Test Topic',
-        currentText: 'Some text has been written.',
-        targetLanguage: 'english',
+        topic: "Test Topic",
+        currentText: "Some text has been written.",
+        targetLanguage: "english",
       },
       expect.any(Object),
     );
   });
 
-  it('should reset the timer on subsequent editor updates (Test Case 3)', () => {
-    renderHook(() => useStuckWriterEffect(mockEditor as any, 'Test Topic'));
+  it("should reset the timer on subsequent editor updates (Test Case 3)", () => {
+    renderHook(() => useStuckWriterEffect(mockEditor as any, "Test Topic"));
 
     // First update
     act(() => {

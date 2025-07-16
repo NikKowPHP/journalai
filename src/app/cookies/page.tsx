@@ -5,9 +5,8 @@ export default function CookiesPage() {
       <p>Last updated: July 16, 2024</p>
 
       <p>
-        LinguaScribe ("us", "we", or "our") uses cookies on our website
-        (the "Service"). By using the Service, you consent to the use of
-        cookies.
+        LinguaScribe ("us", "we", or "our") uses cookies on our website (the
+        "Service"). By using the Service, you consent to the use of cookies.
       </p>
 
       <p>
@@ -49,13 +48,13 @@ export default function CookiesPage() {
       <h3>2. Functional Cookies (Local Storage)</h3>
       <p>
         These are not traditional cookies, but use your browser's "Local
-        Storage" feature. This allows us to remember choices you make and provide
-        enhanced, more personal features. We use local storage for:
+        Storage" feature. This allows us to remember choices you make and
+        provide enhanced, more personal features. We use local storage for:
       </p>
       <ul>
         <li>
-          <strong>Theme Preference:</strong> To remember your light or dark
-          mode preference across visits.
+          <strong>Theme Preference:</strong> To remember your light or dark mode
+          preference across visits.
         </li>
         <li>
           <strong>Language Preference:</strong> To remember your currently
@@ -74,16 +73,15 @@ export default function CookiesPage() {
       </p>
       <p>
         Please note, however, that if you delete cookies or refuse to accept
-        them, you might not be able to use all of the features we offer, you
-        may not be able to store your preferences, and some of our pages might
-        not display properly. Our essential authentication cookie is required to
-        log in to the service.
+        them, you might not be able to use all of the features we offer, you may
+        not be able to store your preferences, and some of our pages might not
+        display properly. Our essential authentication cookie is required to log
+        in to the service.
       </p>
 
       <h2>Where can you find more information about cookies?</h2>
       <p>
-        You can learn more about cookies and the following third-party
-        websites:
+        You can learn more about cookies and the following third-party websites:
       </p>
       <ul>
         <li>

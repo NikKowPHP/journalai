@@ -14,8 +14,7 @@ import type { JournalEntryWithRelations } from "@/lib/types";
 
 // Define props interface for clarity and type safety
 interface UserDetailPageProps {
-  params: Promise<{ id: string }>
-;
+  params: Promise<{ id: string }>;
 }
 
 // Define the page component as an async function constant

@@ -45,14 +45,10 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
             <Button asChild size="lg">
-              <Link href="/signup">
-                Get Started for Free
-              </Link>
+              <Link href="/signup">Get Started for Free</Link>
             </Button>
             <Button asChild variant="ghost" size="lg">
-              <Link href="/dashboard">
-                Go to Dashboard
-              </Link>
+              <Link href="/dashboard">Go to Dashboard</Link>
             </Button>
           </div>
         </div>
@@ -62,11 +58,10 @@ export default function Home() {
       <section id="features" className="py-20 px-4 bg-secondary/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-title-1">
-              Everything You Need to Succeed
-            </h2>
+            <h2 className="text-title-1">Everything You Need to Succeed</h2>
             <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Our platform is packed with features designed to accelerate your fluency and build lasting knowledge.
+              Our platform is packed with features designed to accelerate your
+              fluency and build lasting knowledge.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -108,25 +103,36 @@ export default function Home() {
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-title-1">
-              Get Fluent in 3 Simple Steps
-            </h2>
+            <h2 className="text-title-1">Get Fluent in 3 Simple Steps</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center relative">
             {/* Dashed line connecting the steps */}
             <div className="hidden md:block absolute top-8 left-0 w-full h-px">
-              <svg width="100%" height="2" className="absolute top-1/2 -translate-y-1/2">
-                <line x1="0" y1="1" x2="100%" y2="1" strokeWidth="2" strokeDasharray="8 8" className="stroke-border"/>
+              <svg
+                width="100%"
+                height="2"
+                className="absolute top-1/2 -translate-y-1/2"
+              >
+                <line
+                  x1="0"
+                  y1="1"
+                  x2="100%"
+                  y2="1"
+                  strokeWidth="2"
+                  strokeDasharray="8 8"
+                  className="stroke-border"
+                />
               </svg>
             </div>
-            
+
             <div className="flex flex-col items-center relative z-10">
               <div className="text-4xl font-bold text-primary bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mb-4 border-4 border-background">
                 1
               </div>
               <h3 className="text-xl font-bold mb-2">Write & Submit</h3>
               <p className="text-muted-foreground">
-                Start a journal entry on any topic. Express your thoughts freely in your target language.
+                Start a journal entry on any topic. Express your thoughts freely
+                in your target language.
               </p>
             </div>
             <div className="flex flex-col items-center relative z-10">
@@ -135,7 +141,8 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-2">Get AI Analysis</h3>
               <p className="text-muted-foreground">
-                Receive instant, detailed feedback on your writing, from grammar to phrasing and vocabulary.
+                Receive instant, detailed feedback on your writing, from grammar
+                to phrasing and vocabulary.
               </p>
             </div>
             <div className="flex flex-col items-center relative z-10">
@@ -144,7 +151,8 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-bold mb-2">Review & Grow</h3>
               <p className="text-muted-foreground">
-                Add corrections to your personalized study deck and track your proficiency as it improves over time.
+                Add corrections to your personalized study deck and track your
+                proficiency as it improves over time.
               </p>
             </div>
           </div>
@@ -154,16 +162,13 @@ export default function Home() {
       {/* Final CTA Section */}
       <section className="bg-secondary/30">
         <div className="max-w-4xl mx-auto text-center py-20 px-4">
-          <h2 className="text-title-1">
-            Ready to Achieve Fluency?
-          </h2>
+          <h2 className="text-title-1">Ready to Achieve Fluency?</h2>
           <p className="text-muted-foreground mt-4 mb-8 max-w-2xl mx-auto">
-            Transform your language learning through active writing practice. Start for free, no credit card required.
+            Transform your language learning through active writing practice.
+            Start for free, no credit card required.
           </p>
           <Button asChild size="lg">
-            <Link href="/signup">
-              Sign Up and Start Writing
-            </Link>
+            <Link href="/signup">Sign Up and Start Writing</Link>
           </Button>
         </div>
       </section>

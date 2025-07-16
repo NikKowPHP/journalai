@@ -25,7 +25,7 @@ const DEFAULT_LIMITS: RateLimitConfig = {
   PRO: {
     windowMs: 24 * 60 * 60 * 1000, // 24 hours
     max: Number.MAX_SAFE_INTEGER, // Unlimited
-  }
+  },
 };
 
 export const authRateLimiter = (ip: string) => {
@@ -35,7 +35,7 @@ export const authRateLimiter = (ip: string) => {
   };
 
   const identifier = `ip:${ip}`;
-  
+
   const now = Date.now();
 
   // Get or initialize the rate limit entry
@@ -63,14 +63,14 @@ export const authRateLimiter = (ip: string) => {
   return { allowed: true, remaining: options.max - entry.count };
 };
 
-export const srsReviewRateLimiter = (userId: string, tier: string = 'FREE') => {
+export const srsReviewRateLimiter = (userId: string, tier: string = "FREE") => {
   const options = {
     windowMs: 24 * 60 * 60 * 1000, // 24 hours
-    max: tier === 'FREE' ? 10 : Number.MAX_SAFE_INTEGER,
+    max: tier === "FREE" ? 10 : Number.MAX_SAFE_INTEGER,
   };
 
   const identifier = `srs:${userId}`;
-  
+
   const now = Date.now();
 
   // Get or initialize the rate limit entry
@@ -98,10 +98,11 @@ export const srsReviewRateLimiter = (userId: string, tier: string = 'FREE') => {
   return { allowed: true, remaining: options.max - entry.count };
 };
 
-export const tieredRateLimiter = (userId: string, tier: string = 'FREE') => {
-  const options = DEFAULT_LIMITS[tier as keyof RateLimitConfig] || DEFAULT_LIMITS.FREE;
+export const tieredRateLimiter = (userId: string, tier: string = "FREE") => {
+  const options =
+    DEFAULT_LIMITS[tier as keyof RateLimitConfig] || DEFAULT_LIMITS.FREE;
   const identifier = `user:${userId}`;
-  
+
   const now = Date.now();
 
   // Get or initialize the rate limit entry
@@ -117,7 +118,7 @@ export const tieredRateLimiter = (userId: string, tier: string = 'FREE') => {
   }
 
   // Pro users bypass rate limiting
-  if (tier === 'PRO') {
+  if (tier === "PRO") {
     return { allowed: true, remaining: Number.MAX_SAFE_INTEGER };
   }
 

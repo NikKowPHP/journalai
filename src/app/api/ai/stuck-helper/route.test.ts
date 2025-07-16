@@ -1,16 +1,15 @@
-
 /** @jest-environment node */
-import { POST } from './route';
-import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/db';
-import { getQuestionGenerationService } from '@/lib/ai';
-import { tieredRateLimiter } from '@/lib/rateLimiter';
-import { logger } from '@/lib/logger';
+import { POST } from "./route";
+import { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/db";
+import { getQuestionGenerationService } from "@/lib/ai";
+import { tieredRateLimiter } from "@/lib/rateLimiter";
+import { logger } from "@/lib/logger";
 
 // Mock dependencies
-jest.mock('@/lib/supabase/server');
-jest.mock('@/lib/db', () => ({
+jest.mock("@/lib/supabase/server");
+jest.mock("@/lib/db", () => ({
   __esModule: true,
   prisma: {
     user: {
@@ -18,22 +17,22 @@ jest.mock('@/lib/db', () => ({
     },
   },
 }));
-jest.mock('@/lib/ai');
-jest.mock('@/lib/rateLimiter');
-jest.mock('@/lib/logger');
+jest.mock("@/lib/ai");
+jest.mock("@/lib/rateLimiter");
+jest.mock("@/lib/logger");
 
 const mockedCreateClient = createClient as jest.Mock;
 const mockedGetQGS = getQuestionGenerationService as jest.Mock;
 const mockedTieredRateLimiter = tieredRateLimiter as jest.Mock;
 
-describe('API Route: /api/ai/stuck-helper', () => {
+describe("API Route: /api/ai/stuck-helper", () => {
   // A helper to create mock NextRequest objects
   const createMockRequest = (body: any): NextRequest => {
-    return new NextRequest('http://localhost/api/ai/stuck-helper', {
-      method: 'POST',
+    return new NextRequest("http://localhost/api/ai/stuck-helper", {
+      method: "POST",
       body: JSON.stringify(body),
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   };
@@ -53,18 +52,18 @@ describe('API Route: /api/ai/stuck-helper', () => {
     mockedTieredRateLimiter.mockReturnValue({ allowed: true });
   });
 
-  describe('Happy Path (200 OK)', () => {
-    it('should return suggestions for a valid request', async () => {
+  describe("Happy Path (200 OK)", () => {
+    it("should return suggestions for a valid request", async () => {
       // Arrange
-      const mockUser = { id: 'user-123' };
-      const mockDbUser = { subscriptionTier: 'FREE' };
+      const mockUser = { id: "user-123" };
+      const mockDbUser = { subscriptionTier: "FREE" };
       const mockSuggestions = {
-        suggestions: ['What happened next?', 'How did you feel?'],
+        suggestions: ["What happened next?", "How did you feel?"],
       };
       const requestBody = {
-        topic: 'My Vacation',
-        currentText: 'I went to the beach.',
-        targetLanguage: 'english',
+        topic: "My Vacation",
+        currentText: "I went to the beach.",
+        targetLanguage: "english",
       };
 
       mockGetUser(mockUser);
@@ -90,8 +89,8 @@ describe('API Route: /api/ai/stuck-helper', () => {
     });
   });
 
-  describe('Unauthorized (401)', () => {
-    it('should return 401 if the user is not authenticated', async () => {
+  describe("Unauthorized (401)", () => {
+    it("should return 401 if the user is not authenticated", async () => {
       // Arrange
       mockGetUser(null); // No user
       const request = createMockRequest({});
@@ -102,21 +101,23 @@ describe('API Route: /api/ai/stuck-helper', () => {
 
       // Assert
       expect(response.status).toBe(401);
-      expect(responseBody).toBe('Unauthorized');
+      expect(responseBody).toBe("Unauthorized");
     });
   });
 
-  describe('Bad Request (400)', () => {
-    it('should return 400 if the request body is invalid', async () => {
+  describe("Bad Request (400)", () => {
+    it("should return 400 if the request body is invalid", async () => {
       // Arrange
-      const mockUser = { id: 'user-123' };
+      const mockUser = { id: "user-123" };
       mockGetUser(mockUser);
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({ subscriptionTier: 'FREE' });
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        subscriptionTier: "FREE",
+      });
 
       // Missing 'topic' field
       const invalidRequestBody = {
-        currentText: 'Some text',
-        targetLanguage: 'english',
+        currentText: "Some text",
+        targetLanguage: "english",
       };
       const request = createMockRequest(invalidRequestBody);
 
@@ -126,7 +127,7 @@ describe('API Route: /api/ai/stuck-helper', () => {
 
       // Assert
       expect(response.status).toBe(400);
-      expect(responseBody).toBe('Invalid request body');
+      expect(responseBody).toBe("Invalid request body");
     });
   });
 });

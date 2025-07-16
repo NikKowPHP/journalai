@@ -11,7 +11,10 @@ export async function GET(
 ) {
   const { id } = await params;
   if (!id) {
-    return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Journal ID is required" },
+      { status: 400 },
+    );
   }
   const supabase = await createClient();
   const {
@@ -54,7 +57,10 @@ export async function PUT(
   try {
     const { id } = await context.params;
     if (!id) {
-      return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Journal ID is required" },
+        { status: 400 },
+      );
     }
     const { params } = context;
     const supabase = await createClient();
@@ -102,7 +108,10 @@ export async function DELETE(
   try {
     const { id } = await context.params;
     if (!id) {
-      return NextResponse.json({ error: "Journal ID is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Journal ID is required" },
+        { status: 400 },
+      );
     }
     const { params } = context;
     const supabase = await createClient();

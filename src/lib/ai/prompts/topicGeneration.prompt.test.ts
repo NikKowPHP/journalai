@@ -1,19 +1,19 @@
-import { getTopicGenerationPrompt } from './topicGeneration.prompt';
+import { getTopicGenerationPrompt } from "./topicGeneration.prompt";
 
-describe('getTopicGenerationPrompt', () => {
+describe("getTopicGenerationPrompt", () => {
   const context = {
-    targetLanguage: 'German',
+    targetLanguage: "German",
     proficiency: 75,
     count: 5,
   };
 
-  it('should return a non-empty string', () => {
+  it("should return a non-empty string", () => {
     const prompt = getTopicGenerationPrompt(context);
-    expect(typeof prompt).toBe('string');
+    expect(typeof prompt).toBe("string");
     expect(prompt.length).toBeGreaterThan(0);
   });
 
-  it('should include all context variables in the prompt', () => {
+  it("should include all context variables in the prompt", () => {
     const prompt = getTopicGenerationPrompt(context);
     expect(prompt).toContain(context.targetLanguage);
     expect(prompt).toContain(String(context.proficiency));

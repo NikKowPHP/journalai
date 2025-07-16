@@ -1,6 +1,9 @@
 "use client";
 
-import { useAdminSettings, useUpdateAdminSetting } from "@/lib/hooks/admin-hooks";
+import {
+  useAdminSettings,
+  useUpdateAdminSetting,
+} from "@/lib/hooks/admin-hooks";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
@@ -52,8 +55,8 @@ export function AdminSettings() {
             {updateSettingMutation.isPending
               ? "Updating..."
               : earlyAdopterMode?.enabled
-              ? "Enabled"
-              : "Disabled"}
+                ? "Enabled"
+                : "Disabled"}
           </Button>
         </div>
       </CardContent>

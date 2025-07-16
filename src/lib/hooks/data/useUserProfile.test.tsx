@@ -1,17 +1,16 @@
-
 /** @jest-environment jsdom */
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useUserProfile } from './useUserProfile';
-import { apiClient } from '@/lib/services/api-client.service';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import React from 'react';
+import { renderHook, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useUserProfile } from "./useUserProfile";
+import { apiClient } from "@/lib/services/api-client.service";
+import { useAuthStore } from "@/lib/stores/auth.store";
+import React from "react";
 
 // Mock the API client
-jest.mock('@/lib/services/api-client.service');
+jest.mock("@/lib/services/api-client.service");
 
 // Mock the auth store to directly control the `authUser` variable inside the hook
-jest.mock('@/lib/stores/auth.store');
+jest.mock("@/lib/stores/auth.store");
 
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
 const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
@@ -38,16 +37,20 @@ const createWrapper = () => {
   return Wrapper;
 };
 
-describe('useUserProfile', () => {
+describe("useUserProfile", () => {
   beforeEach(() => {
     // Reset mocks before each test to ensure a clean state
     jest.clearAllMocks();
   });
 
-  it('should not fetch data if there is no authenticated user', () => {
-    mockedUseAuthStore.mockImplementation(selector => selector({ user: null }));
+  it("should not fetch data if there is no authenticated user", () => {
+    mockedUseAuthStore.mockImplementation((selector) =>
+      selector({ user: null }),
+    );
 
-    const { result } = renderHook(() => useUserProfile(), { wrapper: createWrapper() });
+    const { result } = renderHook(() => useUserProfile(), {
+      wrapper: createWrapper(),
+    });
 
     // The query is disabled when there's no user, so it should not be in a loading state.
     expect(result.current.isLoading).toBe(false);
@@ -55,22 +58,26 @@ describe('useUserProfile', () => {
     expect(mockedApiClient.profile.get).not.toHaveBeenCalled();
   });
 
-  describe('when a user is authenticated', () => {
-    const mockUser = { id: 'user-123' };
+  describe("when a user is authenticated", () => {
+    const mockUser = { id: "user-123" };
 
     beforeEach(() => {
-        mockedUseAuthStore.mockImplementation(selector => selector({ user: mockUser }));
+      mockedUseAuthStore.mockImplementation((selector) =>
+        selector({ user: mockUser }),
+      );
     });
 
-    it('should fetch user profile and return data on success (happy path)', async () => {
+    it("should fetch user profile and return data on success (happy path)", async () => {
       const mockProfile = {
-        email: 'test@example.com',
-        nativeLanguage: 'English',
-        subscriptionTier: 'FREE',
+        email: "test@example.com",
+        nativeLanguage: "English",
+        subscriptionTier: "FREE",
       };
       (mockedApiClient.profile.get as jest.Mock).mockResolvedValue(mockProfile);
 
-      const { result } = renderHook(() => useUserProfile(), { wrapper: createWrapper() });
+      const { result } = renderHook(() => useUserProfile(), {
+        wrapper: createWrapper(),
+      });
 
       // Initially, the hook should be in a loading state because the query is enabled.
       expect(result.current.isLoading).toBe(true);
@@ -87,11 +94,13 @@ describe('useUserProfile', () => {
       expect(mockedApiClient.profile.get).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle API errors and populate the error state', async () => {
-      const mockError = new Error('Failed to fetch profile');
+    it("should handle API errors and populate the error state", async () => {
+      const mockError = new Error("Failed to fetch profile");
       (mockedApiClient.profile.get as jest.Mock).mockRejectedValue(mockError);
 
-      const { result } = renderHook(() => useUserProfile(), { wrapper: createWrapper() });
+      const { result } = renderHook(() => useUserProfile(), {
+        wrapper: createWrapper(),
+      });
 
       // The hook should still be in a loading state initially.
       expect(result.current.isLoading).toBe(true);

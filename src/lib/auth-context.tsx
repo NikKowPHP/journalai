@@ -15,11 +15,11 @@ interface AuthContextType {
   error: string | null;
   signIn: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ error: string | null }>;
   signUp: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ data: any; error: string | null }>;
   signOut: () => Promise<void>;
   clearError: () => void;
@@ -67,7 +67,7 @@ export const AuthProvider = ({
   const router = useRouter();
   const authRoutes = useMemo(
     () => ["/login", "/signup", "/forgot-password", "/reset-password"],
-    []
+    [],
   );
   useEffect(() => {
     const supabase = createClient();
@@ -76,12 +76,12 @@ export const AuthProvider = ({
         if (event === "SIGNED_IN" && session?.user) {
           // Sync user with our backend to ensure they have a profile
           fetch("/api/auth/sync-user", { method: "POST" }).catch((e) =>
-            console.error("Failed to sync user on auth state change:", e)
+            console.error("Failed to sync user on auth state change:", e),
           );
         }
         setUser(session?.user ?? null);
         setLoading(false);
-      }
+      },
     );
     return () => {
       authListener?.subscription.unsubscribe();

@@ -1,16 +1,21 @@
-
-import { create } from 'zustand';
-import { User } from '@supabase/supabase-js';
-import { createClient } from '@/lib/supabase/client';
+import { create } from "zustand";
+import { User } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
 interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
-  
+
   setUserAndLoading: (user: User | null, loading: boolean) => void;
-  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string) => Promise<{ data: any; error: string | null }>;
+  signIn: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null }>;
+  signUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ data: any; error: string | null }>;
   signOut: () => Promise<void>;
   clearError: () => void;
 }
@@ -25,14 +30,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signIn: async (email, password) => {
     set({ error: null, loading: true });
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign in');
+        throw new Error(data.error || "Failed to sign in");
       }
 
       if (data.session) {
@@ -46,7 +51,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ loading: false });
         // This might be an email verification case, so we don't throw an error.
       }
-      
+
       return { error: null };
     } catch (err: unknown) {
       const error = err as Error;
@@ -58,16 +63,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signUp: async (email, password) => {
     set({ error: null, loading: true });
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign up');
+        throw new Error(data.error || "Failed to sign up");
       }
-      
+
       if (data.session) {
         set({ user: data.user, loading: false }); // Immediate update for auto-verified accounts
       } else {
@@ -88,6 +93,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     await supabase.auth.signOut();
     set({ user: null, loading: false });
   },
-  
+
   clearError: () => set({ error: null }),
 }));

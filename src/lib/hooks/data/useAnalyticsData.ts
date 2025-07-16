@@ -10,7 +10,8 @@ export const useAnalyticsData = () => {
   );
   return useQuery({
     queryKey: ["analytics", authUser?.id, activeTargetLanguage],
-    queryFn: () => apiClient.analytics.get({ targetLanguage: activeTargetLanguage! }),
+    queryFn: () =>
+      apiClient.analytics.get({ targetLanguage: activeTargetLanguage! }),
     enabled: !!authUser && !!activeTargetLanguage,
   });
 };

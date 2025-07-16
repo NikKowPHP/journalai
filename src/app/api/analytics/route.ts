@@ -73,9 +73,7 @@ export async function GET(req: NextRequest) {
     const proficiencyOverTime = analyses.map((analysis) => ({
       date: analysis.createdAt.toISOString(),
       score:
-        (analysis.grammarScore +
-          analysis.phrasingScore +
-          analysis.vocabScore) /
+        (analysis.grammarScore + analysis.phrasingScore + analysis.vocabScore) /
         3,
     }));
 

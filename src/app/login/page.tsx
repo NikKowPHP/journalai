@@ -1,5 +1,5 @@
-import SignInForm from '@/components/SignInForm';
-import Link from 'next/link';
+import SignInForm from "@/components/SignInForm";
+import Link from "next/link";
 
 export default function LoginPage() {
   return (
@@ -7,8 +7,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <SignInForm />
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
+          Don't have an account?{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-primary hover:underline"
+          >
             Sign up
           </Link>
         </p>

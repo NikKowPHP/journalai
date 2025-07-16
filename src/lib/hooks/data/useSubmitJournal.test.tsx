@@ -1,20 +1,19 @@
-
 /** @jest-environment jsdom */
-import { renderHook, act } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
+import { renderHook, act } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
 
-import { useSubmitJournal } from './useSubmitJournal';
-import { apiClient } from '@/lib/services/api-client.service';
-import { useAuthStore } from '@/lib/stores/auth.store';
-import { useLanguageStore } from '@/lib/stores/language.store';
-import { useToast } from '@/components/ui/use-toast';
+import { useSubmitJournal } from "./useSubmitJournal";
+import { apiClient } from "@/lib/services/api-client.service";
+import { useAuthStore } from "@/lib/stores/auth.store";
+import { useLanguageStore } from "@/lib/stores/language.store";
+import { useToast } from "@/components/ui/use-toast";
 
 // Mock dependencies
-jest.mock('@/lib/services/api-client.service');
-jest.mock('@/lib/stores/auth.store');
-jest.mock('@/lib/stores/language.store');
-jest.mock('@/components/ui/use-toast');
+jest.mock("@/lib/services/api-client.service");
+jest.mock("@/lib/stores/auth.store");
+jest.mock("@/lib/stores/language.store");
+jest.mock("@/components/ui/use-toast");
 
 const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
 const mockedUseAuthStore = useAuthStore as unknown as jest.Mock;
@@ -44,13 +43,17 @@ const createTestWrapper = () => {
   return { queryClient, wrapper: Wrapper };
 };
 
-describe('useSubmitJournal', () => {
+describe("useSubmitJournal", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    
+
     // Mock store return values using a mock implementation for selectors
-    mockedUseAuthStore.mockImplementation(selector => selector({ user: { id: 'user-123' } }));
-    mockedUseLanguageStore.mockImplementation(selector => selector({ activeTargetLanguage: 'spanish' }));
+    mockedUseAuthStore.mockImplementation((selector) =>
+      selector({ user: { id: "user-123" } }),
+    );
+    mockedUseLanguageStore.mockImplementation((selector) =>
+      selector({ activeTargetLanguage: "spanish" }),
+    );
 
     // Mock useToast to return our mock toast function
     mockedUseToast.mockReturnValue({
@@ -58,48 +61,54 @@ describe('useSubmitJournal', () => {
     });
   });
 
-  it('should call apiClient.journal.create and invalidate queries on success', async () => {
+  it("should call apiClient.journal.create and invalidate queries on success", async () => {
     const { queryClient, wrapper } = createTestWrapper();
-    const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
+    const invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
 
-    (mockedApiClient.journal.create as jest.Mock).mockResolvedValue({ id: 'journal-456', content: 'Test content' });
+    (mockedApiClient.journal.create as jest.Mock).mockResolvedValue({
+      id: "journal-456",
+      content: "Test content",
+    });
 
     const { result } = renderHook(() => useSubmitJournal(), { wrapper });
 
-    const payload = { content: 'This is a test journal entry.', topicTitle: 'Testing' };
-    
+    const payload = {
+      content: "This is a test journal entry.",
+      topicTitle: "Testing",
+    };
+
     await act(async () => {
       await result.current.mutateAsync(payload);
     });
-    
+
     // Assert that the API was called correctly
     expect(mockedApiClient.journal.create).toHaveBeenCalledTimes(1);
     expect(mockedApiClient.journal.create).toHaveBeenCalledWith({
       ...payload,
-      targetLanguage: 'spanish', // from the mocked language store
+      targetLanguage: "spanish", // from the mocked language store
     });
-    
+
     // Assert that the query cache was invalidated
     expect(invalidateQueriesSpy).toHaveBeenCalledTimes(1);
     expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: ['journals', 'user-123', 'spanish'], // user id and language from stores
+      queryKey: ["journals", "user-123", "spanish"], // user id and language from stores
     });
-    
+
     // Assert that no error toast was shown
     expect(toastMock).not.toHaveBeenCalled();
   });
 
-  it('should call toast with an error message on failure', async () => {
+  it("should call toast with an error message on failure", async () => {
     const { queryClient, wrapper } = createTestWrapper();
-    const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
-    
-    const mockError = new Error('Your journal entry could not be saved.');
+    const invalidateQueriesSpy = jest.spyOn(queryClient, "invalidateQueries");
+
+    const mockError = new Error("Your journal entry could not be saved.");
     (mockedApiClient.journal.create as jest.Mock).mockRejectedValue(mockError);
 
     const { result } = renderHook(() => useSubmitJournal(), { wrapper });
 
-    const payload = { content: 'This will fail.', topicTitle: 'Failure Test' };
-    
+    const payload = { content: "This will fail.", topicTitle: "Failure Test" };
+
     await act(async () => {
       try {
         await result.current.mutateAsync(payload);
@@ -110,16 +119,16 @@ describe('useSubmitJournal', () => {
 
     // Assert that the API was called
     expect(mockedApiClient.journal.create).toHaveBeenCalledTimes(1);
-    
+
     // Assert that queries were NOT invalidated on failure
     expect(invalidateQueriesSpy).not.toHaveBeenCalled();
 
     // Assert that the error toast was shown
     expect(toastMock).toHaveBeenCalledTimes(1);
     expect(toastMock).toHaveBeenCalledWith({
-        variant: "destructive",
-        title: "Submission Failed",
-        description: "Your journal entry could not be saved.",
+      variant: "destructive",
+      title: "Submission Failed",
+      description: "Your journal entry could not be saved.",
     });
   });
 });

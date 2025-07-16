@@ -1,4 +1,3 @@
-
 "use client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -55,8 +54,8 @@ export function AccountDeletion() {
           <DialogHeader>
             <DialogTitle>Confirm Account Deletion</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. Please type your exact email
-              address ("{userEmail}") to confirm.
+              This action cannot be undone. Please type your exact email address
+              ("{userEmail}") to confirm.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
