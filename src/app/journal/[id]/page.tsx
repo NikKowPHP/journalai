@@ -1,4 +1,3 @@
-"use client";
 import React, { useEffect, useRef } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
 import { FeedbackCard } from "@/components/FeedbackCard";
@@ -14,31 +13,17 @@ import {
 } from "@/lib/hooks/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Spinner from "@/components/ui/Spinner";
-
-const GuidedPopover = ({
-  children,
-  title,
-  description,
-}: {
-  children: React.ReactNode;
-  title: string;
-  description: string;
-}) => (
-  <div className="relative">
-    <div className="absolute -top-4 -left-4 -right-4 -bottom-4 border-2 border-primary border-dashed rounded-xl z-10 pointer-events-none animate-in fade-in duration-500" />
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-background p-3 rounded-lg shadow-2xl border z-20">
-      <h4 className="font-bold text-sm">{title}</h4>
-      <p className="text-xs text-muted-foreground">{description}</p>
-    </div>
-    {children}
-  </div>
-);
+import { useFeatureFlag } from "@/lib/hooks/useFeatureFlag";
+import { GuidedPopover } from "@/components/ui/GuidedPopover";
 
 export default function JournalAnalysisPage() {
   const params = useParams();
   const id = params.id as string;
   const { step, setStep } = useOnboardingStore();
   const analysisInitiated = useRef(false);
+  const [isTranslationNew, markTranslationAsSeen] = useFeatureFlag(
+    "highlight_text_translation",
+  );
 
   const completeOnboarding = () => {
     setStep("COMPLETED");
@@ -86,6 +71,13 @@ export default function JournalAnalysisPage() {
     !journal.analysis && (analyzeJournalMutation.isPending || isLoading);
   const analysisFailed = !journal.analysis && !isAnalysisPending;
 
+  const analysisDisplayComponent = (
+    <AnalysisDisplay
+      content={journal.content}
+      highlights={(journal.analysis?.rawAiResponse as any)?.highlights || []}
+    />
+  );
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-2xl font-bold">Journal Entry Analysis</h1>
@@ -130,24 +122,22 @@ export default function JournalAnalysisPage() {
               <div className="w-full lg:w-2/3 mx-auto">
                 {isTourActive ? (
                   <GuidedPopover
+                    isOpen={true}
+                    onDismiss={() => {}} // Onboarding controls this
                     title="Review Your Feedback"
                     description="We've highlighted areas for improvement. The colors show the type of feedback."
                   >
-                    <AnalysisDisplay
-                      content={journal.content}
-                      highlights={
-                        (journal.analysis.rawAiResponse as any)?.highlights ||
-                        []
-                      }
-                    />
+                    {analysisDisplayComponent}
                   </GuidedPopover>
                 ) : (
-                  <AnalysisDisplay
-                    content={journal.content}
-                    highlights={
-                      (journal.analysis.rawAiResponse as any)?.highlights || []
-                    }
-                  />
+                  <GuidedPopover
+                    isOpen={isTranslationNew}
+                    onDismiss={markTranslationAsSeen}
+                    title="Instant Translation"
+                    description="Select any text in your entry to get an instant translation and add it to your study deck."
+                  >
+                    {analysisDisplayComponent}
+                  </GuidedPopover>
                 )}
               </div>
 
@@ -168,6 +158,8 @@ export default function JournalAnalysisPage() {
                         >
                           {isTourActive && index === 0 ? (
                             <GuidedPopover
+                              isOpen={true}
+                              onDismiss={() => {}} // Onboarding controls this
                               title="Create a Flashcard"
                               description="Click 'Add to Study Deck' to save this correction for later practice."
                             >

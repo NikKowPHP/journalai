@@ -1,4 +1,3 @@
-
 import {
   useEditor,
   EditorContent,
@@ -25,6 +24,8 @@ import { TranslatorDialog } from "./TranslatorDialog";
 import { useSelection } from "@/lib/hooks/ui/useSelection";
 import { TranslationTooltip } from "./ui/TranslationTooltip";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
+import { useFeatureFlag } from "@/lib/hooks/useFeatureFlag";
+import { GuidedPopover } from "./ui/GuidedPopover";
 
 // --- WritingAids Sub-component ---
 interface WritingAidsProps {
@@ -37,6 +38,9 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
   const { data: userProfile } = useUserProfile();
   const { activeTargetLanguage } = useLanguageStore();
   const { isVisible, selectedText, position, close } = useSelection(titleRef);
+  const [isTranslateNew, markTranslateAsSeen] = useFeatureFlag(
+    "highlight_text_translation",
+  );
 
   const shouldEnableTranslation =
     userProfile?.nativeLanguage && activeTargetLanguage;
@@ -86,9 +90,20 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
     <div>
       <Card className="mb-4 bg-secondary/30">
         <CardHeader>
-          <div ref={titleRef}>
-            <CardTitle className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help">Topic: {topicTitle}</CardTitle>
-          </div>
+         
+            <GuidedPopover
+              isOpen={isTranslateNew}
+              onDismiss={markTranslateAsSeen}
+              title="Translate Anything"
+              description="You can select any text on this platform, like this topic title, to get an instant translation."
+          >
+             <div ref={titleRef}>
+              <CardTitle className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help">
+                Topic: {topicTitle}
+              </CardTitle>
+              </div>
+            </GuidedPopover>
+          
         </CardHeader>
         <CardContent className="space-y-4">
           {isPending && (
@@ -167,6 +182,9 @@ const StuckWriterHelper = ({
   const { activeTargetLanguage } = useLanguageStore();
   const { isVisible, selectedText, position, close } =
     useSelection(containerRef);
+  const [isTranslateNew, markTranslateAsSeen] = useFeatureFlag(
+    "highlight_text_translation",
+  );
   const shouldEnableTranslation =
     userProfile?.nativeLanguage && activeTargetLanguage;
 
@@ -194,14 +212,21 @@ const StuckWriterHelper = ({
           </Button>
         </CardHeader>
         <CardContent className="p-0">
-          <ul
-            ref={containerRef}
-            className="space-y-1 text-sm text-muted-foreground list-disc pl-5 underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
+          <GuidedPopover
+            isOpen={isTranslateNew}
+            onDismiss={markTranslateAsSeen}
+            title="Translate Suggestions"
+            description="Don't understand a suggestion? Just select the text to translate it."
           >
-            {suggestions.map((suggestion, index) => (
-              <li key={index}>{suggestion}</li>
-            ))}
-          </ul>
+            <ul
+              ref={containerRef}
+              className="space-y-1 text-sm text-muted-foreground list-disc pl-5 underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
+            >
+              {suggestions.map((suggestion, index) => (
+                <li key={index}>{suggestion}</li>
+              ))}
+            </ul>
+          </GuidedPopover>
         </CardContent>
       </Card>
       {shouldEnableTranslation && isVisible && selectedText && (
