@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -23,6 +24,7 @@ import { Button } from "../ui/button";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { useCompleteOnboarding } from "@/lib/hooks/data";
+import { apiClient } from "@/lib/services/api-client.service";
 
 function AppFooter() {
   return (
@@ -68,11 +70,7 @@ const AwaitingAnalysisModal = () => {
 
   const { data: journal } = useQuery({
     queryKey: ["journal", onboardingJournalId],
-    queryFn: async () => {
-      const res = await fetch(`/api/journal/${onboardingJournalId}`);
-      if (!res.ok) throw new Error("Failed to fetch journal");
-      return res.json();
-    },
+    queryFn: () => apiClient.journal.getById(onboardingJournalId!),
     enabled: !!onboardingJournalId,
     refetchInterval: 3000, // Poll every 3 seconds
   });
@@ -133,13 +131,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setOnboardingJournalId,
     onboardingJournalId,
     setStep,
+    resetOnboarding,
   } = useOnboardingStore();
   const completeOnboardingMutation = useCompleteOnboarding();
   const pathname = usePathname();
   const router = useRouter();
 
   const completeOnboarding = () => {
-    completeOnboardingMutation.mutate();
+    completeOnboardingMutation.mutate(undefined, {
+      onSuccess: () => {
+        resetOnboarding();
+      },
+    });
   };
 
   const isAuthPage =

@@ -1,3 +1,4 @@
+
 import {
   useEditor,
   EditorContent,
@@ -9,7 +10,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { useSubmitJournal } from "@/lib/hooks/data";
+import { useSubmitJournal, useAnalyzeJournal } from "@/lib/hooks/data";
 import {
   useStuckWriterEffect,
   useAutocompleteEffect,
@@ -221,6 +222,7 @@ export function JournalEditor({
     useStuckWriterEffect(editor, topicTitle);
 
   const submitJournalMutation = useSubmitJournal();
+  const analyzeJournalMutation = useAnalyzeJournal();
 
   useEffect(() => {
     onTabRef.current = () => {
@@ -247,6 +249,10 @@ export function JournalEditor({
     submitJournalMutation.mutate(payload, {
       onSuccess: (journal: { id: string }) => {
         editor.commands.clearContent();
+
+        // The Fix: Trigger analysis right after submission
+        analyzeJournalMutation.mutate(journal.id);
+
         if (isOnboarding && onOnboardingSubmit) {
           onOnboardingSubmit(journal.id);
         } else {

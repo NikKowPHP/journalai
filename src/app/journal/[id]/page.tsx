@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useEffect } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
@@ -129,14 +130,17 @@ export default function JournalAnalysisPage() {
                     <AnalysisDisplay
                       content={journal.content}
                       highlights={
-                        journal.analysis.feedbackJson.highlights || []
+                        (journal.analysis.rawAiResponse as any)?.highlights ||
+                        []
                       }
                     />
                   </GuidedPopover>
                 ) : (
                   <AnalysisDisplay
                     content={journal.content}
-                    highlights={journal.analysis.feedbackJson.highlights || []}
+                    highlights={
+                      (journal.analysis.rawAiResponse as any)?.highlights || []
+                    }
                   />
                 )}
               </div>

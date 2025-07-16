@@ -1,4 +1,4 @@
-// src/components/layout/StoreInitializer.tsx
+
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -43,7 +43,7 @@ function StoreInitializer() {
   const authLoading = useAuthStore((state) => state.loading);
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
   const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
-  const { data: studyDeck, isLoading: isDeckLoading } = useStudyDeck();
+  const { isLoading: isDeckLoading } = useStudyDeck();
   const completeOnboardingMutation = useCompleteOnboarding();
 
   useEffect(() => {
@@ -65,7 +65,7 @@ function StoreInitializer() {
       const hasJournals = journals && journals.length > 0;
       const hasSrsItems = (userProfile._count?.srsItems ?? 0) > 0;
 
-      // **THE FIX**: Self-healing logic for onboarding completion.
+      // Self-healing logic for onboarding completion.
       // If a user has done all the steps but the flag isn't set, this completes it for them.
       if (profileIsComplete && hasJournals && hasSrsItems) {
         if (!completeOnboardingMutation.isPending) {
@@ -112,7 +112,6 @@ function StoreInitializer() {
     user,
     userProfile,
     journals,
-    studyDeck,
     authLoading,
     isProfileLoading,
     isJournalsLoading,

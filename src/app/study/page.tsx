@@ -1,3 +1,4 @@
+
 "use client";
 import { StudySession } from "@/components/StudySession";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
@@ -50,7 +51,7 @@ export default function StudyPage() {
     return <div>Error loading study deck: {(error as Error).message}</div>;
 
   const studySession = (
-    <StudySession cards={studyDeck} onOnboardingReview={handleFirstReview} />
+    <StudySession cards={studyDeck || []} onOnboardingReview={handleFirstReview} />
   );
 
   const getLanguageName = (value: string) => {
@@ -66,14 +67,14 @@ export default function StudyPage() {
 
       {!activeTargetLanguage ? (
         <p>Please select a language to start studying.</p>
-      ) : isTourActive && studyDeck?.length > 0 ? (
+      ) : isTourActive && studyDeck && studyDeck.length > 0 ? (
         <GuidedPopover
           title="Practice Makes Perfect"
           description="Flip the card, then rate how well you remembered it to update your study schedule."
         >
           {studySession}
         </GuidedPopover>
-      ) : studyDeck?.length > 0 ? (
+      ) : studyDeck && studyDeck.length > 0 ? (
         studySession
       ) : (
         <p>

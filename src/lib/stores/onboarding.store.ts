@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 
 type OnboardingStep =
@@ -27,7 +28,7 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
   setStep: (step) =>
     set((state) => ({
       step,
-      isActive: step !== "INACTIVE" && step !== "COMPLETED",
+      isActive: step !== "INACTIVE",
     })),
 
   setOnboardingJournalId: (id) => set({ onboardingJournalId: id }),
