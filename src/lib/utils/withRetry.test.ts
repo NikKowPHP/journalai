@@ -29,21 +29,26 @@ describe("withRetry", () => {
   it("should use exponential backoff for delays", async () => {
     jest.useFakeTimers();
     const failingFn = jest.fn().mockRejectedValue(new Error("failure"));
-    const promise = withRetry(failingFn, 3, 100);
 
-    // Let the first call fail
-    await Promise.resolve();
-    await Promise.resolve();
+    // We expect this to reject eventually, so we wrap the call in an assertion.
+    const promiseAssertion = expect(
+      withRetry(failingFn, 3, 100),
+    ).rejects.toThrow("failure");
 
-    // First retry delay
+    // Allow the initial, synchronous call to happen.
+    expect(failingFn).toHaveBeenCalledTimes(1);
+
+    // Advance time for the first retry.
     await jest.advanceTimersByTimeAsync(100);
     expect(failingFn).toHaveBeenCalledTimes(2);
 
-    // Second retry delay
+    // Advance time for the second retry.
     await jest.advanceTimersByTimeAsync(200);
     expect(failingFn).toHaveBeenCalledTimes(3);
 
-    await expect(promise).rejects.toThrow("failure");
+    // Await the final assertion to ensure the test runner waits for the rejection.
+    await promiseAssertion;
+
     jest.useRealTimers();
   });
 });

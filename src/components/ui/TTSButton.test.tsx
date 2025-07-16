@@ -4,13 +4,26 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { TTSButton } from "./TTSButton";
 
+// Mock SpeechSynthesisUtterance which is not available in JSDOM
+class MockSpeechSynthesisUtterance {
+  text: string;
+  lang = "";
+  voice = null;
+  constructor(text: string) {
+    this.text = text;
+  }
+}
+global.SpeechSynthesisUtterance = MockSpeechSynthesisUtterance as any;
+
 // Mock window.speechSynthesis
 const mockSpeak = jest.fn();
-const mockGetVoices = jest.fn(() => []);
+const mockCancel = jest.fn();
+let mockVoices: any[] = [];
 Object.defineProperty(window, "speechSynthesis", {
   value: {
     speak: mockSpeak,
-    getVoices: mockGetVoices,
+    cancel: mockCancel,
+    getVoices: () => mockVoices,
     onvoiceschanged: null,
   },
   writable: true,
@@ -19,8 +32,10 @@ Object.defineProperty(window, "speechSynthesis", {
 describe("TTSButton", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (window.speechSynthesis as any).getVoices = jest.fn(() => []);
-    (window.speechSynthesis as any).onvoiceschanged = null;
+    mockVoices = [];
+    if (window.speechSynthesis) {
+      (window.speechSynthesis as any).onvoiceschanged = null;
+    }
   });
 
   it("renders nothing if speech synthesis is not supported", () => {
@@ -39,12 +54,10 @@ describe("TTSButton", () => {
     });
   });
 
-  it("renders a disabled button if the required voice is not available", () => {
-    (window.speechSynthesis as any).getVoices = jest.fn(() => [
-      { lang: "fr-FR" },
-    ]);
+  it("renders a disabled button if the required voice is not available", async () => {
+    mockVoices = [{ lang: "fr-FR" }];
     render(<TTSButton text="Hello" lang="en-US" />);
-    const button = screen.getByRole("button");
+    const button = await screen.findByRole("button");
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute(
       "title",
@@ -52,26 +65,23 @@ describe("TTSButton", () => {
     );
   });
 
-  it("renders an enabled button if the voice is available", () => {
-    (window.speechSynthesis as any).getVoices = jest.fn(() => [
-      { lang: "en-US" },
-    ]);
+  it("renders an enabled button if the voice is available", async () => {
+    mockVoices = [{ lang: "en-US" }];
     render(<TTSButton text="Hello" lang="en-US" />);
-    const button = screen.getByRole("button");
+    const button = await screen.findByRole("button");
     expect(button).not.toBeDisabled();
   });
 
-  it("calls speechSynthesis.speak with correct text and lang on click", () => {
-    (window.speechSynthesis as any).getVoices = jest.fn(() => [
-      { lang: "es-ES" },
-    ]);
+  it("calls speechSynthesis.speak with correct text and lang on click", async () => {
+    mockVoices = [{ lang: "es-ES" }];
     render(<TTSButton text="Hola" lang="es-ES" />);
-    const button = screen.getByRole("button");
+
+    const button = await screen.findByRole("button");
     fireEvent.click(button);
 
     expect(mockSpeak).toHaveBeenCalledTimes(1);
     const utterance = mockSpeak.mock.calls[0][0];
-    expect(utterance).toBeInstanceOf(SpeechSynthesisUtterance);
+    expect(utterance).toBeInstanceOf(MockSpeechSynthesisUtterance);
     expect(utterance.text).toBe("Hola");
     expect(utterance.lang).toBe("es-ES");
   });
