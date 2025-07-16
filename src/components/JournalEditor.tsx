@@ -10,7 +10,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import { useSubmitJournal } from "@/lib/hooks/data";
+import { useSubmitJournal, useUserProfile } from "@/lib/hooks/data";
 import {
   useStuckWriterEffect,
   useAutocompleteEffect,
@@ -22,6 +22,9 @@ import { Extension } from "@tiptap/core";
 import { useRouter } from "next/navigation";
 import { useLanguageStore } from "@/lib/stores/language.store";
 import { TranslatorDialog } from "./TranslatorDialog";
+import { useSelection } from "@/lib/hooks/ui/useSelection";
+import { TranslationTooltip } from "./ui/TranslationTooltip";
+import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 
 // --- WritingAids Sub-component ---
 interface WritingAidsProps {
@@ -30,9 +33,20 @@ interface WritingAidsProps {
 }
 
 const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
-  const activeTargetLanguage = useLanguageStore(
-    (state) => state.activeTargetLanguage,
-  );
+  const titleRef = useRef<HTMLDivElement>(null);
+  const { data: userProfile } = useUserProfile();
+  const { activeTargetLanguage } = useLanguageStore();
+  const { isVisible, selectedText, position, close } = useSelection(titleRef);
+
+  const shouldEnableTranslation =
+    userProfile?.nativeLanguage && activeTargetLanguage;
+
+  const getLanguageName = (value: string | null | undefined): string => {
+    if (!value) return "";
+    const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+    return lang ? lang.name : value;
+  };
+
   const {
     data: aids,
     mutate: fetchAids,
@@ -69,61 +83,74 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
   };
 
   return (
-    <Card className="mb-4 bg-secondary/30">
-      <CardHeader>
-        <CardTitle className="text-lg">Topic: {topicTitle}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {isPending && (
-          <>
-            <Skeleton className="h-5 w-1/3" />
-            <div className="flex gap-2">
-              <Skeleton className="h-8 w-24" />
-              <Skeleton className="h-8 w-20" />
-              <Skeleton className="h-8 w-28" />
-            </div>
-          </>
-        )}
-        {aids && (
-          <div className="space-y-4">
-            <div>
-              <h4 className="text-sm font-semibold mb-2 text-muted-foreground">
-                Sentence Starter
-              </h4>
-              <p className="italic text-foreground">
-                "{aids.sentenceStarter}"
-                <Button
-                  size="sm"
-                  variant="link"
-                  onClick={insertSentenceStarter}
-                  className="ml-2"
-                >
-                  Use this
-                </Button>
-              </p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold mb-2 text-muted-foreground flex items-center gap-2">
-                <Lightbulb className="h-4 w-4" />
-                Vocabulary to Try
-              </h4>
-              <div className="flex flex-wrap gap-2">
-                {aids.suggestedVocab.map((vocab: string) => (
+    <div>
+      <Card className="mb-4 bg-secondary/30">
+        <CardHeader>
+          <div ref={titleRef}>
+            <CardTitle className="text-lg">Topic: {topicTitle}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isPending && (
+            <>
+              <Skeleton className="h-5 w-1/3" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-28" />
+              </div>
+            </>
+          )}
+          {aids && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-semibold mb-2 text-muted-foreground">
+                  Sentence Starter
+                </h4>
+                <p className="italic text-foreground">
+                  "{aids.sentenceStarter}"
                   <Button
-                    key={vocab}
                     size="sm"
-                    variant="outline"
-                    onClick={() => insertVocab(vocab)}
+                    variant="link"
+                    onClick={insertSentenceStarter}
+                    className="ml-2"
                   >
-                    {vocab}
+                    Use this
                   </Button>
-                ))}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold mb-2 text-muted-foreground flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4" />
+                  Vocabulary to Try
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {aids.suggestedVocab.map((vocab: string) => (
+                    <Button
+                      key={vocab}
+                      size="sm"
+                      variant="outline"
+                      onClick={() => insertVocab(vocab)}
+                    >
+                      {vocab}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+      {shouldEnableTranslation && isVisible && selectedText && (
+        <TranslationTooltip
+          selectedText={selectedText}
+          sourceLang={getLanguageName(activeTargetLanguage)}
+          targetLang={getLanguageName(userProfile.nativeLanguage)}
+          position={position}
+          onClose={close}
+        />
+      )}
+    </div>
   );
 };
 
@@ -135,30 +162,58 @@ const StuckWriterHelper = ({
   suggestions: string[];
   onDismiss: () => void;
 }) => {
+  const containerRef = useRef<HTMLUListElement>(null);
+  const { data: userProfile } = useUserProfile();
+  const { activeTargetLanguage } = useLanguageStore();
+  const { isVisible, selectedText, position, close } =
+    useSelection(containerRef);
+  const shouldEnableTranslation =
+    userProfile?.nativeLanguage && activeTargetLanguage;
+
+  const getLanguageName = (value: string | null | undefined): string => {
+    if (!value) return "";
+    const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+    return lang ? lang.name : value;
+  };
+
   return (
-    <Card className="mt-4 p-4 border-primary/50 bg-secondary/30 relative animate-in fade-in duration-500">
-      <CardHeader className="p-0 pb-2 flex-row justify-between items-center">
-        <CardTitle className="text-base font-semibold flex items-center gap-2">
-          <Lightbulb className="h-4 w-4 text-primary" />
-          Need a nudge?
-        </CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-6 w-6"
-          onClick={onDismiss}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ul className="space-y-1 text-sm text-muted-foreground list-disc pl-5">
-          {suggestions.map((suggestion, index) => (
-            <li key={index}>{suggestion}</li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+    <div>
+      <Card className="mt-4 p-4 border-primary/50 bg-secondary/30 relative animate-in fade-in duration-500">
+        <CardHeader className="p-0 pb-2 flex-row justify-between items-center">
+          <CardTitle className="text-base font-semibold flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-primary" />
+            Need a nudge?
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={onDismiss}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
+          <ul
+            ref={containerRef}
+            className="space-y-1 text-sm text-muted-foreground list-disc pl-5"
+          >
+            {suggestions.map((suggestion, index) => (
+              <li key={index}>{suggestion}</li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
+      {shouldEnableTranslation && isVisible && selectedText && (
+        <TranslationTooltip
+          selectedText={selectedText}
+          sourceLang={getLanguageName(activeTargetLanguage!)}
+          targetLang={getLanguageName(userProfile.nativeLanguage!)}
+          position={position}
+          onClose={close}
+        />
+      )}
+    </div>
   );
 };
 
