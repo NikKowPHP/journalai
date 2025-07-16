@@ -1,3 +1,4 @@
+// src/lib/hooks/editor/useStuckWriterEffect.ts
 
 import { useEffect, useState, useRef } from "react";
 import { useStuckWriterSuggestions } from "@/lib/hooks/data";
@@ -15,9 +16,8 @@ export const useStuckWriterEffect = (
   const [showStuckUI, setShowStuckUI] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // --- THE FIX IS HERE ---
-  // Destructure the mutate function. We'll give it a clearer alias.
-  const { mutate: getSuggestions } = useStuckWriterSuggestions();
+  // --- THE FIX: Get the full mutation object ---
+  const stuckSuggestionsMutation = useStuckWriterSuggestions();
   // --- END FIX ---
 
   const activeTargetLanguage = useLanguageStore(
@@ -30,16 +30,21 @@ export const useStuckWriterEffect = (
     logger.info("[useStuckWriterEffect] Effect initialized or dependencies changed.");
 
     const handleUpdate = () => {
-      // Clear any existing timer on every keystroke
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
-
+      
       setShowStuckUI(false);
       setStuckSuggestions(null);
 
-      // Set a new timer to fire after 7 seconds of inactivity
       debounceTimer.current = setTimeout(() => {
+        // --- THE FIX: Add the guard clause here ---
+        if (stuckSuggestionsMutation.isPending) {
+          logger.info("[useStuckWriterEffect] Timer fired, but a mutation is already in flight. Skipping.");
+          return;
+        }
+        // --- END FIX ---
+
         const currentText = editor.getText();
         if (currentText.trim().length > 0 && activeTargetLanguage) {
           const payload = {
@@ -53,9 +58,7 @@ export const useStuckWriterEffect = (
             payload,
           );
 
-          // --- THE FIX IS HERE ---
-          // Call the stable mutate function directly
-          getSuggestions(payload, {
+          stuckSuggestionsMutation.mutate(payload, {
             onSuccess: (data) => {
               logger.info(
                 "[useStuckWriterEffect] Mutation succeeded.",
@@ -65,9 +68,7 @@ export const useStuckWriterEffect = (
                 setStuckSuggestions(data.suggestions);
                 setShowStuckUI(true);
               } else {
-                logger.info(
-                  "[useStuckWriterEffect] No suggestions returned from AI.",
-                );
+                 logger.info("[useStuckWriterEffect] No suggestions returned from AI.");
               }
             },
             onError: (error) => {
@@ -83,7 +84,6 @@ export const useStuckWriterEffect = (
 
     editor.on("update", handleUpdate);
 
-    // Cleanup
     return () => {
       logger.info("[useStuckWriterEffect] Effect cleanup.");
       editor.off("update", handleUpdate);
@@ -91,9 +91,11 @@ export const useStuckWriterEffect = (
         clearTimeout(debounceTimer.current);
       }
     };
-    // --- THE FIX IS HERE ---
-    // The dependency array now contains stable references, breaking the loop.
-  }, [editor, getSuggestions, topicTitle, activeTargetLanguage]);
+    
+  // --- THE FIX: The dependency array must be stable ---
+  // We use stuckSuggestionsMutation.mutate which is a stable function reference
+  // provided by React Query. This prevents the re-render loop.
+  }, [editor, stuckSuggestionsMutation.mutate, topicTitle, activeTargetLanguage]);
 
   return { stuckSuggestions, showStuckUI, setShowStuckUI };
 };
