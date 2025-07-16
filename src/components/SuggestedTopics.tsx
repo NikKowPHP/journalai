@@ -46,7 +46,7 @@ export function SuggestedTopics({ topics, isLoading }: SuggestedTopicsProps) {
             >
               <Button
                 variant="outline"
-                className="w-full h-auto text-left justify-start whitespace-normal rounded-md"
+                className="w-full h-auto md:w-full md:h-auto p-4 text-left justify-start whitespace-normal rounded-md"
               >
                 {topic}
               </Button>
