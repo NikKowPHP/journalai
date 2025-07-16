@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useEffect } from "react";
 import { Flashcard } from "@/components/Flashcard";
@@ -20,6 +21,7 @@ interface StudyCard {
   frontContent: string;
   backContent: string;
   context: string;
+  targetLanguage?: string;
 }
 
 interface StudySessionProps {
@@ -71,6 +73,7 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
               context={currentCard.context}
               onReview={handleReview}
               onOnboardingReview={onOnboardingReview}
+              targetLanguage={currentCard.targetLanguage}
             />
           </div>
         </>

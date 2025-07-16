@@ -33,6 +33,7 @@ export function TranslationSegmentCard({
       frontContent: sourceText,
       backContent: translatedText,
       targetLanguage,
+      explanation: explanation,
     });
   };
 

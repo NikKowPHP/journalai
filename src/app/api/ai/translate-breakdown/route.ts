@@ -7,10 +7,21 @@ import { tieredRateLimiter } from "@/lib/rateLimiter";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
-const translateBreakdownSchema = z.object({
+const translateBreakdownRequestSchema = z.object({
   text: z.string().min(1),
   sourceLanguage: z.string().min(1),
   targetLanguage: z.string().min(1),
+});
+
+const translateBreakdownResponseSchema = z.object({
+  fullTranslation: z.string(),
+  segments: z.array(
+    z.object({
+      source: z.string(),
+      translation: z.string(),
+      explanation: z.string(),
+    }),
+  ),
 });
 
 export async function POST(req: NextRequest) {
@@ -47,13 +58,13 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const parsed = translateBreakdownSchema.safeParse(body);
+    const parsedRequest = translateBreakdownRequestSchema.safeParse(body);
 
-    if (!parsed.success) {
+    if (!parsedRequest.success) {
       return new NextResponse("Invalid request body", { status: 400 });
     }
 
-    const { text, sourceLanguage, targetLanguage } = parsed.data;
+    const { text, sourceLanguage, targetLanguage } = parsedRequest.data;
 
     const aiService = getQuestionGenerationService();
 
@@ -63,7 +74,18 @@ export async function POST(req: NextRequest) {
       targetLanguage,
     );
 
-    return NextResponse.json(result);
+    const parsedResult = translateBreakdownResponseSchema.safeParse(result);
+    if (!parsedResult.success) {
+      logger.error("AI response validation failed for translate-breakdown", {
+        error: parsedResult.error,
+        response: result,
+      });
+      return new NextResponse("Internal Server Error: AI response malformed", {
+        status: 500,
+      });
+    }
+
+    return NextResponse.json(parsedResult.data);
   } catch (error) {
     logger.error("Error in translate-breakdown API:", error);
     return new NextResponse("Internal Server Error", { status: 500 });

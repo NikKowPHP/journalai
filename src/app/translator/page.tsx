@@ -19,6 +19,7 @@ import {
   useUserProfile,
   useStudyDeck,
   useTranslateAndBreakdown,
+  useTranslateText,
 } from "@/lib/hooks/data";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 import { ArrowRightLeft } from "lucide-react";
@@ -37,16 +38,15 @@ function getLanguageName(value: string | null | undefined): string {
 
 export default function TranslatorPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
-  const { data: studyDeck, isLoading: isDeckLoading } = useStudyDeck();
-  const translateMutation = useTranslateAndBreakdown();
+  const { data: studyDeck } = useStudyDeck();
+  const translateTextMutation = useTranslateText();
+  const translateAndBreakdownMutation = useTranslateAndBreakdown();
 
   const [sourceLang, setSourceLang] = useState<string | null>(null);
   const [targetLang, setTargetLang] = useState<string | null>(null);
   const [sourceText, setSourceText] = useState("");
-  const [results, setResults] = useState<{
-    fullTranslation: string;
-    segments: Segment[];
-  } | null>(null);
+  const [fullTranslation, setFullTranslation] = useState("");
+  const [segments, setSegments] = useState<Segment[] | null>(null);
 
   const allUserLanguages = useMemo(() => {
     if (!userProfile) return [];
@@ -65,9 +65,17 @@ export default function TranslatorPage() {
     }
   }, [userProfile]);
 
+  useEffect(() => {
+    setFullTranslation("");
+    setSegments(null);
+  }, [sourceText]);
+
   const handleTranslate = () => {
     if (sourceText.trim() && sourceLang && targetLang) {
-      translateMutation.mutate(
+      setFullTranslation("");
+      setSegments(null);
+
+      translateTextMutation.mutate(
         {
           text: sourceText,
           sourceLanguage: getLanguageName(sourceLang),
@@ -75,7 +83,21 @@ export default function TranslatorPage() {
         },
         {
           onSuccess: (data) => {
-            setResults(data);
+            setFullTranslation(data.translatedText);
+            // Now trigger the slower breakdown
+            translateAndBreakdownMutation.mutate(
+              {
+                text: sourceText,
+                sourceLanguage: getLanguageName(sourceLang),
+                targetLanguage: getLanguageName(targetLang),
+              },
+              {
+                onSuccess: (breakdownData) => {
+                  setFullTranslation(breakdownData.fullTranslation);
+                  setSegments(breakdownData.segments);
+                },
+              },
+            );
           },
         },
       );
@@ -86,11 +108,15 @@ export default function TranslatorPage() {
     const tempLang = sourceLang;
     setSourceLang(targetLang);
     setTargetLang(tempLang);
-    setSourceText(results?.fullTranslation || "");
-    setResults(null);
+    setSourceText(fullTranslation);
+    setFullTranslation("");
+    setSegments(null);
   };
 
   const deckSet = new Set(studyDeck?.map((item: any) => item.frontContent));
+  const isTranslating =
+    translateTextMutation.isPending || translateAndBreakdownMutation.isPending;
+  const isBreakingDown = translateAndBreakdownMutation.isPending;
 
   if (isProfileLoading) {
     return (
@@ -110,10 +136,10 @@ export default function TranslatorPage() {
             <CardTitle>Translate Text</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 items-center">
+            <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
               <Select value={sourceLang || ""} onValueChange={setSourceLang}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Source Language" />
+                  <SelectValue placeholder="Source" />
                 </SelectTrigger>
                 <SelectContent>
                   {allUserLanguages.map((lang) => (
@@ -123,9 +149,17 @@ export default function TranslatorPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleSwapLanguages}
+                disabled={!fullTranslation}
+              >
+                <ArrowRightLeft className="h-4 w-4" />
+              </Button>
               <Select value={targetLang || ""} onValueChange={setTargetLang}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Target Language" />
+                  <SelectValue placeholder="Target" />
                 </SelectTrigger>
                 <SelectContent>
                   {allUserLanguages.map((lang) => (
@@ -142,33 +176,20 @@ export default function TranslatorPage() {
               onChange={(e) => setSourceText(e.target.value)}
               rows={8}
             />
-            <div className="flex justify-between items-center">
-              <Button
-                variant="ghost"
-                onClick={handleSwapLanguages}
-                disabled={!results?.fullTranslation}
-              >
-                <ArrowRightLeft className="h-4 w-4 mr-2" />
-                Swap
-              </Button>
-              <Button
-                onClick={handleTranslate}
-                disabled={translateMutation.isPending}
-              >
-                {translateMutation.isPending && (
-                  <Spinner size="sm" className="mr-2" />
-                )}
+            <div className="flex justify-end items-center">
+              <Button onClick={handleTranslate} disabled={isTranslating}>
+                {isTranslating && <Spinner size="sm" className="mr-2" />}
                 Translate
               </Button>
             </div>
-            {translateMutation.error && (
+            {translateTextMutation.error && (
               <p className="text-destructive text-sm">
-                {(translateMutation.error as Error).message}
+                {(translateTextMutation.error as Error).message}
               </p>
             )}
             <Textarea
               placeholder="Translation will appear here..."
-              value={results?.fullTranslation || ""}
+              value={fullTranslation}
               readOnly
               rows={8}
               className="bg-muted"
@@ -181,14 +202,14 @@ export default function TranslatorPage() {
             <CardTitle>Breakdown & Flashcards</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 max-h-[60vh] overflow-y-auto">
-            {translateMutation.isPending && <Spinner />}
-            {!results && !translateMutation.isPending && (
+            {isBreakingDown && <Spinner />}
+            {!segments && !isBreakingDown && (
               <p className="text-muted-foreground text-center py-10">
                 Translate a paragraph to see sentence-by-sentence breakdowns
                 here.
               </p>
             )}
-            {results?.segments.map((segment, index) => (
+            {segments?.map((segment, index) => (
               <TranslationSegmentCard
                 key={index}
                 sourceText={segment.source}

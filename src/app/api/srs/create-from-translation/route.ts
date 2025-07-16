@@ -1,3 +1,4 @@
+
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/supabase/server";
@@ -8,6 +9,7 @@ const createFromTranslationSchema = z.object({
   frontContent: z.string().min(1),
   backContent: z.string().min(1),
   targetLanguage: z.string().min(1),
+  explanation: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -28,7 +30,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.errors }, { status: 400 });
     }
 
-    const { frontContent, backContent, targetLanguage } = parsed.data;
+    const { frontContent, backContent, targetLanguage, explanation } =
+      parsed.data;
 
     const srsItem = await prisma.srsReviewItem.create({
       data: {
@@ -36,6 +39,7 @@ export async function POST(request: Request) {
         type: "TRANSLATION",
         frontContent,
         backContent,
+        context: explanation,
         targetLanguage,
         nextReviewAt: new Date(),
       },

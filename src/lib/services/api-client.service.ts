@@ -66,6 +66,7 @@ export const apiClient = {
       frontContent: string;
       backContent: string;
       targetLanguage: string;
+      explanation?: string;
     }) => {
       const { data } = await axios.post(
         "/api/srs/create-from-translation",

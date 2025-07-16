@@ -1,142 +1,104 @@
-### [BASH_COMMANDS]
-```bash
-# No new files or directories needed
-```
-### docs/phases/phase-l-after-implementation.md
-```markdown
-## **Final Implementation Plan (Revision 2)**
 
-This plan outlines the atomic steps to enhance the standalone translator tool with improved language selection, seamless language swapping, and more intelligent, pedagogically useful flashcard chunking.
 
-### Epic 1: Enhance Language Selection in Translator
+## **Final Implementation Plan (Revision 5)**
 
-**Goal:** Allow users to select from any of their learned languages as source or target, and ensure flashcards are saved to the correct language deck.
+### Epic 1: Enhance Translator UI & UX
 
-*   [x] **Task 1.1: Consolidate User's Languages for Selectors**
+**Goal:** Refine the translator's layout, state management, and perceived performance for a professional, seamless user experience.
+
+*   [x] **Task 1.1: Redesign Translator Layout**
+    *   **File to Edit:** `src/app/translator/page.tsx`
+    *   **Action:** Restructure the JSX to create a three-column layout: `[Source Lang Select] [Icon-only Swap Button] [Target Lang Select]`. Populate both selectors with a consolidated list of all the user's learned languages.
+
+*   [x] **Task 1.2: Implement Chained-Request Translation for Perceived Performance**
     *   **File to Edit:** `src/app/translator/page.tsx`
     *   **Action:**
-        1.  Inside the `TranslatorPage` component, use the `useUserProfile` hook to get the user's data.
-        2.  Create a memoized list of all available languages for the user. This list should contain the user's `nativeLanguage` and all languages from their `languageProfiles` array, with duplicates removed.
-            ```javascript
-            const allUserLanguages = React.useMemo(() => {
-              if (!userProfile) return [];
-              const languages = new Set<string>();
-              if (userProfile.nativeLanguage) {
-                languages.add(userProfile.nativeLanguage);
-              }
-              userProfile.languageProfiles?.forEach(p => languages.add(p.language));
-              return Array.from(languages);
-            }, [userProfile]);
-            ```
-        3.  Update both the source and target language `<Select>` components to map over this `allUserLanguages` array to render the `<SelectItem>` options.
+        1.  Create two separate state variables: `fullTranslation` and `breakdownSegments`.
+        2.  Modify the `handleTranslate` function to trigger a **chained request**:
+            *   Call the **fast** `useTranslateText` mutation.
+            *   In its `onSuccess` callback, set the `fullTranslation` state and then immediately trigger the **slow** `useTranslateAndBreakdown` mutation.
+        3.  Use two separate loading state variables (`isTranslating`, `isBreakingDown`) to show a primary spinner on the "Translate" button and a secondary, less obtrusive spinner in the breakdown section.
 
-*   [x] **Task 1.2: Ensure Correct Language for Flashcards**
-    *   **File to Edit:** `src/components/TranslationSegmentCard.tsx`
-    *   **Action:** Verify that the `targetLanguage` prop passed to this component is derived from the *state* of the target language selector on the `translator` page, not from the global language store. The current implementation already does this, but this task is to confirm its correctness. The `handleAddToDeck` function should use this prop when calling `addToDeck`.
-
-### Epic 2: Improve Language Swapping Logic
-
-**Goal:** Make the "Swap Languages" functionality seamless and intuitive.
-
-*   [x] **Task 2.1: Refine `handleSwapLanguages` Function**
+*   [x] **Task 1.3: Refine UI State Management**
     *   **File to Edit:** `src/app/translator/page.tsx`
-    *   **Action:** Modify the `handleSwapLanguages` function to perform a complete state swap.
-        1.  Swap the selected languages in the state:
-            ```javascript
-            const tempLang = sourceLang;
-            setSourceLang(targetLang);
-            setTargetLang(tempLang);
-            ```
-        2.  Swap the text content by moving the full translated text into the source text area.
-            ```javascript
-            setSourceText(results?.fullTranslation || '');
-            ```
-        3.  Reset the translation results to clear the breakdown and signal a new translation is needed.
-            ```javascript
-            setResults(null);
-            ```
+    *   **Action:** Implement a `useEffect` hook that listens for changes to the `sourceText` state. On change, it must clear both `fullTranslation` and `breakdownSegments` to prevent displaying stale data.
 
-### Epic 3: Implement Intelligent Phrase Chunking for Flashcards
+### Epic 2: Implement Backend Robustness & AI Enhancements
 
-**Goal:** Rework the AI logic to break down paragraphs into smaller, meaningful phrases with explanations, rather than full sentences.
+**Goal:** Make all AI interactions more reliable and resilient through data validation and a reusable retry mechanism.
 
-*   [x] **Task 3.1: Re-engineer the Paragraph Breakdown AI Prompt**
-    *   **File to Edit:** `src/lib/ai/prompts/paragraphBreakdown.prompt.ts`
-    *   **Action:** Replace the existing prompt with a more sophisticated one that asks for semantically useful chunks and an explanation for each.
-    *   **New Prompt Structure:**
+*   [x] **Task 2.1: Implement a Reusable API Retry Helper Function**
+    *   **File to Create:** `src/lib/utils/withRetry.ts` (or add to `utils.ts`)
+    *   **Action:** Create a higher-order async function `withRetry` that takes an async function and retry options as arguments. It should re-attempt the function call on failure using exponential backoff.
         ```typescript
-        export const getParagraphBreakdownPrompt = (text: string, sourceLang: string, targetLang: string) => `
-        You are an expert language tutor. Your task is to translate a paragraph from ${sourceLang} to ${targetLang}, and then break it down into smaller, grammatically coherent, and pedagogically useful chunks for creating flashcards.
-
-        **CONTEXT:**
-        *   **Source Language:** ${sourceLang}
-        *   **Target Language:** ${targetLang}
-        *   **Paragraph to Translate:** "${text}"
-
-        **YOUR TASK:**
-        Provide a response as a single raw JSON object with this exact structure:
-        {
-          "fullTranslation": "The complete, natural translation of the entire paragraph.",
-          "segments": [
-            {
-              "source": "The first useful phrase from the original paragraph.",
-              "translation": "The direct translation of that phrase.",
-              "explanation": "A brief explanation of why this chunk is useful for memorization (e.g., 'A common prepositional phrase', 'A key verb conjugation', 'An idiomatic expression')."
-            }
-          ]
-        }
-
-        **EXAMPLE:**
-        For the input "I have chosen a topic that is common and interesting: A description of a holiday in the mountains.", a good response would be:
-        {
-          "fullTranslation": "Ich habe ein Thema gewählt, das gängig und interessant ist: Eine Beschreibung eines Urlaubs in den Bergen.",
-          "segments": [
-            { "source": "I have chosen a topic", "translation": "Ich habe ein Thema gewählt", "explanation": "Demonstrates the present perfect tense ('have chosen')." },
-            { "source": "that is common and interesting", "translation": "das gängig und interessant ist", "explanation": "A useful relative clause with common adjectives." },
-            { "source": "A description of a holiday", "translation": "Eine Beschreibung eines Urlaubs", "explanation": "Shows the genitive case ('of a holiday')." },
-            { "source": "in the mountains", "translation": "in den Bergen", "explanation": "A common prepositional phrase indicating location." }
-          ]
-        }
-        
-        Now, process the provided paragraph.
-        `;
+        // Signature example
+        export async function withRetry<T>(
+          fn: () => Promise<T>,
+          retries = 3,
+          delay = 1000
+        ): Promise<T> { ... }
         ```
 
-*   [x] **Task 3.2: Update Backend Service Return Type**
-    *   **File to Edit:** `src/lib/ai/generation-service.ts`
-        *   **Action:** Update the `translateAndBreakdown` method's return type signature to include the new `explanation` field in the segments array. `segments: { source: string; translation: string; explanation: string }[]`.
+*   [x] **Task 2.2: Integrate Retry Logic into the AI Service Layer**
     *   **File to Edit:** `src/lib/ai/gemini-service.ts`
-        *   **Action:** Ensure the implementation correctly returns the new structure. No code change is needed here as it just parses the JSON, but it's good to verify.
+    *   **Action:** In every method that makes a network call to the Gemini API (e.g., `analyzeJournalEntry`, `translateAndBreakdown`, `generateTopics`), wrap the core `this.genAI.models.generateContent(...)` call with the new `withRetry` helper. This centralizes all AI-related retry logic.
 
-*   [x] **Task 3.3: Display Explanations in the Frontend**
-    *   **File to Edit:** `src/app/translator/page.tsx`
-        *   **Action:** Update the `Segment` interface at the top of the file to include `explanation: string;`.
-    *   **File to Edit:** `src/components/TranslationSegmentCard.tsx`
-        *   **Action:**
-            1.  Add `explanation` to the component's props interface.
-            2.  Conditionally render the explanation below the source/translation texts. Style it distinctly (e.g., smaller, italic, with a lightbulb icon) to appear as a helpful tip.
-                ```jsx
-                {explanation && (
-                  <p className="text-xs text-muted-foreground italic mt-2">
-                    Tip: {explanation}
-                  </p>
-                )}
-                ```
-    *   **File to Edit:** `src/app/translator/page.tsx`
-        *   **Action:** When mapping over the `results.segments`, pass the `segment.explanation` as a prop to each `<TranslationSegmentCard />`.
-```
-### src/app/translator/page.tsx
-```tsx
-```
-### src/components/TranslationSegmentCard.tsx
-```tsx
-```
-### src/lib/ai/gemini-service.ts
-```ts
-```
-### src/lib/ai/generation-service.ts
-```ts
-```
-### src/lib/ai/prompts/paragraphBreakdown.prompt.ts
-```ts
+*   [x] **Task 2.3: Implement Backend Data Validation with Zod**
+    *   **File to Edit:** `src/app/api/ai/translate-breakdown/route.ts`
+    *   **Action:**
+        1.  Define a `zod` schema that validates the expected JSON structure from the AI: `{ fullTranslation: string, segments: z.array(...) }`.
+        2.  After receiving the AI response, wrap `JSON.parse()` in a `try...catch` block.
+        3.  Use `schema.safeParse()` on the parsed object. If parsing or validation fails, log the error and return a user-friendly `500` status with a clear error message.
+
+### Epic 3: Unify Flashcard Content & Add TTS
+
+**Goal:** Ensure all flashcards, regardless of origin, contain contextual explanations and have Text-to-Speech functionality.
+
+*   [x] **Task 3.1: Enhance Flashcard Creation from Journal Analysis**
+    *   **File to Edit:** `/api/srs/create-from-mistake/route.ts`
+    *   **Action:** Confirm that the `explanation` string from the `Mistake` model is correctly saved to the `context` field of the `SrsReviewItem`.
+
+*   [x] **Task 3.2: Enhance Flashcard Creation from Translator**
+    *   **Files to Edit:** `/api/srs/create-from-translation/route.ts`, `api-client.service.ts`, `useCreateSrsFromTranslation.ts`
+    *   **Action:** Update the entire data flow (Zod schema, API client, and hook) to accept an optional `explanation` and save it to the `context` field of the `SrsReviewItem`.
+
+*   [x] **Task 3.3: Implement Graceful Degradation for TTS Button**
+    *   **File to Create:** `src/components/ui/TTSButton.tsx`
+    *   **Action:** Create a `TTSButton` component that checks for `window.speechSynthesis` and available voices. It should render nothing if unsupported, or render a disabled button with a tooltip if a specific language voice is missing.
+
+*   [x] **Task 3.4: Integrate TTS Button and Context into Flashcard UI**
+    *   **File to Edit:** `src/components/Flashcard.tsx`
+    *   **Action:**
+        1.  On the back of the card, render the `context` prop (the explanation/tip) in a distinct style.
+        2.  Add the new `TTSButton` next to the `backContent`.
+        3.  Ensure the `targetLanguage` is passed down from the study page to provide the correct language code to the TTS button.
+
+### Epic 4: Feature Discoverability
+
+**Goal:** Inform users about new features in a non-intrusive way.
+
+*   [x] **Task 4.1: Implement One-Time Feature Highlights**
+    *   **Action:** Create a simple custom hook `useFeatureFlag(featureName)` that uses `localStorage` to manage "seen" states.
+    *   **File to Edit:** `src/components/Flashcard.tsx`
+        *   **Action:** The first time a flashcard with `context` is shown, use a dismissible popover to highlight it.
+        *   **Action:** The first time a flashcard is flipped, use a similar popover to highlight the `TTSButton`.
+
+### Epic 5: Quality Assurance and Testing
+
+**Goal:** Validate all new features and robustness improvements.
+
+*   [x] **Task 5.1: Backend Unit & Integration Tests**
+    *   **Action:**
+        1.  **Retry Helper Test:** Write a dedicated unit test for the `withRetry` helper to validate its success, failure, and delay logic.
+        2.  **Zod Failure Test:** Update the integration test for `/api/ai/translate-breakdown` to assert it returns a `500` error when the AI returns malformed JSON.
+        3.  **Flashcard Context Test:** Update integration tests for both `create-from-mistake` and `create-from-translation` to confirm the `explanation`/`context` is saved correctly.
+
+*   [x] **Task 5.2: Frontend Component Tests**
+    *   **Action:**
+        1.  **Translator Page:** Update tests to verify the chained-request UX (fast translation appears, then breakdown).
+        2.  **TTS Button:** Write a component test for `TTSButton.tsx` to check all three states: works, disabled, and not rendered.
+        3.  **Flashcard:** Update tests to confirm the `context` and `TTSButton` are rendered correctly on the back of the card.
+
+*   [x] **Task 5.3: Manual End-to-End (E2E) User Flow Testing**
+    *   **Action:** Perform the full E2E test, including checking the new TTS and explanation features on both types of flashcards (from journal and translator) and verifying the improved UX on the translator page.
 ```
