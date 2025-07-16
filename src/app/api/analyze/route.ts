@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -27,16 +28,28 @@ export async function POST(req: NextRequest) {
 
     const { journalId } = parsed.data;
 
-    // 1. Fetch the journal entry to ensure user owns it
+    // 1. Fetch the journal entry to ensure user owns it AND check for existing analysis
     const journal = await prisma.journalEntry.findFirst({
       where: { id: journalId, authorId: user.id },
       include: {
         topic: true,
+        analysis: true, // Include the analysis relation
       },
     });
     if (!journal) {
       return NextResponse.json({ error: "Journal not found" }, { status: 404 });
     }
+
+    // --- ROBUSTNESS FIX ---
+    // If an analysis already exists, return it immediately. This makes the endpoint idempotent.
+    if (journal.analysis) {
+      logger.warn(
+        `Analysis already exists for journal ${journalId}. Returning existing analysis.`,
+      );
+      return NextResponse.json(journal.analysis);
+    }
+    // --- END FIX ---
+
     const targetLanguage = journal.targetLanguage;
 
     if (!targetLanguage) {

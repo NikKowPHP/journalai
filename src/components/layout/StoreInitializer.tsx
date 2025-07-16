@@ -1,25 +1,28 @@
-
 "use client";
 
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
-import { useOnboardingStore } from "@/lib/stores/onboarding.store";
+import {
+  useOnboardingStore,
+  type OnboardingStep,
+} from "@/lib/stores/onboarding.store";
 import {
   useUserProfile,
   useJournalHistory,
   useStudyDeck,
-  useCompleteOnboarding,
 } from "@/lib/hooks/data";
 import { useLanguageStore } from "@/lib/stores/language.store";
 
 function StoreInitializer() {
   const { setUserAndLoading } = useAuthStore();
-  const setOnboardingStep = useOnboardingStore((state) => state.setStep);
-  const setOnboardingJournalId = useOnboardingStore(
-    (state) => state.setOnboardingJournalId,
-  );
+  const {
+    step,
+    onboardingJournalId,
+    setStep: setOnboardingStep,
+    setOnboardingJournalId,
+  } = useOnboardingStore();
   const { activeTargetLanguage, setActiveTargetLanguage } = useLanguageStore();
   const initialized = useRef(false);
   const router = useRouter();
@@ -44,12 +47,12 @@ function StoreInitializer() {
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
   const { data: journals, isLoading: isJournalsLoading } = useJournalHistory();
   const { isLoading: isDeckLoading } = useStudyDeck();
-  const completeOnboardingMutation = useCompleteOnboarding();
 
   useEffect(() => {
     if (authLoading || isProfileLoading || isJournalsLoading || isDeckLoading)
       return;
 
+    // This logic remains to set the active language
     if (user && userProfile && !activeTargetLanguage) {
       if (userProfile.defaultTargetLanguage) {
         setActiveTargetLanguage(userProfile.defaultTargetLanguage);
@@ -58,54 +61,54 @@ function StoreInitializer() {
       }
     }
 
-    if (user && userProfile && !userProfile.onboardingCompleted) {
+    // --- REFACTORED ONBOARDING LOGIC ---
+    // Only calculate the starting step if the user needs onboarding AND the flow is not already active.
+    if (
+      user &&
+      userProfile &&
+      !userProfile.onboardingCompleted &&
+      step === "INACTIVE"
+    ) {
       const profileIsComplete = !!(
         userProfile.nativeLanguage && userProfile.defaultTargetLanguage
       );
       const hasJournals = journals && journals.length > 0;
       const hasSrsItems = (userProfile._count?.srsItems ?? 0) > 0;
 
-      // Self-healing logic for onboarding completion.
-      // If a user has done all the steps but the flag isn't set, this completes it for them.
-      if (profileIsComplete && hasJournals && hasSrsItems) {
-        if (!completeOnboardingMutation.isPending) {
-          completeOnboardingMutation.mutate();
-        }
-        // Exit early and let the component re-render with the updated profile.
-        return;
-      }
+      let nextStep: OnboardingStep = "INACTIVE"; // Default to INACTIVE
 
-      // If self-healing didn't trigger, proceed with the normal state machine.
       if (!profileIsComplete) {
-        setOnboardingStep("PROFILE_SETUP");
-        return;
-      }
-
-      if (!hasJournals) {
-        setOnboardingStep("FIRST_JOURNAL");
-        return;
-      }
-
-      const latestJournal = journals[0];
-
-      if (latestJournal && !latestJournal.analysis) {
-        setOnboardingJournalId(latestJournal.id);
-        setOnboardingStep("VIEW_ANALYSIS");
-        return;
-      }
-
-      if (latestJournal && latestJournal.analysis) {
-        setOnboardingJournalId(latestJournal.id);
-
-        if (!hasSrsItems) {
-          setOnboardingStep("VIEW_ANALYSIS");
-          return;
-        } else {
-          setOnboardingStep("STUDY_INTRO");
-          return;
+        nextStep = "PROFILE_SETUP";
+      } else if (!hasJournals) {
+        nextStep = "FIRST_JOURNAL";
+      } else {
+        const latestJournal = journals[0];
+        if (latestJournal) {
+          if (latestJournal.id !== onboardingJournalId) {
+            setOnboardingJournalId(latestJournal.id);
+          }
+          if (!latestJournal.analysis) {
+            nextStep = "VIEW_ANALYSIS";
+          } else if (!hasSrsItems) {
+            nextStep = "VIEW_ANALYSIS"; // User needs to create the first card
+          } else {
+            // This case should not happen for an un-onboarded user, but as a fallback:
+            nextStep = "STUDY_INTRO";
+          }
         }
       }
-    } else {
+
+      // Only set the step if we determined a new starting point
+      if (nextStep !== "INACTIVE") {
+        setOnboardingStep(nextStep);
+      }
+      // Handle the case where the user is onboarded but the store state is stale
+    } else if (
+      user &&
+      userProfile &&
+      userProfile.onboardingCompleted &&
+      step !== "INACTIVE"
+    ) {
       setOnboardingStep("INACTIVE");
     }
   }, [
@@ -118,9 +121,10 @@ function StoreInitializer() {
     isDeckLoading,
     setOnboardingStep,
     setOnboardingJournalId,
-    completeOnboardingMutation,
     activeTargetLanguage,
     setActiveTargetLanguage,
+    step,
+    onboardingJournalId,
   ]);
 
   return null;

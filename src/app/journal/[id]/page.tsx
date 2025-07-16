@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
 import { FeedbackCard } from "@/components/FeedbackCard";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ export default function JournalAnalysisPage() {
   const params = useParams();
   const id = params.id as string;
   const { step, setStep } = useOnboardingStore();
+  const analysisInitiated = useRef(false);
 
   const completeOnboarding = () => {
     setStep("COMPLETED");
@@ -51,7 +52,13 @@ export default function JournalAnalysisPage() {
   const analyzeJournalMutation = useAnalyzeJournal();
 
   useEffect(() => {
-    if (journal && !journal.analysis && !analyzeJournalMutation.isPending) {
+    if (
+      journal &&
+      !journal.analysis &&
+      !analyzeJournalMutation.isPending &&
+      !analysisInitiated.current
+    ) {
+      analysisInitiated.current = true;
       analyzeJournalMutation.mutate(id);
     }
   }, [journal, analyzeJournalMutation, id]);

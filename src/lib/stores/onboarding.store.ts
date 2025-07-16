@@ -1,7 +1,6 @@
-
 import { create } from "zustand";
 
-type OnboardingStep =
+export type OnboardingStep =
   | "PROFILE_SETUP"
   | "FIRST_JOURNAL"
   | "VIEW_ANALYSIS"

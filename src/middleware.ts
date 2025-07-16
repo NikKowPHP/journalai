@@ -1,3 +1,4 @@
+
 // src/middleware.ts
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
@@ -13,9 +14,7 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Log an error or redirect to an error page if environment variables are missing
     console.error("Supabase environment variables are missing!");
-    // Redirect to an error page or simply return the response without Supabase client
     return NextResponse.redirect(
       new URL("/error?message=Supabase configuration missing", request.url),
     );
@@ -63,38 +62,43 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  // Refresh session if expired - important to keep user logged in
-  // Get user info
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Define protected and auth routes
+  const { pathname } = request.nextUrl;
+
   const protectedRoutes = [
     "/dashboard",
-    "/questions",
-    "/generate",
-    "/profile", // Assuming /profile will be a protected route
+    "/journal",
+    "/study",
+    "/analytics",
+    "/settings",
+    "/admin",
   ];
 
-  // Define routes that should not be accessible if the user is already logged in
   const authRoutes = [
     "/login",
     "/signup",
     "/forgot-password",
     "/reset-password",
   ];
-  const { pathname } = request.nextUrl;
+
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route),
+  );
+  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   // If user is not logged in and trying to access a protected route, redirect to login
-  if (!user && protectedRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.redirect(
-      new URL("/login?error=Please log in to access this page.", request.url),
-    );
+  if (!user && isProtectedRoute) {
+    const redirectUrl = new URL("/login", request.url);
+    redirectUrl.searchParams.set("error", "Please log in to access this page.");
+    redirectUrl.searchParams.set("redirectedFrom", pathname);
+    return NextResponse.redirect(redirectUrl);
   }
 
-  // If user is logged in and trying to access an auth route (login/register), redirect to dashboard
-  if (user && authRoutes.some((route) => pathname.startsWith(route))) {
+  // If user is logged in and trying to access an auth route, redirect to dashboard
+  if (user && isAuthRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

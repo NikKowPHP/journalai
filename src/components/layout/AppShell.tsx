@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -110,8 +109,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/signup") ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password");
+  
+  const protectedRoutes = [
+    "/dashboard",
+    "/journal",
+    "/study",
+    "/analytics",
+    "/settings",
+    "/admin",
+  ];
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user && isProtectedRoute) {
+      router.replace('/login');
+    }
+  }, [loading, user, isProtectedRoute, router]);
+
+
+  if (loading || (!user && isProtectedRoute)) {
     return <GlobalSpinner />;
   }
 
