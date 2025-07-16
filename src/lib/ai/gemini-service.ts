@@ -1,4 +1,3 @@
-
 import { QuestionGenerationService } from "./generation-service";
 import type {
   GeneratedQuestion,
@@ -10,6 +9,7 @@ import type {
   JournalAnalysisResult,
   JournalingAids,
   StuckWriterContext,
+  GeminiAiConfig,
 } from "@/lib/types";
 import { GoogleGenAI } from "@google/genai";
 import * as fs from "fs";
@@ -36,6 +36,7 @@ export class GeminiQuestionGenerationService
 {
   private genAI: GoogleGenAI;
   private model: string = "gemini-2.5-flash";
+  private config: GeminiAiConfig = { responseMimeType: "application/json" };
 
   constructor(apiKey: string) {
     this.genAI = new GoogleGenAI({ apiKey });
@@ -44,17 +45,18 @@ export class GeminiQuestionGenerationService
   async analyzeJournalEntry(
     journalContent: string,
     targetLanguage: string = "English",
-    proficiencyScore: number,
+    proficiencyScore: number
   ): Promise<JournalAnalysisResult> {
     const prompt = getJournalAnalysisPrompt(
       journalContent,
       targetLanguage,
-      proficiencyScore,
+      proficiencyScore
     );
 
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
@@ -64,7 +66,7 @@ export class GeminiQuestionGenerationService
       const cleanedText = this.cleanJsonString(text);
       if (!cleanedText) {
         throw new Error(
-          "Failed to get a valid response from the AI for journal analysis.",
+          "Failed to get a valid response from the AI for journal analysis."
         );
       }
 
@@ -95,13 +97,14 @@ export class GeminiQuestionGenerationService
   }
 
   async generateQuestions(
-    context: GenerationContext,
+    context: GenerationContext
   ): Promise<GeneratedQuestion[]> {
     const prompt = getQuestionGenerationPrompt(context);
 
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
@@ -111,10 +114,10 @@ export class GeminiQuestionGenerationService
       const cleanedText = this.cleanJsonString(text);
       if (!cleanedText) {
         console.error(
-          "Gemini response for questions was empty after cleaning.",
+          "Gemini response for questions was empty after cleaning."
         );
         throw new Error(
-          "Failed to get a valid response from the AI for generating questions.",
+          "Failed to get a valid response from the AI for generating questions."
         );
       }
 
@@ -132,6 +135,7 @@ export class GeminiQuestionGenerationService
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
@@ -142,7 +146,7 @@ export class GeminiQuestionGenerationService
 
       if (!cleanedText) {
         throw new Error(
-          "Failed to get a valid response from the AI for answer evaluation.",
+          "Failed to get a valid response from the AI for answer evaluation."
         );
       }
 
@@ -157,7 +161,7 @@ export class GeminiQuestionGenerationService
   }
 
   async evaluateAudioAnswer(
-    context: AudioEvaluationContext,
+    context: AudioEvaluationContext
   ): Promise<EvaluationResult & { transcription: string }> {
     const { audioBuffer, mimeType, ...promptContext } = context;
     const prompt = getAudioAnswerEvaluationPrompt(promptContext);
@@ -186,6 +190,7 @@ export class GeminiQuestionGenerationService
       // 3. Generate content using the file
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }, audioPart] }],
       });
       const text = result.text || "";
@@ -196,7 +201,7 @@ export class GeminiQuestionGenerationService
 
       if (!cleanedText) {
         throw new Error(
-          "Failed to get a valid response from the AI for audio evaluation.",
+          "Failed to get a valid response from the AI for audio evaluation."
         );
       }
 
@@ -218,7 +223,7 @@ export class GeminiQuestionGenerationService
       } catch (unlinkError) {
         console.error(
           `Failed to delete temporary file: ${tempFilePath}`,
-          unlinkError,
+          unlinkError
         );
       }
     }
@@ -227,17 +232,18 @@ export class GeminiQuestionGenerationService
   async translateText(
     text: string,
     sourceLanguage: string,
-    targetLanguage: string,
+    targetLanguage: string
   ): Promise<string> {
     const prompt = getTextTranslationPrompt(
       text,
       sourceLanguage,
-      targetLanguage,
+      targetLanguage
     );
 
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const translatedText = result.text || "";
@@ -257,6 +263,7 @@ export class GeminiQuestionGenerationService
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const completion = result.text || "";
@@ -276,6 +283,7 @@ export class GeminiQuestionGenerationService
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const title = result.text || "";
@@ -299,6 +307,7 @@ export class GeminiQuestionGenerationService
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
@@ -319,6 +328,7 @@ export class GeminiQuestionGenerationService
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
@@ -328,7 +338,7 @@ export class GeminiQuestionGenerationService
       const cleanedText = this.cleanJsonString(text);
       if (!cleanedText) {
         throw new Error(
-          "Gemini response for role refinement was empty after cleaning.",
+          "Gemini response for role refinement was empty after cleaning."
         );
       }
 
@@ -350,6 +360,7 @@ export class GeminiQuestionGenerationService
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
@@ -359,7 +370,7 @@ export class GeminiQuestionGenerationService
       const cleanedText = this.cleanJsonString(text);
       if (!cleanedText) {
         throw new Error(
-          "Failed to get a valid response from the AI for topic generation.",
+          "Failed to get a valid response from the AI for topic generation."
         );
       }
       const topics = JSON.parse(cleanedText) as string[];
@@ -371,32 +382,33 @@ export class GeminiQuestionGenerationService
   }
 
   async generateStuckWriterSuggestions(
-    context: StuckWriterContext,
+    context: StuckWriterContext
   ): Promise<{ suggestions: string[] }> {
     const prompt = getStuckWriterPrompt(context);
 
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const text = result.text || "";
       if (!text) {
         throw new Error(
-          "Empty response from Gemini API for stuck writer suggestions",
+          "Empty response from Gemini API for stuck writer suggestions"
         );
       }
       const cleanedText = this.cleanJsonString(text);
       if (!cleanedText) {
         throw new Error(
-          "Failed to get a valid response from the AI for stuck writer suggestions.",
+          "Failed to get a valid response from the AI for stuck writer suggestions."
         );
       }
       return JSON.parse(cleanedText) as { suggestions: string[] };
     } catch (error) {
       console.error(
         "Error generating stuck writer suggestions with Gemini:",
-        error,
+        error
       );
       throw error;
     }
@@ -405,21 +417,29 @@ export class GeminiQuestionGenerationService
   async translateAndBreakdown(
     text: string,
     sourceLang: string,
-    targetLang: string,
-  ): Promise<{ fullTranslation: string; segments: { source: string; translation: string }[] }> {
+    targetLang: string
+  ): Promise<{
+    fullTranslation: string;
+    segments: { source: string; translation: string }[];
+  }> {
     const prompt = getParagraphBreakdownPrompt(text, sourceLang, targetLang);
     try {
       const result = await this.genAI.models.generateContent({
         model: this.model,
+        config: this.config,
         contents: [{ role: "user", parts: [{ text: prompt }] }],
       });
       const responseText = result.text || "";
       if (!responseText) {
-        throw new Error("Empty response from Gemini API for paragraph breakdown");
+        throw new Error(
+          "Empty response from Gemini API for paragraph breakdown"
+        );
       }
       const cleanedText = this.cleanJsonString(responseText);
       if (!cleanedText) {
-        throw new Error("Failed to get a valid response from the AI for paragraph breakdown.");
+        throw new Error(
+          "Failed to get a valid response from the AI for paragraph breakdown."
+        );
       }
       return JSON.parse(cleanedText);
     } catch (error) {
