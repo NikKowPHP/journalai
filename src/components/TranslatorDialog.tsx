@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "./ui/textarea";
 import {
   useUserProfile,
-  useTranslateText,
+  useTranslateAndBreakdown,
   useCreateSrsFromTranslation,
 } from "@/lib/hooks/data";
 import { useLanguageStore } from "@/lib/stores/language.store";
@@ -40,7 +41,7 @@ export function TranslatorDialog({
 }: TranslatorDialogProps) {
   const { data: userProfile } = useUserProfile();
   const { activeTargetLanguage } = useLanguageStore();
-  const translateMutation = useTranslateText();
+  const translateMutation = useTranslateAndBreakdown();
   const {
     mutate: addToDeck,
     reset: resetAddToDeck,
@@ -52,6 +53,7 @@ export function TranslatorDialog({
   const [targetLang, setTargetLang] = useState<string | null>(null);
   const [sourceText, setSourceText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
+  const [explanation, setExplanation] = useState<string | null>(null);
 
   // Reset state when dialog opens
   useEffect(() => {
@@ -60,12 +62,14 @@ export function TranslatorDialog({
       setTargetLang(activeTargetLanguage);
       setSourceText("");
       setTranslatedText("");
+      setExplanation(null);
       resetAddToDeck();
     }
   }, [open, userProfile, activeTargetLanguage, resetAddToDeck]);
 
   const handleTranslate = () => {
     if (sourceText.trim() && sourceLang && targetLang) {
+      setExplanation(null);
       translateMutation.mutate(
         {
           text: sourceText,
@@ -74,7 +78,14 @@ export function TranslatorDialog({
         },
         {
           onSuccess: (data) => {
-            setTranslatedText(data.translatedText);
+            setTranslatedText(data.fullTranslation);
+            const fullExplanation = data.segments
+              .map((s: { explanation: string }) => s.explanation)
+              .filter(Boolean)
+              .join(" ");
+            if (fullExplanation) {
+              setExplanation(fullExplanation);
+            }
             resetAddToDeck(); // Allow adding new translation to deck
           },
         },
@@ -90,6 +101,7 @@ export function TranslatorDialog({
     const tempText = sourceText;
     setSourceText(translatedText);
     setTranslatedText(tempText);
+    setExplanation(null);
   };
 
   const handleAddToDeck = () => {
@@ -98,6 +110,7 @@ export function TranslatorDialog({
         frontContent: sourceText,
         backContent: translatedText,
         targetLanguage: targetLang,
+        explanation: explanation ?? undefined,
       });
     }
   };
@@ -147,6 +160,11 @@ export function TranslatorDialog({
                 className="resize-none bg-muted/50"
                 rows={5}
               />
+              {explanation && (
+                <div className="text-xs text-muted-foreground p-2 bg-secondary rounded-md border mt-2">
+                  <strong>Tip:</strong> {explanation}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex justify-center">

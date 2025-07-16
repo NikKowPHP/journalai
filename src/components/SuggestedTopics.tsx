@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export function SuggestedTopics({ topics, isLoading }: SuggestedTopicsProps) {
             >
               <Button
                 variant="outline"
-                className="w-full h-full text-left justify-start"
+                className="w-full h-auto text-left justify-start whitespace-normal rounded-md"
               >
                 {topic}
               </Button>

@@ -1,3 +1,5 @@
+// src/app/api/ai/stuck-helper/route.ts
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -13,6 +15,7 @@ const stuckHelperSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  logger.info("[API:stuck-helper] Received POST request.");
   try {
     const supabase = await createClient();
     const {
@@ -20,23 +23,23 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (!user) {
+      logger.warn("[API:stuck-helper] Unauthorized: No user session found.");
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
-    logger.info(`/api/ai/stuck-helper - POST - User: ${user.id}`);
+    logger.info(`[API:stuck-helper] Request initiated by user: ${user.id}`);
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: { subscriptionTier: true },
     });
+    const tier = dbUser?.subscriptionTier || "FREE";
+    logger.info(`[API:stuck-helper] User tier is: ${tier}`);
 
     // Rate limit based on user's subscription tier
-    const rateLimitResult = tieredRateLimiter(
-      user.id,
-      dbUser?.subscriptionTier || "FREE",
-    );
+    const rateLimitResult = tieredRateLimiter(user.id, tier);
 
     if (!rateLimitResult.allowed) {
+      logger.warn(`[API:stuck-helper] Rate limit exceeded for user: ${user.id}`);
       return new NextResponse("Rate limit exceeded", {
         status: 429,
         headers: {
@@ -44,26 +47,34 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+    logger.info(`[API:stuck-helper] User passed rate limit.`);
 
     const body = await req.json();
+    logger.info("[API:stuck-helper] Parsed request body.", { body });
+    
     const parsed = stuckHelperSchema.safeParse(body);
 
     if (!parsed.success) {
+      logger.warn("[API:stuck-helper] Invalid request body.", { error: parsed.error });
       return new NextResponse("Invalid request body", { status: 400 });
     }
+    logger.info("[API:stuck-helper] Request body validation successful.");
 
     const { topic, currentText, targetLanguage } = parsed.data;
 
     const aiService = getQuestionGenerationService();
+    
+    logger.info("[API:stuck-helper] Calling AI service with payload.", { payload: parsed.data });
     const suggestions = await aiService.generateStuckWriterSuggestions({
       topic,
       currentText,
       targetLanguage,
     });
+    logger.info("[API:stuck-helper] Received successful response from AI service.", { suggestions });
 
     return NextResponse.json(suggestions);
   } catch (error) {
-    logger.error("Error in stuck-helper API:", error);
+    logger.error("[API:stuck-helper] An unexpected error occurred.", { error });
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
