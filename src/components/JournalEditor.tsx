@@ -87,7 +87,7 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
       <Card className="mb-4 bg-secondary/30">
         <CardHeader>
           <div ref={titleRef}>
-            <CardTitle className="text-lg">Topic: {topicTitle}</CardTitle>
+            <CardTitle className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help">Topic: {topicTitle}</CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -196,7 +196,7 @@ const StuckWriterHelper = ({
         <CardContent className="p-0">
           <ul
             ref={containerRef}
-            className="space-y-1 text-sm text-muted-foreground list-disc pl-5"
+            className="space-y-1 text-sm text-muted-foreground list-disc pl-5 underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
           >
             {suggestions.map((suggestion, index) => (
               <li key={index}>{suggestion}</li>
@@ -331,7 +331,7 @@ export function JournalEditor({
       <div className="border rounded-lg overflow-hidden">
         {editor && (
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-            <div className="flex gap-1 p-1 bg-popover text-popover-foreground border border-border rounded-md shadow-md">
+            <div className="flex gap-1 p-1 bg-popover text-popover-foreground border border-border rounded-md shadow-md ">
               <button
                 onClick={() => editor.chain().focus().toggleBold().run()}
                 className={`p-1 rounded ${
