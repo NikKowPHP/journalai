@@ -12,6 +12,7 @@ interface TranslationSegmentCardProps {
   translatedText: string;
   targetLanguage: string;
   isAlreadyInDeck: boolean;
+  explanation?: string;
 }
 
 export function TranslationSegmentCard({
@@ -19,6 +20,7 @@ export function TranslationSegmentCard({
   translatedText,
   targetLanguage,
   isAlreadyInDeck,
+  explanation,
 }: TranslationSegmentCardProps) {
   const {
     mutate: addToDeck,
@@ -42,6 +44,11 @@ export function TranslationSegmentCard({
         <div className="flex-1 space-y-2">
           <p className="text-sm text-muted-foreground">{sourceText}</p>
           <p className="text-sm font-medium">{translatedText}</p>
+          {explanation && (
+            <p className="text-xs text-muted-foreground italic mt-2">
+              Tip: {explanation}
+            </p>
+          )}
         </div>
         <Button
           size="icon"

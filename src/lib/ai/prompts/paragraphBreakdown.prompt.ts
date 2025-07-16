@@ -4,7 +4,7 @@ export const getParagraphBreakdownPrompt = (
   sourceLang: string,
   targetLang: string,
 ) => `
-You are an expert language translator. Your task is to translate a paragraph from ${sourceLang} to ${targetLang} and also provide a sentence-by-sentence breakdown.
+You are an expert language tutor. Your task is to translate a paragraph from ${sourceLang} to ${targetLang}, and then break it down into smaller, grammatically coherent, and pedagogically useful chunks for creating flashcards.
 
 **CONTEXT:**
 *   **Source Language:** ${sourceLang}
@@ -14,24 +14,27 @@ You are an expert language translator. Your task is to translate a paragraph fro
 **YOUR TASK:**
 Provide a response as a single raw JSON object with this exact structure:
 {
-  "fullTranslation": "The complete translation of the entire paragraph.",
+  "fullTranslation": "The complete, natural translation of the entire paragraph.",
   "segments": [
     {
-      "source": "The first sentence from the original paragraph.",
-      "translation": "The translation of the first sentence."
-    },
-    {
-      "source": "The second sentence from the original paragraph.",
-      "translation": "The translation of the second sentence."
+      "source": "The first useful phrase from the original paragraph.",
+      "translation": "The direct translation of that phrase.",
+      "explanation": "A brief explanation of why this chunk is useful for memorization (e.g., 'A common prepositional phrase', 'A key verb conjugation', 'An idiomatic expression')."
     }
   ]
 }
 
-**GUIDELINES:**
-1.  Ensure the "fullTranslation" is a natural and fluent translation of the whole paragraph.
-2.  The "segments" array should contain an object for each sentence in the original paragraph.
-3.  The "source" in each segment must be the original sentence from the user's text.
-4.  The "translation" in each segment must be the corresponding translation of that sentence.
+**EXAMPLE:**
+For the input "I have chosen a topic that is common and interesting: A description of a holiday in the mountains.", a good response would be:
+{
+  "fullTranslation": "Ich habe ein Thema gewählt, das gängig und interessant ist: Eine Beschreibung eines Urlaubs in den Bergen.",
+  "segments": [
+    { "source": "I have chosen a topic", "translation": "Ich habe ein Thema gewählt", "explanation": "Demonstrates the present perfect tense ('have chosen')." },
+    { "source": "that is common and interesting", "translation": "das gängig und interessant ist", "explanation": "A useful relative clause with common adjectives." },
+    { "source": "A description of a holiday", "translation": "Eine Beschreibung eines Urlaubs", "explanation": "Shows the genitive case ('of a holiday')." },
+    { "source": "in the mountains", "translation": "in den Bergen", "explanation": "A common prepositional phrase indicating location." }
+  ]
+}
 
 Now, process the provided paragraph.
 `;

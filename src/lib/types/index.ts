@@ -84,3 +84,7 @@ export type JournalEntryWithRelations = JournalEntry & {
   topic: Topic | null;
   analysis: (Analysis & { mistakes: Mistake[] }) | null;
 };
+
+export interface GeminiAiConfig {
+  responseMimeType: string
+}

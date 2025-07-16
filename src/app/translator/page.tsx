@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,7 @@ import { ArrowRightLeft } from "lucide-react";
 interface Segment {
   source: string;
   translation: string;
+  explanation: string;
 }
 
 function getLanguageName(value: string | null | undefined): string {
@@ -46,6 +47,16 @@ export default function TranslatorPage() {
     fullTranslation: string;
     segments: Segment[];
   } | null>(null);
+
+  const allUserLanguages = useMemo(() => {
+    if (!userProfile) return [];
+    const languages = new Set<string>();
+    if (userProfile.nativeLanguage) {
+      languages.add(userProfile.nativeLanguage);
+    }
+    userProfile.languageProfiles?.forEach((p: any) => languages.add(p.language));
+    return Array.from(languages);
+  }, [userProfile]);
 
   useEffect(() => {
     if (userProfile) {
@@ -72,8 +83,9 @@ export default function TranslatorPage() {
   };
 
   const handleSwapLanguages = () => {
+    const tempLang = sourceLang;
     setSourceLang(targetLang);
-    setTargetLang(sourceLang);
+    setTargetLang(tempLang);
     setSourceText(results?.fullTranslation || "");
     setResults(null);
   };
@@ -104,16 +116,11 @@ export default function TranslatorPage() {
                   <SelectValue placeholder="Source Language" />
                 </SelectTrigger>
                 <SelectContent>
-                  {userProfile?.languageProfiles?.map((p: any) => (
-                    <SelectItem key={p.language} value={p.language}>
-                      {getLanguageName(p.language)}
+                  {allUserLanguages.map((lang) => (
+                    <SelectItem key={lang} value={lang}>
+                      {getLanguageName(lang)}
                     </SelectItem>
                   ))}
-                  {userProfile?.nativeLanguage && (
-                    <SelectItem value={userProfile.nativeLanguage}>
-                      {getLanguageName(userProfile.nativeLanguage)}
-                    </SelectItem>
-                  )}
                 </SelectContent>
               </Select>
               <Select value={targetLang || ""} onValueChange={setTargetLang}>
@@ -121,16 +128,11 @@ export default function TranslatorPage() {
                   <SelectValue placeholder="Target Language" />
                 </SelectTrigger>
                 <SelectContent>
-                  {userProfile?.languageProfiles?.map((p: any) => (
-                    <SelectItem key={p.language} value={p.language}>
-                      {getLanguageName(p.language)}
+                  {allUserLanguages.map((lang) => (
+                    <SelectItem key={lang} value={lang}>
+                      {getLanguageName(lang)}
                     </SelectItem>
                   ))}
-                  {userProfile?.nativeLanguage && (
-                    <SelectItem value={userProfile.nativeLanguage}>
-                      {getLanguageName(userProfile.nativeLanguage)}
-                    </SelectItem>
-                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -191,6 +193,7 @@ export default function TranslatorPage() {
                 key={index}
                 sourceText={segment.source}
                 translatedText={segment.translation}
+                explanation={segment.explanation}
                 targetLanguage={targetLang!}
                 isAlreadyInDeck={deckSet.has(segment.source)}
               />

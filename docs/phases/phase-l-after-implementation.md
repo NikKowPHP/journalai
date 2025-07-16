@@ -1,109 +1,142 @@
+### [BASH_COMMANDS]
+```bash
+# No new files or directories needed
+```
+### docs/phases/phase-l-after-implementation.md
+```markdown
+## **Final Implementation Plan (Revision 2)**
 
+This plan outlines the atomic steps to enhance the standalone translator tool with improved language selection, seamless language swapping, and more intelligent, pedagogically useful flashcard chunking.
 
-### Epic 1: Refactor Analytics into Dashboard
+### Epic 1: Enhance Language Selection in Translator
 
-**Goal:** Move the analytics functionality from `/analytics` to `/dashboard`, making the dashboard the central hub for user insights.
+**Goal:** Allow users to select from any of their learned languages as source or target, and ensure flashcards are saved to the correct language deck.
 
-*   [x] **Task 1.1: Enhance Dashboard Page with Analytics**
-    *   **File to Edit:** `src/app/dashboard/page.tsx`
-    *   **Details:**
-        1.  Import `ProficiencyChart`, `SubskillScores`, and `PricingTable`.
-        2.  Inside the component, ensure `useUserProfile` and `useAnalyticsData` hooks are used.
-        3.  Modify the main return statement's JSX to include a new section for analytics, rendered conditionally below the `DashboardSummary`.
-        4.  **Conditional Logic:**
-            *   If `user?.subscriptionTier` is `PRO` or `ADMIN` and `analytics.totalEntries > 0`, render the charts.
-            *   If the user is `FREE` and `analytics.totalEntries > 0`, render a `Card` containing a title like "Upgrade to Pro for Detailed Analytics" and the `<PricingTable />` component.
-        5.  **Data Mapping:** For the chart components, map the `analytics.subskillScores` object into an array of `{ skill, score }` objects before passing it to `<SubskillScores />`.
+*   [x] **Task 1.1: Consolidate User's Languages for Selectors**
+    *   **File to Edit:** `src/app/translator/page.tsx`
+    *   **Action:**
+        1.  Inside the `TranslatorPage` component, use the `useUserProfile` hook to get the user's data.
+        2.  Create a memoized list of all available languages for the user. This list should contain the user's `nativeLanguage` and all languages from their `languageProfiles` array, with duplicates removed.
+            ```javascript
+            const allUserLanguages = React.useMemo(() => {
+              if (!userProfile) return [];
+              const languages = new Set<string>();
+              if (userProfile.nativeLanguage) {
+                languages.add(userProfile.nativeLanguage);
+              }
+              userProfile.languageProfiles?.forEach(p => languages.add(p.language));
+              return Array.from(languages);
+            }, [userProfile]);
+            ```
+        3.  Update both the source and target language `<Select>` components to map over this `allUserLanguages` array to render the `<SelectItem>` options.
 
-*   [x] **Task 1.2: Update Navigation Menus**
-    *   **File to Edit:** `src/components/layout/DesktopSidebar.tsx`
-        *   **Action:** In the `navItems` array, remove the object for "Analytics".
-    *   **File to Edit:** `src/components/layout/BottomTabBar.tsx`
-        *   **Action:** In the `navItems` array, remove the object for "Analytics".
+*   [x] **Task 1.2: Ensure Correct Language for Flashcards**
+    *   **File to Edit:** `src/components/TranslationSegmentCard.tsx`
+    *   **Action:** Verify that the `targetLanguage` prop passed to this component is derived from the *state* of the target language selector on the `translator` page, not from the global language store. The current implementation already does this, but this task is to confirm its correctness. The `handleAddToDeck` function should use this prop when calling `addToDeck`.
 
-*   [x] **Task 1.3: Update Middleware**
-    *   **File to Edit:** `src/middleware.ts`
-    *   **Action:** In the `protectedRoutes` array, remove the `'/analytics'` string.
+### Epic 2: Improve Language Swapping Logic
 
-*   [x] **Task 1.4: Delete Redundant Analytics Page**
-    *   **File to Delete:** `src/app/analytics/page.tsx`
+**Goal:** Make the "Swap Languages" functionality seamless and intuitive.
 
-### Epic 2: Revise Chart Colors for Theming
-
-**Goal:** Improve chart visibility and aesthetics in both light and dark modes.
-
-*   [x] **Task 2.1: Define Theme-Aware Chart Colors in CSS**
-    *   **File to Edit:** `src/app/globals.css`
-    *   **Details:**
-        1.  In the `.dark` selector, update the `--chart-*` CSS variables to be brighter and more vibrant for better contrast on a dark background.
-            ```css
-            .dark {
-              /* ... existing variables */
-              --chart-1: oklch(0.7 0.22 265); /* Brighter Blue */
-              --chart-2: oklch(0.75 0.22 130); /* Brighter Green */
-              --chart-3: oklch(0.78 0.25 50); /* Brighter Orange */
-              --chart-4: oklch(0.75 0.24 15); /* Brighter Red */
-              --chart-5: oklch(0.72 0.22 300); /* Brighter Purple */
-            }
+*   [x] **Task 2.1: Refine `handleSwapLanguages` Function**
+    *   **File to Edit:** `src/app/translator/page.tsx`
+    *   **Action:** Modify the `handleSwapLanguages` function to perform a complete state swap.
+        1.  Swap the selected languages in the state:
+            ```javascript
+            const tempLang = sourceLang;
+            setSourceLang(targetLang);
+            setTargetLang(tempLang);
+            ```
+        2.  Swap the text content by moving the full translated text into the source text area.
+            ```javascript
+            setSourceText(results?.fullTranslation || '');
+            ```
+        3.  Reset the translation results to clear the breakdown and signal a new translation is needed.
+            ```javascript
+            setResults(null);
             ```
 
-*   [x] **Task 2.2: Apply New Chart Colors in Components**
-    *   **File to Edit:** `src/components/ProficiencyChart.tsx`
-        *   **Action:** In the `<Line>` component, change the `stroke` prop from `hsl(var(--primary))` to `hsl(var(--chart-1))`. Change the `dot` fill to `hsl(var(--chart-1))` as well.
-    *   **File to Edit:** `src/components/SubskillScores.tsx`
-        *   **Action:** In the `<Bar>` component, change the `fill` prop from `hsl(var(--primary))` to `hsl(var(--chart-1))`.
+### Epic 3: Implement Intelligent Phrase Chunking for Flashcards
 
-### Epic 3: Implement Standalone Translator Tool
+**Goal:** Rework the AI logic to break down paragraphs into smaller, meaningful phrases with explanations, rather than full sentences.
 
-**Goal:** Create a new `/translator` page with advanced paragraph-to-flashcard functionality.
+*   [x] **Task 3.1: Re-engineer the Paragraph Breakdown AI Prompt**
+    *   **File to Edit:** `src/lib/ai/prompts/paragraphBreakdown.prompt.ts`
+    *   **Action:** Replace the existing prompt with a more sophisticated one that asks for semantically useful chunks and an explanation for each.
+    *   **New Prompt Structure:**
+        ```typescript
+        export const getParagraphBreakdownPrompt = (text: string, sourceLang: string, targetLang: string) => `
+        You are an expert language tutor. Your task is to translate a paragraph from ${sourceLang} to ${targetLang}, and then break it down into smaller, grammatically coherent, and pedagogically useful chunks for creating flashcards.
 
-*   [x] **Task 3.1: Create New "Translator" Page & Navigation**
-    *   **File to Create:** `src/app/translator/page.tsx` (Add basic page structure with an `h1` title for now).
-    *   **File to Edit:** `src/components/layout/DesktopSidebar.tsx` -> Add `{ href: "/translator", label: "Translator", icon: Languages }` to the `navItems` array.
-    *   **File to Edit:** `src/components/layout/BottomTabBar.tsx` -> Add `{ href: "/translator", label: "Translator", icon: Languages }` to the `navItems` array.
-    *   **File to Edit:** `src/middleware.ts` -> Add `'/translator'` to the `protectedRoutes` array.
+        **CONTEXT:**
+        *   **Source Language:** ${sourceLang}
+        *   **Target Language:** ${targetLang}
+        *   **Paragraph to Translate:** "${text}"
 
-*   [x] **Task 3.2: Implement Backend for Translation Breakdown**
-    *   **File to Create:** `src/lib/ai/prompts/paragraphBreakdown.prompt.ts`
-        *   **Details:** Create a prompt that instructs the AI to take a paragraph and return a JSON object with this exact structure: `{ "fullTranslation": "...", "segments": [{ "source": "...", "translation": "..." }] }`.
-    *   **Files to Edit:** `src/lib/ai/generation-service.ts` (interface) and `src/lib/ai/gemini-service.ts` (implementation).
-        *   **Action:** Add a new method `translateAndBreakdown(text: string, sourceLang: string, targetLang: string)` that uses the new prompt.
-    *   **File to Create:** `src/app/api/ai/translate-breakdown/route.ts`
-        *   **Details:** Create a new POST route. It must be protected by auth middleware and use the `tieredRateLimiter`. It will call the `translateAndBreakdown` service method and return the result.
+        **YOUR TASK:**
+        Provide a response as a single raw JSON object with this exact structure:
+        {
+          "fullTranslation": "The complete, natural translation of the entire paragraph.",
+          "segments": [
+            {
+              "source": "The first useful phrase from the original paragraph.",
+              "translation": "The direct translation of that phrase.",
+              "explanation": "A brief explanation of why this chunk is useful for memorization (e.g., 'A common prepositional phrase', 'A key verb conjugation', 'An idiomatic expression')."
+            }
+          ]
+        }
 
-*   [x] **Task 3.3: Update API Client and Create Data Hook**
-    *   **File to Edit:** `src/lib/services/api-client.service.ts`
-        *   **Action:** Under `apiClient.ai`, add `translateAndBreakdown: async (payload) => { ... }`.
-    *   **File to Create:** `src/lib/hooks/data/useTranslateAndBreakdown.ts`
-        *   **Action:** Create a new `useMutation` hook that calls `apiClient.ai.translateAndBreakdown`. Export it from `src/lib/hooks/data/index.ts`.
+        **EXAMPLE:**
+        For the input "I have chosen a topic that is common and interesting: A description of a holiday in the mountains.", a good response would be:
+        {
+          "fullTranslation": "Ich habe ein Thema gewählt, das gängig und interessant ist: Eine Beschreibung eines Urlaubs in den Bergen.",
+          "segments": [
+            { "source": "I have chosen a topic", "translation": "Ich habe ein Thema gewählt", "explanation": "Demonstrates the present perfect tense ('have chosen')." },
+            { "source": "that is common and interesting", "translation": "das gängig und interessant ist", "explanation": "A useful relative clause with common adjectives." },
+            { "source": "A description of a holiday", "translation": "Eine Beschreibung eines Urlaubs", "explanation": "Shows the genitive case ('of a holiday')." },
+            { "source": "in the mountains", "translation": "in den Bergen", "explanation": "A common prepositional phrase indicating location." }
+          ]
+        }
+        
+        Now, process the provided paragraph.
+        `;
+        ```
 
-*   [x] **Task 3.4: Build the Core Translator UI**
+*   [x] **Task 3.2: Update Backend Service Return Type**
+    *   **File to Edit:** `src/lib/ai/generation-service.ts`
+        *   **Action:** Update the `translateAndBreakdown` method's return type signature to include the new `explanation` field in the segments array. `segments: { source: string; translation: string; explanation: string }[]`.
+    *   **File to Edit:** `src/lib/ai/gemini-service.ts`
+        *   **Action:** Ensure the implementation correctly returns the new structure. No code change is needed here as it just parses the JSON, but it's good to verify.
+
+*   [x] **Task 3.3: Display Explanations in the Frontend**
     *   **File to Edit:** `src/app/translator/page.tsx`
-    *   **Details:**
-        1.  Build the layout with two `Textarea` components, language `Select` dropdowns, and "Translate" / "Swap" buttons.
-        2.  Use the `useUserProfile` hook to populate the `Select` dropdowns with the user's available languages.
-        3.  Implement the `useTranslateAndBreakdown` mutation hook.
-
-*   [x] **Task 3.5: Implement Translator UI States**
+        *   **Action:** Update the `Segment` interface at the top of the file to include `explanation: string;`.
+    *   **File to Edit:** `src/components/TranslationSegmentCard.tsx`
+        *   **Action:**
+            1.  Add `explanation` to the component's props interface.
+            2.  Conditionally render the explanation below the source/translation texts. Style it distinctly (e.g., smaller, italic, with a lightbulb icon) to appear as a helpful tip.
+                ```jsx
+                {explanation && (
+                  <p className="text-xs text-muted-foreground italic mt-2">
+                    Tip: {explanation}
+                  </p>
+                )}
+                ```
     *   **File to Edit:** `src/app/translator/page.tsx`
-    *   **Details:**
-        1.  Use the `isPending` state from the mutation hook to show a spinner and disable the "Translate" button.
-        2.  Use the `error` state to display an error message if the API call fails.
-        3.  Add a dedicated state for the results (the `segments` array). If this state is empty, display a placeholder message like "Translate a paragraph to see sentence-by-sentence breakdowns here."
-
-*   [x] **Task 3.6: Create Reusable `TranslationSegmentCard` Component**
-    *   **File to Create:** `src/components/TranslationSegmentCard.tsx`
-    *   **Details:**
-        1.  Component accepts props: `sourceText`, `translatedText`, `targetLanguage`, and `isAlreadyInDeck`.
-        2.  It will display the source and translated text.
-        3.  It will contain an "Add to Deck" button that uses the `useCreateSrsFromTranslation` hook.
-        4.  The button should be disabled and show "Added!" if `isAlreadyInDeck` is true or if the creation mutation is successful.
-
-*   [x] **Task 3.7: Implement and Render Breakdown Results**
-    *   **File to Edit:** `src/app/translator/page.tsx`
-    *   **Details:**
-        1.  Use the `useStudyDeck` hook to get the user's current flashcards.
-        2.  Create a `Set` from the deck's `frontContent` for efficient O(1) lookups.
-        3.  In the `onSuccess` callback of the `useTranslateAndBreakdown` mutation, update a state variable with the `segments` array from the API response.
-        4.  Map over the `segments` array to render a list of `<TranslationSegmentCard />` components, passing the correct props, including `isAlreadyInDeck={deckSet.has(segment.source)}`.
+        *   **Action:** When mapping over the `results.segments`, pass the `segment.explanation` as a prop to each `<TranslationSegmentCard />`.
+```
+### src/app/translator/page.tsx
+```tsx
+```
+### src/components/TranslationSegmentCard.tsx
+```tsx
+```
+### src/lib/ai/gemini-service.ts
+```ts
+```
+### src/lib/ai/generation-service.ts
+```ts
+```
+### src/lib/ai/prompts/paragraphBreakdown.prompt.ts
+```ts
 ```

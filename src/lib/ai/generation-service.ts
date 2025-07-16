@@ -107,6 +107,10 @@ export interface QuestionGenerationService {
     targetLang: string,
   ): Promise<{
     fullTranslation: string;
-    segments: { source: string; translation: string }[];
+    segments: {
+      source: string;
+      translation: string;
+      explanation: string;
+    }[];
   }>;
 }
