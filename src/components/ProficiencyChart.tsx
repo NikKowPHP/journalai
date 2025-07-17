@@ -1,4 +1,3 @@
-
 import {
   LineChart,
   Line,
@@ -22,24 +21,27 @@ export function ProficiencyChart({ data }: ProficiencyChartProps) {
           data={data}
           margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
         >
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
           <XAxis
             dataKey="date"
             stroke="hsl(var(--foreground))"
-            tick={{ fill: "hsl(var(--foreground))" }}
+            tick={{ fill: "hsl(var(--muted-foreground))" }}
+            tickLine={{ stroke: "hsl(var(--foreground))" }}
           />
           <YAxis
             stroke="hsl(var(--foreground))"
-            tick={{ fill: "hsl(var(--foreground))" }}
+            tick={{ fill: "hsl(var(--muted-foreground))" }}
+            tickLine={{ stroke: "hsl(var(--foreground))" }}
           />
           <Tooltip
             contentStyle={{
               backgroundColor: "hsl(var(--background))",
               borderColor: "hsl(var(--border))",
               borderRadius: "var(--radius)",
+              color: "hsl(var(--foreground))",
             }}
           />
-          <Legend />
+          <Legend wrapperStyle={{ color: "hsl(var(--muted-foreground))" }} />
           <Line
             type="monotone"
             dataKey="score"
