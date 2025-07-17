@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,15 +40,18 @@ export function Flashcard({
   const [showTTSPopover, setShowTTSPopover] = useState(false);
 
   useEffect(() => {
-    if (context && isContextNew && !isFlipped) {
-      // Show popover only when card is flipped and context is new
+    setIsFlipped(false);
+  }, [frontContent]);
+
+  useEffect(() => {
+    if (context && isContextNew && isFlipped) {
       setShowContextPopover(true);
     }
   }, [context, isContextNew, isFlipped]);
 
-  const handleFlip = () => {
+  const handleShowAnswer = () => {
     setIsFlipped(true);
-    if (isTTSNew) {
+    if (isTTSNew && targetLanguage) {
       setShowTTSPopover(true);
     }
   };
@@ -64,74 +66,88 @@ export function Flashcard({
   };
 
   return (
-    <Card className="p-6 space-y-6 bg-gradient-to-br from-background to-muted/20">
-      {!isFlipped ? (
-        <div className="space-y-4">
-          <div className="text-lg font-medium text-center p-4 border-b">
-            {frontContent}
-          </div>
-          <Button onClick={handleFlip} className="w-full">
-            Flip Card
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-center p-4 border-b bg-accent/20">
-            <p className="text-lg font-medium text-center">{backContent}</p>
-            <GuidedPopover
-              isOpen={showTTSPopover}
-              onDismiss={() => {
-                setShowTTSPopover(false);
-                markTTSAsSeen();
-              }}
-              title="Hear it Aloud"
-              description="Click here to listen to the pronunciation of the text."
-            >
-              {targetLanguage && (
-                <TTSButton text={backContent} lang={targetLanguage} />
-              )}
-            </GuidedPopover>
-          </div>
-          {context && (
-            <GuidedPopover
-              isOpen={showContextPopover}
-              onDismiss={() => {
-                setShowContextPopover(false);
-                markContextAsSeen();
-              }}
-              title="Extra Context"
-              description="Flashcards now include helpful explanations or tips."
-            >
-              <div className="text-sm text-muted-foreground p-2 bg-secondary rounded-md">
-                {context}
+    <Card className="p-6 space-y-4 bg-gradient-to-br from-background to-muted/20">
+      <div className="text-lg font-medium text-center p-4">
+        {frontContent}
+      </div>
+
+      {!isFlipped && (
+        <Button onClick={handleShowAnswer} className="w-full">
+          Show Answer
+        </Button>
+      )}
+
+      {isFlipped && (
+        <div className="animate-in fade-in duration-300">
+          <hr className="my-4" />
+          <div className="space-y-4">
+            <div className="flex items-center justify-center p-4">
+              <p className="text-lg font-medium text-center">{backContent}</p>
+              <GuidedPopover
+                isOpen={showTTSPopover}
+                onDismiss={() => {
+                  setShowTTSPopover(false);
+                  markTTSAsSeen();
+                }}
+                title="Hear it Aloud"
+                description="Click here to listen to the pronunciation of the text."
+              >
+                {targetLanguage && (
+                  <TTSButton text={backContent} lang={targetLanguage} />
+                )}
+              </GuidedPopover>
+            </div>
+            {context && (
+              <GuidedPopover
+                isOpen={showContextPopover}
+                onDismiss={() => {
+                  setShowContextPopover(false);
+                  markContextAsSeen();
+                }}
+                title="Extra Context"
+                description="Flashcards now include helpful explanations or tips."
+              >
+                <div className="text-sm text-muted-foreground p-2 bg-secondary rounded-md">
+                  {context}
+                </div>
+              </GuidedPopover>
+            )}
+
+            <div className="flex justify-around gap-2 pt-4 text-center">
+              <div className="flex-1">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => handleReview(0)}
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  Forgot
+                </Button>
+                <span className="text-xs text-muted-foreground">&lt;1m</span>
               </div>
-            </GuidedPopover>
-          )}
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="secondary"
-              className="flex-1"
-              onClick={() => handleReview(0)}
-            >
-              <XCircle className="mr-2 h-4 w-4" />
-              Forgot
-            </Button>
-            <Button
-              variant="secondary"
-              className="flex-1"
-              onClick={() => handleReview(3)}
-            >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Good
-            </Button>
-            <Button
-              variant="secondary"
-              className="flex-1"
-              onClick={() => handleReview(5)}
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Easy
-            </Button>
+              <div className="flex-1">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => handleReview(3)}
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Good
+                </Button>
+                <span className="text-xs text-muted-foreground">&lt;10m</span>
+              </div>
+              <div className="flex-1">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => handleReview(5)}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Easy
+                </Button>
+                <span className="text-xs text-muted-foreground">4d</span>
+              </div>
+            </div>
           </div>
         </div>
       )}

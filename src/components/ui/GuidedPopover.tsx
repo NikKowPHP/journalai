@@ -3,6 +3,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import { Button } from "./button";
+import { cn } from "@/lib/utils";
 
 interface GuidedPopoverProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface GuidedPopoverProps {
   description: string;
   isOpen: boolean;
   onDismiss: () => void;
+  placement?: "top" | "bottom";
 }
 export const GuidedPopover = ({
   children,
@@ -17,13 +19,19 @@ export const GuidedPopover = ({
   description,
   isOpen,
   onDismiss,
+  placement = "top",
 }: GuidedPopoverProps) => {
   if (!isOpen) return <>{children}</>;
 
   return (
     <div className="relative">
       <div className="absolute -top-4 -left-4 -right-4 -bottom-4 border-2 border-primary border-dashed rounded-xl z-10 pointer-events-none animate-in fade-in duration-500" />
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-background p-3 rounded-lg shadow-2xl border z-50">
+      <div
+        className={cn(
+          "absolute left-1/2 -translate-x-1/2 w-64 bg-background p-3 rounded-lg shadow-2xl border z-50",
+          placement === "top" ? "bottom-full mb-2" : "top-full mt-2",
+        )}
+      >
         <Button
           variant="ghost"
           size="icon"

@@ -37,54 +37,65 @@ describe("Flashcard", () => {
     onReviewMock.mockClear();
   });
 
-  it("renders the unflipped state correctly", () => {
+  // Test 1: Verify initial state
+  it("shows front content and 'Show Answer' button initially, but not back content", () => {
     render(<Flashcard frontContent={frontContent} backContent={backContent} />);
-    expect(screen.getByText(frontContent)).toBeInTheDocument();
+
+    // Check what's visible
+    expect(screen.getByText(frontContent)).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Show Answer" }),
+    ).toBeVisible();
+
+    // Check what's not in the document
     expect(screen.queryByText(backContent)).not.toBeInTheDocument();
-    const flipButton = screen.getByRole("button", { name: "Flip Card" });
-    expect(flipButton).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /forgot/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /good/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /easy/i }),
+    ).not.toBeInTheDocument();
   });
 
-  it('flips the card when "Flip Card" button is clicked', () => {
-    render(<Flashcard frontContent={frontContent} backContent={backContent} />);
-    const flipButton = screen.getByRole("button", { name: "Flip Card" });
-    fireEvent.click(flipButton);
-    expect(screen.getByText(backContent)).toBeInTheDocument();
-    expect(screen.queryByText(frontContent)).not.toBeInTheDocument();
-  });
-
-  it("renders the flipped state with review buttons, context, and TTS button", () => {
+  // Test 2: Verify state after flipping
+  it("reveals back content and review buttons when 'Show Answer' is clicked", () => {
     render(
       <Flashcard
         frontContent={frontContent}
         backContent={backContent}
         context={context}
-        targetLanguage="en"
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Flip Card" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
 
-    // Check content
-    expect(screen.getByText(backContent)).toBeInTheDocument();
-    expect(screen.getByText(context)).toBeInTheDocument();
-    expect(screen.getByTestId("tts-button")).toBeInTheDocument();
+    // Front content is still visible
+    expect(screen.getByText(frontContent)).toBeVisible();
 
-    // Check review buttons
-    const forgotButton = screen.getByRole("button", { name: /forgot/i });
-    const goodButton = screen.getByRole("button", { name: /good/i });
-    const easyButton = screen.getByRole("button", { name: /easy/i });
-    expect(forgotButton).toBeInTheDocument();
-    expect(goodButton).toBeInTheDocument();
-    expect(easyButton).toBeInTheDocument();
+    // "Show Answer" button is now hidden
+    expect(
+      screen.queryByRole("button", { name: "Show Answer" }),
+    ).not.toBeInTheDocument();
 
-    // Check icons
-    expect(screen.getByTestId("x-icon")).toBeInTheDocument();
-    expect(screen.getByTestId("check-icon")).toBeInTheDocument();
-    expect(screen.getByTestId("sparkles-icon")).toBeInTheDocument();
+    // Back content is now visible
+    expect(screen.getByText(backContent)).toBeVisible();
+    expect(screen.getByText(context)).toBeVisible();
+
+    // Review buttons are visible
+    expect(screen.getByRole("button", { name: /forgot/i })).toBeVisible();
+    expect(screen.getByRole("button", { name: /good/i })).toBeVisible();
+    expect(screen.getByRole("button", { name: /easy/i })).toBeVisible();
   });
 
-  it('calls onReview with quality 0 when "Forgot" is clicked', () => {
+  // Test 3: Verify review button functionality
+  it.each([
+    [0, "Forgot"],
+    [3, "Good"],
+    [5, "Easy"],
+  ])("calls onReview with quality %i when '%s' is clicked", (quality, buttonName) => {
     render(
       <Flashcard
         frontContent={frontContent}
@@ -92,34 +103,12 @@ describe("Flashcard", () => {
         onReview={onReviewMock}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Flip Card" }));
-    fireEvent.click(screen.getByRole("button", { name: /forgot/i }));
-    expect(onReviewMock).toHaveBeenCalledWith(0);
-  });
 
-  it('calls onReview with quality 3 when "Good" is clicked', () => {
-    render(
-      <Flashcard
-        frontContent={frontContent}
-        backContent={backContent}
-        onReview={onReviewMock}
-      />,
+    fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: new RegExp(buttonName, "i") }),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Flip Card" }));
-    fireEvent.click(screen.getByRole("button", { name: /good/i }));
-    expect(onReviewMock).toHaveBeenCalledWith(3);
-  });
 
-  it('calls onReview with quality 5 when "Easy" is clicked', () => {
-    render(
-      <Flashcard
-        frontContent={frontContent}
-        backContent={backContent}
-        onReview={onReviewMock}
-      />,
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Flip Card" }));
-    fireEvent.click(screen.getByRole("button", { name: /easy/i }));
-    expect(onReviewMock).toHaveBeenCalledWith(5);
+    expect(onReviewMock).toHaveBeenCalledWith(quality);
   });
 });

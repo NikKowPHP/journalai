@@ -1,3 +1,4 @@
+
 "use client";
 import { StudySession } from "@/components/StudySession";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
@@ -6,25 +7,7 @@ import { useStudyDeck } from "@/lib/hooks/data";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguageStore } from "@/lib/stores/language.store";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
-
-const GuidedPopover = ({
-  children,
-  title,
-  description,
-}: {
-  children: React.ReactNode;
-  title: string;
-  description: string;
-}) => (
-  <div className="relative">
-    <div className="absolute -top-4 -left-4 -right-4 -bottom-4 border-2 border-primary border-dashed rounded-xl z-10 pointer-events-none animate-in fade-in duration-500" />
-    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-background p-3 rounded-lg shadow-2xl border z-20">
-      <h4 className="font-bold text-sm">{title}</h4>
-      <p className="text-xs text-muted-foreground">{description}</p>
-    </div>
-    {children}
-  </div>
-);
+import { GuidedPopover } from "@/components/ui/GuidedPopover";
 
 export default function StudyPage() {
   const { step, setStep } = useOnboardingStore();
@@ -50,7 +33,10 @@ export default function StudyPage() {
     return <div>Error loading study deck: {(error as Error).message}</div>;
 
   const studySession = (
-    <StudySession cards={studyDeck || []} onOnboardingReview={handleFirstReview} />
+    <StudySession
+      cards={studyDeck || []}
+      onOnboardingReview={handleFirstReview}
+    />
   );
 
   const getLanguageName = (value: string) => {
@@ -68,6 +54,11 @@ export default function StudyPage() {
         <p>Please select a language to start studying.</p>
       ) : isTourActive && studyDeck && studyDeck.length > 0 ? (
         <GuidedPopover
+          isOpen={isTourActive}
+          onDismiss={() => {
+            /* This popover is part of the tour and should not be dismissible by the user. */
+          }}
+          placement="bottom"
           title="Practice Makes Perfect"
           description="Flip the card, then rate how well you remembered it to update your study schedule."
         >
