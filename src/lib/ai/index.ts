@@ -16,7 +16,7 @@ export function getQuestionGenerationService(): QuestionGenerationService {
           "GEMINI_API_KEY is required when using Gemini provider",
         );
       }
-      return new GeminiQuestionGenerationService(process.env.GEMINI_API_KEY);
+      return new GeminiQuestionGenerationService();
 
     // Add cases for other providers here
 

@@ -1,4 +1,3 @@
-
 import { QuestionGenerationService } from "./generation-service";
 import type {
   GeneratedQuestion,
@@ -10,9 +9,8 @@ import type {
   JournalAnalysisResult,
   JournalingAids,
   StuckWriterContext,
-  GeminiAiConfig,
 } from "@/lib/types";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Part } from "@google/genai";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
@@ -32,16 +30,59 @@ import {
   getParagraphBreakdownPrompt,
 } from "./prompts";
 import { withRetry } from "../utils/withRetry";
+import { getNextKey, getTotalKeys } from "./gemini-key-provider";
+
+const GEMINI_MODELS = { gemini_2_5_flash : 'gemini-2.5-flash'}
 
 export class GeminiQuestionGenerationService
   implements QuestionGenerationService
 {
-  private genAI: GoogleGenAI;
-  private model: string = "gemini-2.5-flash";
-  private config: GeminiAiConfig = { responseMimeType: "application/json" };
+  private model: string = GEMINI_MODELS.gemini_2_5_flash;
+  private jsonConfig = {
+    responseMimeType: "application/json",
+  };
 
-  constructor(apiKey: string) {
-    this.genAI = new GoogleGenAI({ apiKey });
+  constructor() {}
+
+  private async _executeWithRotation<T>(
+    requestFn: (client: GoogleGenAI) => Promise<T>,
+  ): Promise<T> {
+    const totalKeys = getTotalKeys();
+    if (totalKeys === 0) {
+      throw new Error("No Gemini API keys provided in environment variables.");
+    }
+
+    let lastError: any;
+
+    for (let i = 0; i < totalKeys; i++) {
+      const apiKey = getNextKey();
+      if (!apiKey) {
+        continue; // Should not happen if totalKeys > 0
+      }
+
+      try {
+        const client = new GoogleGenAI({ apiKey });
+        return await withRetry(() => requestFn(client));
+      } catch (error: any) {
+        lastError = error;
+        const errorMessage = (error.message || "").toLowerCase();
+        if (
+          errorMessage.includes("429") ||
+          errorMessage.includes("permission denied") ||
+          errorMessage.includes("api key not valid")
+        ) {
+          console.warn(
+            `Gemini API key failed. Rotating to next key. Error: ${error.message}`,
+          );
+          continue; // Try the next key
+        }
+        // For other errors, fail fast.
+        throw error;
+      }
+    }
+    throw new Error(
+      `All Gemini API keys failed. Last error: ${lastError?.message}`,
+    );
   }
 
   async analyzeJournalEntry(
@@ -56,14 +97,14 @@ export class GeminiQuestionGenerationService
     );
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: { responseMimeType: "application/json" },
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API");
       }
@@ -89,13 +130,7 @@ export class GeminiQuestionGenerationService
     }
   }
 
-  /**
-   * Cleans the raw text response from the LLM to extract a JSON string.
-   * @param text The raw string from the LLM.
-   * @returns A cleaned string that is likely a JSON object or array.
-   */
   private cleanJsonString(text: string): string {
-    // Remove markdown fences and trim whitespace
     const cleaned = text.replace(/```json/g, "").replace(/```/g, "");
     return cleaned.trim();
   }
@@ -106,13 +141,14 @@ export class GeminiQuestionGenerationService
     const prompt = getQuestionGenerationPrompt(context);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API");
       }
@@ -138,14 +174,14 @@ export class GeminiQuestionGenerationService
     const prompt = getAnswerEvaluationPrompt(context);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API");
       }
@@ -158,7 +194,6 @@ export class GeminiQuestionGenerationService
       }
 
       const evaluation = JSON.parse(cleanedText);
-      // Ensure score is a number
       evaluation.score = Number(evaluation.score) || 0;
       return evaluation as EvaluationResult;
     } catch (error) {
@@ -175,41 +210,49 @@ export class GeminiQuestionGenerationService
 
     const tempFileName = `${crypto.randomBytes(16).toString("hex")}.webm`;
     const tempFilePath = path.join(os.tmpdir(), tempFileName);
-    let uploadedFileResponse;
 
     try {
-      // 1. Write audio buffer to a temporary file
       await fs.promises.writeFile(tempFilePath, audioBuffer);
 
-      // 2. Upload the file to the Files API
-      uploadedFileResponse = await withRetry(() =>
-        this.genAI.files.upload({
-          file: tempFilePath,
-          config: { mimeType: mimeType || "audio/webm" },
-        }),
-      );
+      const result = await this._executeWithRotation(async (client) => {
+        let uploadedFileResponse: any;
+        try {
+          uploadedFileResponse = await client.files.upload({
+            file: tempFilePath,
+            config: { mimeType: mimeType || "audio/webm" },
+          });
 
-      const audioPart = {
-        fileData: {
-          mimeType: uploadedFileResponse.mimeType,
-          fileUri: uploadedFileResponse.uri,
-        },
-      };
+          const audioPart: Part = {
+            fileData: {
+              mimeType: uploadedFileResponse.mimeType!,
+              fileUri: uploadedFileResponse.uri!,
+            },
+          };
 
-      // 3. Generate content using the file
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
-          model: this.model,
-          config: this.config,
-          contents: [{ role: "user", parts: [{ text: prompt }, audioPart] }],
-        }),
-      );
-      const text = result.text || "";
+          return await client.models.generateContent({
+            model: this.model,
+            config: this.jsonConfig,
+            contents: [{ role: "user", parts: [{ text: prompt }, audioPart] }],
+          });
+        } finally {
+          if (uploadedFileResponse?.name) {
+            await client.files
+              .delete({ name: uploadedFileResponse.name })
+              .catch((e) =>
+                console.error(
+                  `Non-critical failure to delete Gemini temp file ${uploadedFileResponse.name}`,
+                  e,
+                ),
+              );
+          }
+        }
+      });
+
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API");
       }
       const cleanedText = this.cleanJsonString(text);
-
       if (!cleanedText) {
         throw new Error(
           "Failed to get a valid response from the AI for audio evaluation.",
@@ -223,19 +266,10 @@ export class GeminiQuestionGenerationService
       console.error("Error evaluating audio answer with Gemini:", error);
       throw error;
     } finally {
-      // 4. Clean up
-      if (uploadedFileResponse) {
-        if (uploadedFileResponse.name) {
-          await this.genAI.files.delete({ name: uploadedFileResponse.name });
-        }
-      }
       try {
         await fs.promises.unlink(tempFilePath);
       } catch (unlinkError) {
-        console.error(
-          `Failed to delete temporary file: ${tempFilePath}`,
-          unlinkError,
-        );
+        // Ignore if file doesn't exist etc.
       }
     }
   }
@@ -252,13 +286,13 @@ export class GeminiQuestionGenerationService
     );
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const translatedText = result.text || "";
+      const translatedText = result.text;
       if (!translatedText) {
         throw new Error("Empty response from Gemini API");
       }
@@ -273,14 +307,13 @@ export class GeminiQuestionGenerationService
     const prompt = getSentenceCompletionPrompt(text);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const completion = result.text || "";
+      const completion = result.text;
       if (!completion) {
         return "";
       }
@@ -295,14 +328,13 @@ export class GeminiQuestionGenerationService
     const prompt = getTitleGenerationPrompt(journalContent);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const title = result.text || "";
+      const title = result.text;
       if (!title) {
         throw new Error("Empty response from Gemini API");
       }
@@ -321,14 +353,14 @@ export class GeminiQuestionGenerationService
     const prompt = getJournalingAidsPrompt(context);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API for journaling aids");
       }
@@ -344,14 +376,14 @@ export class GeminiQuestionGenerationService
     const prompt = getRoleRefinementPrompt(role);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API");
       }
@@ -362,8 +394,7 @@ export class GeminiQuestionGenerationService
         );
       }
 
-      const suggestions = JSON.parse(cleanedText);
-      return suggestions as RoleSuggestion[];
+      return JSON.parse(cleanedText);
     } catch (error) {
       console.error("Error refining role with Gemini:", error);
       throw error;
@@ -378,14 +409,14 @@ export class GeminiQuestionGenerationService
     const prompt = getTopicGenerationPrompt(context);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error("Empty response from Gemini API for topic generation");
       }
@@ -395,8 +426,7 @@ export class GeminiQuestionGenerationService
           "Failed to get a valid response from the AI for topic generation.",
         );
       }
-      const topics = JSON.parse(cleanedText) as string[];
-      return topics;
+      return JSON.parse(cleanedText) as string[];
     } catch (error) {
       console.error("Error generating topics with Gemini:", error);
       throw error;
@@ -409,14 +439,14 @@ export class GeminiQuestionGenerationService
     const prompt = getStuckWriterPrompt(context);
 
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const text = result.text || "";
+      const text = result.text;
       if (!text) {
         throw new Error(
           "Empty response from Gemini API for stuck writer suggestions",
@@ -448,14 +478,14 @@ export class GeminiQuestionGenerationService
   }> {
     const prompt = getParagraphBreakdownPrompt(text, sourceLang, targetLang);
     try {
-      const result = await withRetry(() =>
-        this.genAI.models.generateContent({
+      const result = await this._executeWithRotation((client) =>
+        client.models.generateContent({
           model: this.model,
-          config: this.config,
+          config: this.jsonConfig,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
         }),
       );
-      const responseText = result.text || "";
+      const responseText = result.text;
       if (!responseText) {
         throw new Error("Empty response from Gemini API for paragraph breakdown");
       }
