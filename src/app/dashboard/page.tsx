@@ -85,7 +85,7 @@ export default function DashboardPage() {
         <LanguageSwitcher />
       </div>
 
-      {!hasEntries ? (
+      {!hasEntries && !isLoading ? (
         <Card className="text-center p-8">
           <CardHeader>
             <CardTitle>Start Your Journey</CardTitle>

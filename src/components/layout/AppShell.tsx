@@ -142,7 +142,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const OnboardingOverlay = () => {
     if (!isActive) return null;
-
+    if (loading) return null;
     switch (step) {
       case "PROFILE_SETUP":
         return (
@@ -171,7 +171,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   onOnboardingSubmit={(id) => {
                     setOnboardingJournalId(id);
                     setStep("VIEW_ANALYSIS"); // Pre-emptively set the step
-                    router.push(`/journal/${id}`); // Redirect to the analysis page
+                   
                   }}
                 />
               </div>

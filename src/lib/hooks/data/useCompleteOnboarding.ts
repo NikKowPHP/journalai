@@ -14,18 +14,22 @@ export const useCompleteOnboarding = (options?: {
 
   return useMutation({
     mutationFn: apiClient.user.completeOnboarding,
-    onSuccess: () => {
-      // First, invalidate the user profile so the client re-fetches it with onboardingCompleted: true
-      queryClient.invalidateQueries({
-        queryKey: ["userProfile", authUser?.id],
-      });
-      // Second, show a success message
+    onSuccess: async () => {
+      // Show toast immediately for good UX
       toast({
         title: "Onboarding Complete!",
         description: "Welcome! You're all set to start your journey.",
       });
-      // Third, reset the global onboarding state store
+
+      // Force a refetch of the user profile and wait for it to complete.
+      // This ensures the local cache is updated *before* any navigation or state reset.
+      await queryClient.refetchQueries({
+        queryKey: ["userProfile", authUser?.id],
+      });
+
+      // Now that we know the userProfile data is fresh, reset the onboarding store.
       resetOnboarding();
+
       // Finally, execute any additional success logic, like navigation.
       options?.onSuccess?.();
     },

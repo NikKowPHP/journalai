@@ -1,4 +1,3 @@
-
 'use client'
 import React, { useEffect, useRef } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
@@ -65,9 +64,14 @@ export default function JournalAnalysisPage() {
   if (error) return <div>Error: {(error as Error).message}</div>;
   if (!journal) return <div>Journal entry not found.</div>;
 
-  const isAnalysisPending =
-    !journal.analysis && (analyzeJournalMutation.isPending || isLoading);
-  const analysisFailed = !journal.analysis && !isAnalysisPending;
+  const isMutationRunning =
+    analyzeJournalMutation.isPending || retryAnalysisMutation.isPending;
+  const didMutationFail =
+    (analyzeJournalMutation.isError || retryAnalysisMutation.isError) &&
+    !isMutationRunning;
+
+  const isAnalysisPending = !journal.analysis && !didMutationFail;
+  const analysisFailed = !journal.analysis && didMutationFail;
 
   const analysisDisplayComponent = (
     <AnalysisDisplay
