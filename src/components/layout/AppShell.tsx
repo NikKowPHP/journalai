@@ -136,6 +136,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [loading, user, isAuthPage, isProtectedRoute, router]);
 
+  // NEW "GATEKEEPER" RENDER LOGIC
+  // Show the spinner if:
+  // 1. The initial auth state is still loading.
+  // 2. A redirect is about to happen (e.g., logged-in user on /login).
   if (loading || (user && isAuthPage) || (!user && isProtectedRoute)) {
     return <GlobalSpinner />;
   }
@@ -271,7 +275,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   // If user is authenticated show the main app shell
-  if (user) {
+  if (user && !isAuthPage) {
     return (
       <div className="flex h-screen bg-secondary/30">
         <DesktopSidebar />
