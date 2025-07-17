@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect, useRef } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
 import { FeedbackCard } from "@/components/FeedbackCard";
