@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
@@ -6,8 +7,7 @@ interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
-
-  setUserAndLoading: (user: User | null, loading: boolean) => void;
+  initialize: () => () => void; // Returns the unsubscribe function
   signIn: (
     email: string,
     password: string,
@@ -20,12 +20,28 @@ interface AuthState {
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  loading: true,
+  loading: true, // Start in a loading state until initialized
   error: null,
 
-  setUserAndLoading: (user, loading) => set({ user, loading }),
+  initialize: () => {
+    const supabase = createClient();
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" && session?.user) {
+          // Sync user with our backend to ensure they have a profile
+          fetch("/api/auth/sync-user", { method: "POST" }).catch((e) =>
+            console.error("Failed to sync user on auth state change:", e),
+          );
+        }
+        set({ user: session?.user ?? null, loading: false });
+      },
+    );
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  },
 
   signIn: async (email, password) => {
     set({ error: null, loading: true });
@@ -46,12 +62,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
         });
-        set({ user: data.user, loading: false }); // Immediate update
-      } else {
-        set({ loading: false });
-        // This might be an email verification case, so we don't throw an error.
       }
-
+      // The listener will handle setting user and loading state
       return { error: null };
     } catch (err: unknown) {
       const error = err as Error;
@@ -74,9 +86,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       if (data.session) {
-        set({ user: data.user, loading: false }); // Immediate update for auto-verified accounts
+        const supabase = createClient();
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+        // The listener will handle setting user and loading state
       } else {
-        set({ loading: false }); // For accounts needing email verification
+        // For accounts needing email verification
+        set({ loading: false });
       }
 
       return { data, error: null };
@@ -91,7 +109,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ loading: true });
     const supabase = createClient();
     await supabase.auth.signOut();
-    set({ user: null, loading: false });
+    // The listener will handle setting user to null and loading to false.
   },
 
   clearError: () => set({ error: null }),

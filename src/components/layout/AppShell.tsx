@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -104,30 +105,38 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const isAuthPage =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/forgot-password") ||
-    pathname.startsWith("/reset-password");
-  
+  const authRoutes = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+  ];
+  const isAuthPage = authRoutes.some((route) => pathname.startsWith(route));
+
   const protectedRoutes = [
     "/dashboard",
     "/journal",
     "/study",
-    "/analytics",
+    "/translator",
     "/settings",
     "/admin",
   ];
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isProtectedRoute = protectedRoutes.some((route) =>
+    pathname.startsWith(route),
+  );
 
   useEffect(() => {
-    if (!loading && !user && isProtectedRoute) {
-      router.replace('/login');
+    if (loading) return; // Don't do anything until auth state is confirmed
+
+    if (user && isAuthPage) {
+      router.replace("/dashboard");
     }
-  }, [loading, user, isProtectedRoute, router]);
+    if (!user && isProtectedRoute) {
+      router.replace("/login");
+    }
+  }, [loading, user, isAuthPage, isProtectedRoute, router]);
 
-
-  if (loading || (!user && isProtectedRoute)) {
+  if (loading || (user && isAuthPage) || (!user && isProtectedRoute)) {
     return <GlobalSpinner />;
   }
 
@@ -261,8 +270,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // If user is authenticated and not on an auth page, show the main app shell
-  if (user && !isAuthPage) {
+  // If user is authenticated show the main app shell
+  if (user) {
     return (
       <div className="flex h-screen bg-secondary/30">
         <DesktopSidebar />

@@ -1,5 +1,27 @@
-
-
+### [BASH_COMMANDS]
+```bash
+rm src/lib/auth-context.tsx
+```
+### src/components/layout/AppShell.tsx
+```tsx
+```
+### src/components/layout/StoreInitializer.tsx
+```tsx
+```
+### src/components/SignInForm.tsx
+```tsx
+```
+### src/components/SignUpForm.tsx
+```tsx
+```
+### src/lib/stores/auth.store.ts
+```ts
+```
+### src/providers.tsx
+```tsx
+```
+### docs/phases/phase-l-after-implementation.md
+```md
 ### Part 2 (Definitive Plan): Refactor Auth to a Single Source of Truth with Zustand
 
 The goal is to make the Zustand store the sole owner of authentication state and logic. The rest of the application will simply react to changes in the store.
@@ -8,7 +30,7 @@ The goal is to make the Zustand store the sole owner of authentication state and
 
 The store will now handle everything: state, API calls, and initialization.
 
-*   [ ] **Modify `src/lib/stores/auth.store.ts`:**
+*   [x] **Modify `src/lib/stores/auth.store.ts`:**
     *   Add an `initialize` action that sets up the Supabase `onAuthStateChange` listener. This is the most critical change, as it moves the core logic from `auth-context.tsx` into our global store.
     *   Ensure the `signIn` and `signUp` methods are the ones making the `fetch` calls to your API routes. They should update the store's `loading` and `error` state directly.
     *   Ensure the `signOut` method correctly calls the Supabase client and clears the user state.
@@ -51,7 +73,7 @@ The store will now handle everything: state, API calls, and initialization.
 
 The store needs to be initialized once when the application loads. We will use the existing `StoreInitializer` for this.
 
-*   [ ] **Update `src/components/layout/StoreInitializer.tsx`:**
+*   [x] **Update `src/components/layout/StoreInitializer.tsx`:**
     *   Call the new `initialize` action from the auth store within a `useEffect` with an empty dependency array to ensure it runs only once on mount.
 
     ```tsx
@@ -78,8 +100,8 @@ The store needs to be initialized once when the application loads. We will use t
 
 The `AuthProvider` is now completely redundant.
 
-*   [ ] **Delete the file `src/lib/auth-context.tsx`**.
-*   [ ] **Remove the `<AuthProvider>` wrapper from `src/providers.tsx`:**
+*   [x] **Delete the file `src/lib/auth-context.tsx`**.
+*   [x] **Remove the `<AuthProvider>` wrapper from `src/providers.tsx`:**
 
     ```diff
     // In src/providers.tsx
@@ -105,13 +127,13 @@ The `AuthProvider` is now completely redundant.
 
 #### 4. Refactor UI Components to Use Only the Zustand Store
 
-*   [ ] **Update `src/components/SignInForm.tsx` & `SignUpForm.tsx`:**
+*   [x] **Update `src/components/SignInForm.tsx` & `SignUpForm.tsx`:**
     -   These components should *only* use `useAuthStore()`.
     -   They should read `loading` and `error` from the store.
     -   They should call the `signIn` and `signUp` actions from the store.
     -   **Crucially, remove all `router.push()` calls.** Navigation is no longer their responsibility.
 
-*   [ ] **Refactor `src/components/layout/AppShell.tsx` to be the "Gatekeeper":**
+*   [x] **Refactor `src/components/layout/AppShell.tsx` to be the "Gatekeeper":**
     -   This component is now the single source of truth for *what to display* based on auth state.
     -   It will read `user` and `loading` directly from `useAuthStore`.
     -   The render logic will be clean and simple: if loading, show spinner; otherwise, show the appropriate layout (app shell or public layout).
@@ -159,7 +181,7 @@ The `AuthProvider` is now completely redundant.
 
 #### 5. Verification and Final Testing
 
-*   [ ] **Confirm functionality:** Rerun the manual tests for login, signup, and redirects.
+*   [x] **Confirm functionality:** Rerun the manual tests for login, signup, and redirects.
 *   **Expected Outcome:**
     1.  User clicks "Sign In".
     2.  The `signIn` action in `useAuthStore` is called, setting `loading` to `true`.
@@ -171,4 +193,4 @@ The `AuthProvider` is now completely redundant.
     8.  The router finishes navigating to `/dashboard`, the `AppShell` renders again with the new path, and the dashboard content is finally displayed.
 
 This new plan is far more robust, eliminates the architectural flaws, and will produce the seamless user experience you're looking for.
-
+```

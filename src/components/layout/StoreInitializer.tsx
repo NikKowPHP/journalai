@@ -1,8 +1,7 @@
+
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import {
   useOnboardingStore,
@@ -16,7 +15,7 @@ import {
 import { useLanguageStore } from "@/lib/stores/language.store";
 
 function StoreInitializer() {
-  const { setUserAndLoading } = useAuthStore();
+  const initializeAuth = useAuthStore((state) => state.initialize);
   const {
     step,
     onboardingJournalId,
@@ -24,22 +23,14 @@ function StoreInitializer() {
     setOnboardingJournalId,
   } = useOnboardingStore();
   const { activeTargetLanguage, setActiveTargetLanguage } = useLanguageStore();
-  const initialized = useRef(false);
-  const router = useRouter();
 
   // Auth state listener
   useEffect(() => {
-    if (!initialized.current) {
-      const supabase = createClient();
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        setUserAndLoading(session?.user ?? null, false);
-        if (event === "SIGNED_OUT") {
-          router.push("/");
-        }
-      });
-      initialized.current = true;
-    }
-  }, [setUserAndLoading, router]);
+    const unsubscribe = initializeAuth();
+    return () => {
+      unsubscribe();
+    };
+  }, [initializeAuth]);
 
   // Onboarding logic
   const user = useAuthStore((state) => state.user);

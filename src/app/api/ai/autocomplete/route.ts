@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { logger } from "@/lib/logger";
 
 const geminiService = new GeminiQuestionGenerationService(
-  process.env.GEMINI_API_KEY!,
+  
 );
 
 export const POST = async (req: NextRequest) => {
