@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -22,6 +21,7 @@ import { Button } from "../ui/button";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { useCompleteOnboarding } from "@/lib/hooks/data";
+import Spinner from "../ui/Spinner";
 
 function AppFooter() {
   return (
@@ -91,19 +91,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setOnboardingJournalId,
     onboardingJournalId,
     setStep,
-    resetOnboarding,
   } = useOnboardingStore();
-  const completeOnboardingMutation = useCompleteOnboarding();
   const pathname = usePathname();
   const router = useRouter();
 
-  const completeOnboarding = () => {
-    completeOnboardingMutation.mutate(undefined, {
-      onSuccess: () => {
-        resetOnboarding();
-      },
-    });
-  };
+  const completeOnboardingMutation = useCompleteOnboarding({
+    onSuccess: () => {
+      router.push("/dashboard");
+    },
+  });
 
   const authRoutes = [
     "/login",
@@ -249,19 +245,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <DialogFooter className="gap-2 sm:flex-row">
                 <Button
                   variant="secondary"
-                  onClick={() => {
-                    completeOnboarding();
-                    router.push("/analytics");
-                  }}
+                  onClick={() => completeOnboardingMutation.mutate()}
+                  disabled={completeOnboardingMutation.isPending}
                 >
+                  {completeOnboardingMutation.isPending && (
+                    <Spinner size="sm" className="mr-2" />
+                  )}
                   View My Progress
                 </Button>
                 <Button
-                  onClick={() => {
-                    completeOnboarding();
-                    router.push("/dashboard");
-                  }}
+                  onClick={() => completeOnboardingMutation.mutate()}
+                  disabled={completeOnboardingMutation.isPending}
                 >
+                  {completeOnboardingMutation.isPending && (
+                    <Spinner size="sm" className="mr-2" />
+                  )}
                   Explore Dashboard
                 </Button>
               </DialogFooter>
