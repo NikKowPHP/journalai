@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useEffect, useRef } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
@@ -14,7 +15,6 @@ import {
 } from "@/lib/hooks/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Spinner from "@/components/ui/Spinner";
-import { useFeatureFlag } from "@/lib/hooks/useFeatureFlag";
 import { GuidedPopover } from "@/components/ui/GuidedPopover";
 
 export default function JournalAnalysisPage() {
@@ -22,9 +22,6 @@ export default function JournalAnalysisPage() {
   const id = params.id as string;
   const { step, setStep } = useOnboardingStore();
   const analysisInitiated = useRef(false);
-  const [isTranslationNew, markTranslationAsSeen] = useFeatureFlag(
-    "highlight_text_translation",
-  );
 
   const completeOnboarding = () => {
     setStep("COMPLETED");
@@ -131,14 +128,7 @@ export default function JournalAnalysisPage() {
                     {analysisDisplayComponent}
                   </GuidedPopover>
                 ) : (
-                  <GuidedPopover
-                    isOpen={isTranslationNew}
-                    onDismiss={markTranslationAsSeen}
-                    title="Instant Translation"
-                    description="Select any text in your entry to get an instant translation and add it to your study deck."
-                  >
-                    {analysisDisplayComponent}
-                  </GuidedPopover>
+                  analysisDisplayComponent
                 )}
               </div>
 

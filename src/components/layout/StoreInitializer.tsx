@@ -1,12 +1,9 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useAuthStore } from "@/lib/stores/auth.store";
-import {
-  useOnboardingStore,
-  type OnboardingStep,
-} from "@/lib/stores/onboarding.store";
+import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import {
   useUserProfile,
   useJournalHistory,
@@ -16,12 +13,7 @@ import { useLanguageStore } from "@/lib/stores/language.store";
 
 function StoreInitializer() {
   const initializeAuth = useAuthStore((state) => state.initialize);
-  const {
-    step,
-    onboardingJournalId,
-    setStep: setOnboardingStep,
-    setOnboardingJournalId,
-  } = useOnboardingStore();
+  const { step, determineCurrentStep, resetOnboarding } = useOnboardingStore();
   const { activeTargetLanguage, setActiveTargetLanguage } = useLanguageStore();
 
   // Auth state listener
@@ -52,55 +44,23 @@ function StoreInitializer() {
       }
     }
 
-    // --- REFACTORED ONBOARDING LOGIC ---
-    // Only calculate the starting step if the user needs onboarding AND the flow is not already active.
+    // Only run the determination logic if the onboarding flow isn't already active.
     if (
       user &&
       userProfile &&
       !userProfile.onboardingCompleted &&
       step === "INACTIVE"
     ) {
-      const profileIsComplete = !!(
-        userProfile.nativeLanguage && userProfile.defaultTargetLanguage
-      );
-      const hasJournals = journals && journals.length > 0;
-      const hasSrsItems = (userProfile._count?.srsItems ?? 0) > 0;
-
-      let nextStep: OnboardingStep = "INACTIVE"; // Default to INACTIVE
-
-      if (!profileIsComplete) {
-        nextStep = "PROFILE_SETUP";
-      } else if (!hasJournals) {
-        nextStep = "FIRST_JOURNAL";
-      } else {
-        const latestJournal = journals[0];
-        if (latestJournal) {
-          if (latestJournal.id !== onboardingJournalId) {
-            setOnboardingJournalId(latestJournal.id);
-          }
-          if (!latestJournal.analysis) {
-            nextStep = "VIEW_ANALYSIS";
-          } else if (!hasSrsItems) {
-            nextStep = "VIEW_ANALYSIS"; // User needs to create the first card
-          } else {
-            // This case should not happen for an un-onboarded user, but as a fallback:
-            nextStep = "STUDY_INTRO";
-          }
-        }
-      }
-
-      // Only set the step if we determined a new starting point
-      if (nextStep !== "INACTIVE") {
-        setOnboardingStep(nextStep);
-      }
-      // Handle the case where the user is onboarded but the store state is stale
+      determineCurrentStep({
+        userProfile: userProfile,
+        journals: journals || [],
+      });
     } else if (
       user &&
-      userProfile &&
-      userProfile.onboardingCompleted &&
+      userProfile?.onboardingCompleted &&
       step !== "INACTIVE"
     ) {
-      setOnboardingStep("INACTIVE");
+      resetOnboarding();
     }
   }, [
     user,
@@ -110,12 +70,11 @@ function StoreInitializer() {
     isProfileLoading,
     isJournalsLoading,
     isDeckLoading,
-    setOnboardingStep,
-    setOnboardingJournalId,
+    determineCurrentStep,
+    step,
+    resetOnboarding,
     activeTargetLanguage,
     setActiveTargetLanguage,
-    step,
-    onboardingJournalId,
   ]);
 
   return null;

@@ -1,10 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Sparkles, XCircle } from "lucide-react";
 import { TTSButton } from "./ui/TTSButton";
-import { useFeatureFlag } from "@/lib/hooks/useFeatureFlag";
-import { GuidedPopover } from "./ui/GuidedPopover";
 
 /**
  * An interactive flashcard component for spaced repetition study.
@@ -34,26 +33,12 @@ export function Flashcard({
   const [isFlipped, setIsFlipped] = useState(false);
   const [onboardingReviewed, setOnboardingReviewed] = useState(false);
 
-  const [isContextNew, markContextAsSeen] = useFeatureFlag("flashcard_context");
-  const [isTTSNew, markTTSAsSeen] = useFeatureFlag("flashcard_tts");
-  const [showContextPopover, setShowContextPopover] = useState(false);
-  const [showTTSPopover, setShowTTSPopover] = useState(false);
-
   useEffect(() => {
     setIsFlipped(false);
   }, [frontContent]);
 
-  useEffect(() => {
-    if (context && isContextNew && isFlipped) {
-      setShowContextPopover(true);
-    }
-  }, [context, isContextNew, isFlipped]);
-
   const handleShowAnswer = () => {
     setIsFlipped(true);
-    if (isTTSNew && targetLanguage) {
-      setShowTTSPopover(true);
-    }
   };
 
   const handleReview = (quality: number) => {
@@ -83,34 +68,14 @@ export function Flashcard({
           <div className="space-y-4">
             <div className="flex items-center justify-center p-4">
               <p className="text-lg font-medium text-center">{backContent}</p>
-              <GuidedPopover
-                isOpen={showTTSPopover}
-                onDismiss={() => {
-                  setShowTTSPopover(false);
-                  markTTSAsSeen();
-                }}
-                title="Hear it Aloud"
-                description="Click here to listen to the pronunciation of the text."
-              >
-                {targetLanguage && (
-                  <TTSButton text={backContent} lang={targetLanguage} />
-                )}
-              </GuidedPopover>
+              {targetLanguage && (
+                <TTSButton text={backContent} lang={targetLanguage} />
+              )}
             </div>
             {context && (
-              <GuidedPopover
-                isOpen={showContextPopover}
-                onDismiss={() => {
-                  setShowContextPopover(false);
-                  markContextAsSeen();
-                }}
-                title="Extra Context"
-                description="Flashcards now include helpful explanations or tips."
-              >
-                <div className="text-sm text-muted-foreground p-2 bg-secondary rounded-md">
-                  {context}
-                </div>
-              </GuidedPopover>
+              <div className="text-sm text-muted-foreground p-2 bg-secondary rounded-md">
+                {context}
+              </div>
             )}
 
             <div className="flex justify-around gap-2 pt-4 text-center">
