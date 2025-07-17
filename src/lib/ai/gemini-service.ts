@@ -1,4 +1,3 @@
-
 import { QuestionGenerationService } from "./generation-service";
 import type {
   GeneratedQuestion,
@@ -31,7 +30,7 @@ import {
   getParagraphBreakdownPrompt,
 } from "./prompts";
 import { withRetry } from "../utils/withRetry";
-import { getNextKey, getTotalKeys } from "./gemini-key-provider";
+import { getAllKeys } from "./gemini-key-provider";
 
 const GEMINI_MODELS = { gemini_2_5_flash : 'gemini-2.5-flash'}
 
@@ -48,28 +47,31 @@ export class GeminiQuestionGenerationService
   private async _executeWithRotation<T>(
     requestFn: (client: GoogleGenAI) => Promise<T>,
   ): Promise<T> {
-    const totalKeys = getTotalKeys();
-    if (totalKeys === 0) {
+    const allKeys = getAllKeys();
+    if (allKeys.length === 0) {
       throw new Error("No Gemini API keys provided in environment variables.");
+    }
+
+    // Fisher-Yates shuffle to randomize key order for each execution.
+    // This is more robust for serverless environments where state is not preserved.
+    for (let i = allKeys.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allKeys[i], allKeys[j]] = [allKeys[j], allKeys[i]];
     }
 
     let lastError: any;
 
-    for (let i = 0; i < totalKeys; i++) {
-      const apiKey = getNextKey();
-      if (!apiKey) {
-        continue; // Should not happen if totalKeys > 0
-      }
-
+    for (const apiKey of allKeys) {
       try {
         const client = new GoogleGenAI({ apiKey });
         return await withRetry(() => requestFn(client));
       } catch (error: any) {
         lastError = error;
         const errorMessage = (error.message || "").toLowerCase();
+        // Check for errors that indicate a key-specific problem
         if (
-          errorMessage.includes("429") ||
-          errorMessage.includes("permission denied") ||
+          errorMessage.includes("429") || // Rate limit
+          errorMessage.includes("permission denied") || // Invalid key permissions
           errorMessage.includes("api key not valid")
         ) {
           console.warn(
@@ -77,7 +79,7 @@ export class GeminiQuestionGenerationService
           );
           continue; // Try the next key
         }
-        // For other errors, fail fast.
+        // For other errors (e.g., bad request, malformed prompt), fail fast.
         throw error;
       }
     }

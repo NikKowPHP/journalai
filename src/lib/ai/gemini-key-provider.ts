@@ -1,6 +1,4 @@
-
 let keys: string[] = [];
-let currentIndex = 0;
 
 function initializeKeys() {
   const patternedKeys: { index: number; key: string }[] = [];
@@ -23,7 +21,6 @@ function initializeKeys() {
     keys = [process.env.GEMINI_API_KEY];
   }
 
-  // --- REFINEMENT ---
   // Fail immediately if no keys are configured.
   if (keys.length === 0) {
     throw new Error("No Gemini API keys found. Please set GEMINI_API_KEY or GEMINI_API_KEY_n in your environment.");
@@ -33,22 +30,13 @@ function initializeKeys() {
 // Initialize on module load
 initializeKeys();
 
-export function getNextKey(): string {
-  // --- REFINEMENT ---
-  // Now that we throw an error on init, we can be sure keys[currentIndex] exists.
-  const key = keys[currentIndex];
-  // This is the correct way to cycle through the array.
-  currentIndex = (currentIndex + 1) % keys.length;
-  return key;
-}
-
-export function getTotalKeys(): number {
-  return keys.length;
+export function getAllKeys(): string[] {
+  // Return a copy for safety, ensuring the original array isn't mutated elsewhere.
+  return [...keys];
 }
 
 // For testing purposes, to re-initialize with mocked env vars
 export function _resetForTesting() {
   keys = [];
-  currentIndex = 0;
   initializeKeys();
 }

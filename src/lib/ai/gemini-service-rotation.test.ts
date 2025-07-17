@@ -1,3 +1,4 @@
+
 /** @jest-environment node */
 import { GeminiQuestionGenerationService } from "./gemini-service";
 import * as keyProvider from "./gemini-key-provider";
@@ -45,8 +46,7 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
   });
 
   it("should succeed on the first key if it is valid", async () => {
-    mockedKeyProvider.getTotalKeys.mockReturnValue(1);
-    mockedKeyProvider.getNextKey.mockReturnValue("valid-key-1");
+    mockedKeyProvider.getAllKeys.mockReturnValue(["valid-key-1"]);
     mockGenerateContent.mockResolvedValue({
       text: '{"feedback": "Great job!"}',
     });
@@ -58,15 +58,15 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
     );
 
     expect(result.feedback).toBe("Great job!");
-    expect(mockedKeyProvider.getNextKey).toHaveBeenCalledTimes(1);
+    expect(mockedKeyProvider.getAllKeys).toHaveBeenCalledTimes(1);
     expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
 
-  it("should failover to the second key if the first one is rate-limited (429)", async () => {
-    mockedKeyProvider.getTotalKeys.mockReturnValue(2);
-    mockedKeyProvider.getNextKey
-      .mockReturnValueOnce("rate-limited-key")
-      .mockReturnValueOnce("valid-key-2");
+  it("should failover to another key if one is rate-limited (429)", async () => {
+    mockedKeyProvider.getAllKeys.mockReturnValue([
+      "rate-limited-key",
+      "valid-key-2",
+    ]);
 
     // First call fails with a 429-like error, second call succeeds
     mockGenerateContent
@@ -82,17 +82,14 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
     );
 
     expect(result.feedback).toBe("Success on second key!");
-    expect(mockedKeyProvider.getNextKey).toHaveBeenCalledTimes(2);
+    expect(mockedKeyProvider.getAllKeys).toHaveBeenCalledTimes(1);
     expect(mockGenerateContent).toHaveBeenCalledTimes(2);
     // Verify that GoogleGenAI was instantiated twice (once for each key attempt)
     expect(mockedGoogleGenAI).toHaveBeenCalledTimes(2);
   });
 
-  it("should throw an error if all keys are rate-limited", async () => {
-    mockedKeyProvider.getTotalKeys.mockReturnValue(2);
-    mockedKeyProvider.getNextKey
-      .mockReturnValueOnce("key1")
-      .mockReturnValueOnce("key2");
+  it("should throw an error if all keys fail", async () => {
+    mockedKeyProvider.getAllKeys.mockReturnValue(["key1", "key2"]);
 
     mockGenerateContent.mockRejectedValue(new Error("API key not valid"));
 
@@ -102,13 +99,12 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
       "All Gemini API keys failed. Last error: API key not valid",
     );
 
-    expect(mockedKeyProvider.getNextKey).toHaveBeenCalledTimes(2);
+    expect(mockedKeyProvider.getAllKeys).toHaveBeenCalledTimes(1);
     expect(mockGenerateContent).toHaveBeenCalledTimes(2);
   });
 
   it("should throw immediately for non-rotation errors", async () => {
-    mockedKeyProvider.getTotalKeys.mockReturnValue(2);
-    mockedKeyProvider.getNextKey.mockReturnValue("key1");
+    mockedKeyProvider.getAllKeys.mockReturnValue(["key1", "key2"]);
 
     const nonRotationError = new Error("Invalid request");
     mockGenerateContent.mockRejectedValue(nonRotationError);
@@ -118,7 +114,7 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
     ).rejects.toThrow("Invalid request");
 
     // It should only try once
-    expect(mockedKeyProvider.getNextKey).toHaveBeenCalledTimes(1);
+    expect(mockedKeyProvider.getAllKeys).toHaveBeenCalledTimes(1);
     expect(mockGenerateContent).toHaveBeenCalledTimes(1);
   });
 });
