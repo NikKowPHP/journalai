@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
         proficiencyOverTime: [],
         subskillScores: { grammar: 0, phrasing: 0, vocabulary: 0 },
         recentJournals: [],
+        subskillProficiencyOverTime: [],
       });
     }
 
@@ -77,7 +78,15 @@ export async function GET(req: NextRequest) {
         3,
     }));
 
-    // 6. Get recent journal entries
+    // 6. Calculate subskill proficiency over time
+    const subskillProficiencyOverTime = analyses.map((analysis) => ({
+      date: analysis.createdAt.toISOString(),
+      grammar: analysis.grammarScore,
+      phrasing: analysis.phrasingScore,
+      vocabulary: analysis.vocabScore,
+    }));
+
+    // 7. Get recent journal entries
     const recentJournals = await prisma.journalEntry.findMany({
       where: { authorId: user.id, targetLanguage: targetLanguage },
       orderBy: { createdAt: "desc" },
@@ -92,6 +101,7 @@ export async function GET(req: NextRequest) {
       proficiencyOverTime,
       subskillScores,
       recentJournals,
+      subskillProficiencyOverTime,
     });
   } catch (error) {
     console.error("Error fetching analytics:", error);

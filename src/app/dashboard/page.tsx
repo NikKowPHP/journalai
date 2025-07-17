@@ -1,4 +1,3 @@
-
 "use client";
 import React from "react";
 import Link from "next/link";
@@ -18,6 +17,7 @@ import { useSuggestedTopics } from "@/lib/hooks/data/useSuggestedTopics";
 import { ProficiencyChart } from "@/components/ProficiencyChart";
 import { SubskillScores } from "@/components/SubskillScores";
 import { PricingTable } from "@/components/PricingTable";
+import { SubskillProgressChart } from "@/components/SubskillProgressChart";
 
 export default function DashboardPage() {
   const { data: user, isLoading: isUserLoading } = useUserProfile();
@@ -109,24 +109,36 @@ export default function DashboardPage() {
           />
 
           {user && ["PRO", "ADMIN"].includes(user.subscriptionTier) ? (
-            <div className="grid gap-8 md:grid-cols-2">
+            <>
+              <div className="grid gap-8 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Proficiency Over Time</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ProficiencyChart data={analytics.proficiencyOverTime} />
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Skill Breakdown</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <SubskillScores data={skillBreakdown} />
+                  </CardContent>
+                </Card>
+              </div>
               <Card>
                 <CardHeader>
-                  <CardTitle>Proficiency Over Time</CardTitle>
+                  <CardTitle>Subskill Progression</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ProficiencyChart data={analytics.proficiencyOverTime} />
+                  <SubskillProgressChart
+                    data={analytics.subskillProficiencyOverTime}
+                  />
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Skill Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SubskillScores data={skillBreakdown} />
-                </CardContent>
-              </Card>
-            </div>
+            </>
           ) : (
             <Card>
               <CardHeader>
