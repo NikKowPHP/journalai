@@ -20,13 +20,21 @@ import { PricingTable } from "@/components/PricingTable";
 import { SubskillProgressChart } from "@/components/SubskillProgressChart";
 
 export default function DashboardPage() {
-  const { data: user, isLoading: isUserLoading } = useUserProfile();
-  const { data: analytics, isLoading: isAnalyticsLoading } = useAnalyticsData();
+  const {
+    data: user,
+    isLoading: isUserLoading,
+    isFetching: isUserFetching,
+  } = useUserProfile();
+  const {
+    data: analytics,
+    isLoading: isAnalyticsLoading,
+    isFetching: isAnalyticsFetching,
+  } = useAnalyticsData();
   const generateTopicsMutation = useGenerateTopics();
   const {
     data: suggestedTopics,
     isLoading: isTopicsLoading,
-    isFetching,
+    isFetching: isSuggestedTopicsFetching,
   } = useSuggestedTopics();
 
   const handleGenerateTopics = () => {
@@ -34,11 +42,18 @@ export default function DashboardPage() {
   };
 
   const isLoadingTopics =
-    isTopicsLoading || isFetching || generateTopicsMutation.isPending;
-  const isLoading =
-    isUserLoading || (user && user.onboardingCompleted && isAnalyticsLoading);
+    isTopicsLoading ||
+    isSuggestedTopicsFetching ||
+    generateTopicsMutation.isPending;
 
-  if (isLoading) {
+  // This more robust loading state checks for both initial load and background refetches.
+  // This prevents rendering with stale data after an invalidation (e.g., post-onboarding).
+  const isPageLoading =
+    isUserLoading ||
+    isUserFetching ||
+    (user && !analytics && (isAnalyticsLoading || isAnalyticsFetching));
+
+  if (isPageLoading) {
     return (
       <div className="container mx-auto p-4 space-y-6">
         <Skeleton className="h-8 w-1/3 mb-4" />
@@ -85,7 +100,7 @@ export default function DashboardPage() {
         <LanguageSwitcher />
       </div>
 
-      {!hasEntries && !isLoading ? (
+      {!hasEntries ? (
         <Card className="text-center p-8">
           <CardHeader>
             <CardTitle>Start Your Journey</CardTitle>
