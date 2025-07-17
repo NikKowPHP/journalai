@@ -1,14 +1,19 @@
-
 /** @jest-environment node */
-import { GeminiQuestionGenerationService } from "../gemini-service";
-import * as keyProvider from "../gemini-key-provider";
+import { GeminiQuestionGenerationService } from "./gemini-service";
+import * as keyProvider from "./gemini-key-provider";
 import { GoogleGenAI } from "@google/genai";
+import { withRetry } from "../utils/withRetry";
 
 // Mock the entire @google/genai library
 jest.mock("@google/genai");
 
 // Mock our key provider module
-jest.mock("../gemini-key-provider");
+jest.mock("./gemini-key-provider");
+
+// Mock the withRetry utility to prevent delays and multiple attempts in this test suite
+jest.mock("../utils/withRetry", () => ({
+  withRetry: jest.fn((fn) => fn()),
+}));
 
 const mockedGoogleGenAI = GoogleGenAI as jest.Mock;
 const mockedKeyProvider = keyProvider as jest.Mocked<typeof keyProvider>;
@@ -23,6 +28,7 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (withRetry as jest.Mock).mockImplementation((fn) => fn());
 
     // Mock the constructor and method chain for GoogleGenAI
     mockedGoogleGenAI.mockImplementation(() => ({
@@ -42,7 +48,7 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
     mockedKeyProvider.getTotalKeys.mockReturnValue(1);
     mockedKeyProvider.getNextKey.mockReturnValue("valid-key-1");
     mockGenerateContent.mockResolvedValue({
-      response: { text: () => '{"feedback": "Great job!"}' },
+      text: '{"feedback": "Great job!"}',
     });
 
     const result = await service.analyzeJournalEntry(
@@ -66,7 +72,7 @@ describe("GeminiQuestionGenerationService with Key Rotation", () => {
     mockGenerateContent
       .mockRejectedValueOnce(new Error("429 Too Many Requests"))
       .mockResolvedValueOnce({
-        response: { text: () => '{"feedback": "Success on second key!"}' },
+        text: '{"feedback": "Success on second key!"}',
       });
 
     const result = await service.analyzeJournalEntry(

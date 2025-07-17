@@ -1,7 +1,7 @@
 
 /** @jest-environment jsdom */
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { TranslationInput } from "./TranslationInput";
 
 // Mock navigator.clipboard
@@ -51,7 +51,9 @@ describe("TranslationInput", () => {
     );
     const pasteButton = screen.getByTitle("Paste from clipboard");
     fireEvent.click(pasteButton);
-    expect(onTextChangeMock).toHaveBeenCalledWith("pasted text");
+    await waitFor(() => {
+      expect(onTextChangeMock).toHaveBeenCalledWith("pasted text");
+    });
   });
 
   it("clears input when discard button is clicked", () => {
