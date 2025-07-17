@@ -1,4 +1,3 @@
-
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/services/api-client.service";
 import { useToast } from "@/components/ui/use-toast";
@@ -7,6 +6,8 @@ export const useStuckWriterSuggestions = () => {
   const { toast } = useToast();
   return useMutation({
     mutationFn: apiClient.ai.getStuckSuggestions,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     onError: (error: Error) => {
       console.error("Stuck writer suggestions error:", error);
       toast({

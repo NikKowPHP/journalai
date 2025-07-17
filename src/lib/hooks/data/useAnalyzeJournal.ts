@@ -13,6 +13,8 @@ export const useAnalyzeJournal = () => {
   );
   return useMutation({
     mutationFn: apiClient.analyze.start,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     onSuccess: (analysis, journalId) => {
       queryClient.invalidateQueries({ queryKey: ["journal", journalId] });
       queryClient.invalidateQueries({

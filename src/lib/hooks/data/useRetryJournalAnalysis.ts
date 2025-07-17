@@ -7,6 +7,8 @@ export const useRetryJournalAnalysis = () => {
   const { toast } = useToast();
   return useMutation({
     mutationFn: apiClient.journal.retryAnalysis,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     onSuccess: (analysis, journalId) => {
       queryClient.invalidateQueries({ queryKey: ["journal", journalId] });
       toast({
