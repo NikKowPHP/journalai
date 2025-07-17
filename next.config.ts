@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 import withPWAInit from "next-pwa";
-
+import { withSentryConfig } from "@sentry/nextjs";
 const pwaEnabled = process.env.NODE_ENV === "production";
 
 const withPWA = withPWAInit({
@@ -41,6 +41,18 @@ const withPWA = withPWAInit({
     },
   ],
 });
+const sentryWebpackPluginOptions = {
+  // Additional config options for the Sentry Webpack plugin. Keep in mind that
+  // the following options are set automatically, and overriding them is not
+  // recommended:
+  //   release, url, authToken, configFile, stripPrefix,
+  //   urlPrefix, include, ignore
+
+  silent: true, // Don't show logs
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+};
+
 
 const nextConfig: NextConfig = {
   images: {
@@ -53,4 +65,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig as any);
+export default withSentryConfig(
+  withPWA(nextConfig as any),
+  sentryWebpackPluginOptions
+);
