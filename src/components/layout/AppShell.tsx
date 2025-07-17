@@ -97,6 +97,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const completeOnboardingMutation = useCompleteOnboarding({
     onSuccess: () => {
+      // The hook now handles resetting state and invalidating queries.
+      // We just need to navigate.
       router.push("/dashboard");
     },
   });
@@ -142,7 +144,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const OnboardingOverlay = () => {
     if (!isActive) return null;
-    if (loading) return null;
+
     switch (step) {
       case "PROFILE_SETUP":
         return (
@@ -171,7 +173,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   onOnboardingSubmit={(id) => {
                     setOnboardingJournalId(id);
                     setStep("VIEW_ANALYSIS"); // Pre-emptively set the step
-                   
+                  
                   }}
                 />
               </div>
