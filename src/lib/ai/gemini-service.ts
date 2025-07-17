@@ -29,8 +29,7 @@ import {
   getStuckWriterPrompt,
   getParagraphBreakdownPrompt,
 } from "./prompts";
-import { withRetry } from "../utils/withRetry";
-import { getAllKeys } from "./gemini-key-provider";
+import { executeGeminiWithRotation } from "./gemini-executor";
 
 const GEMINI_MODELS = { gemini_2_5_flash : 'gemini-2.5-flash'}
 
@@ -44,50 +43,6 @@ export class GeminiQuestionGenerationService
 
   constructor() {}
 
-  private async _executeWithRotation<T>(
-    requestFn: (client: GoogleGenAI) => Promise<T>,
-  ): Promise<T> {
-    const allKeys = getAllKeys();
-    if (allKeys.length === 0) {
-      throw new Error("No Gemini API keys provided in environment variables.");
-    }
-
-    // Fisher-Yates shuffle to randomize key order for each execution.
-    // This is more robust for serverless environments where state is not preserved.
-    for (let i = allKeys.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [allKeys[i], allKeys[j]] = [allKeys[j], allKeys[i]];
-    }
-
-    let lastError: any;
-
-    for (const apiKey of allKeys) {
-      try {
-        const client = new GoogleGenAI({ apiKey });
-        return await withRetry(() => requestFn(client));
-      } catch (error: any) {
-        lastError = error;
-        const errorMessage = (error.message || "").toLowerCase();
-        // Check for errors that indicate a key-specific problem
-        if (
-          errorMessage.includes("429") || // Rate limit
-          errorMessage.includes("permission denied") || // Invalid key permissions
-          errorMessage.includes("api key not valid")
-        ) {
-          console.warn(
-            `Gemini API key failed. Rotating to next key. Error: ${error.message}`,
-          );
-          continue; // Try the next key
-        }
-        // For other errors (e.g., bad request, malformed prompt), fail fast.
-        throw error;
-      }
-    }
-    throw new Error(
-      `All Gemini API keys failed. Last error: ${lastError?.message}`,
-    );
-  }
-
   async analyzeJournalEntry(
     journalContent: string,
     targetLanguage: string = "English",
@@ -100,7 +55,7 @@ export class GeminiQuestionGenerationService
     );
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: { responseMimeType: "application/json" },
@@ -144,7 +99,7 @@ export class GeminiQuestionGenerationService
     const prompt = getQuestionGenerationPrompt(context);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,
@@ -177,7 +132,7 @@ export class GeminiQuestionGenerationService
     const prompt = getAnswerEvaluationPrompt(context);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,
@@ -217,7 +172,7 @@ export class GeminiQuestionGenerationService
     try {
       await fs.promises.writeFile(tempFilePath, audioBuffer);
 
-      const result = await this._executeWithRotation(async (client) => {
+      const result = await executeGeminiWithRotation(async (client) => {
         let uploadedFileResponse: any;
         try {
           uploadedFileResponse = await client.files.upload({
@@ -289,7 +244,7 @@ export class GeminiQuestionGenerationService
     );
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -310,7 +265,7 @@ export class GeminiQuestionGenerationService
     const prompt = getSentenceCompletionPrompt(text);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -331,7 +286,7 @@ export class GeminiQuestionGenerationService
     const prompt = getTitleGenerationPrompt(journalContent);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -356,7 +311,7 @@ export class GeminiQuestionGenerationService
     const prompt = getJournalingAidsPrompt(context);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,
@@ -379,7 +334,7 @@ export class GeminiQuestionGenerationService
     const prompt = getRoleRefinementPrompt(role);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,
@@ -412,7 +367,7 @@ export class GeminiQuestionGenerationService
     const prompt = getTopicGenerationPrompt(context);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,
@@ -442,7 +397,7 @@ export class GeminiQuestionGenerationService
     const prompt = getStuckWriterPrompt(context);
 
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,
@@ -481,7 +436,7 @@ export class GeminiQuestionGenerationService
   }> {
     const prompt = getParagraphBreakdownPrompt(text, sourceLang, targetLang);
     try {
-      const result = await this._executeWithRotation((client) =>
+      const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({
           model: this.model,
           config: this.jsonConfig,

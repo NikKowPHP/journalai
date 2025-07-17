@@ -7,7 +7,7 @@ const LOG_LEVELS = {
 type LogLevel = keyof typeof LOG_LEVELS;
 
 const log = (level: LogLevel, message: string, context?: any) => {
-  if (process.env.NODE_ENV === "development") {
+  // if (process.env.NODE_ENV === "development") {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] [${level}] ${message}`;
 
@@ -23,7 +23,7 @@ const log = (level: LogLevel, message: string, context?: any) => {
       loggerMethod(logMessage);
     }
   }
-};
+// };
 
 export const logger = {
   info: (message: string, context?: any) => log("INFO", message, context),
