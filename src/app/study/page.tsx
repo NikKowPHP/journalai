@@ -3,7 +3,7 @@
 import { StudySession } from "@/components/StudySession";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useStudyDeck } from "@/lib/hooks/data";
+import { useStudyDeck, useUserProfile } from "@/lib/hooks/data";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguageStore } from "@/lib/stores/language.store";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
@@ -14,13 +14,20 @@ export default function StudyPage() {
   const isTourActive = step === "STUDY_INTRO";
   const { activeTargetLanguage } = useLanguageStore();
 
-  const { data: studyDeck, isLoading, error } = useStudyDeck();
+  const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
+  const {
+    data: studyDeck,
+    isLoading: isDeckLoading,
+    error,
+  } = useStudyDeck();
 
   const handleFirstReview = () => {
     if (isTourActive) {
       setStep("COMPLETED");
     }
   };
+
+  const isLoading = isProfileLoading || isDeckLoading;
 
   if (isLoading)
     return (
@@ -35,6 +42,8 @@ export default function StudyPage() {
   const studySession = (
     <StudySession
       cards={studyDeck || []}
+      nativeLanguage={userProfile?.nativeLanguage}
+      targetLanguage={activeTargetLanguage}
       onOnboardingReview={handleFirstReview}
     />
   );

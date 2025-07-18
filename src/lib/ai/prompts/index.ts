@@ -1,9 +1,7 @@
-
 export * from "./journalAnalysis.prompt";
 export * from "./questionGeneration.prompt";
 export * from "./answerEvaluation.prompt";
 export * from "./audioAnswerEvaluation.prompt";
-export * from "./textTranslation.prompt";
 export * from "./sentenceCompletion.prompt";
 export * from "./titleGeneration.prompt";
 export * from "./journalingAids.prompt";

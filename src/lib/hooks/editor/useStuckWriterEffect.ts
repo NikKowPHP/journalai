@@ -1,3 +1,4 @@
+
 // src/lib/hooks/editor/useStuckWriterEffect.ts
 
 import { useEffect, useState, useRef } from "react";
@@ -15,10 +16,9 @@ export const useStuckWriterEffect = (
   );
   const [showStuckUI, setShowStuckUI] = useState(false);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const dismissTimerRef = useRef<NodeJS.Timeout | null>(null); // Timer to hide the UI
 
-  // --- THE FIX: Get the full mutation object ---
   const stuckSuggestionsMutation = useStuckWriterSuggestions();
-  // --- END FIX ---
 
   const activeTargetLanguage = useLanguageStore(
     (state) => state.activeTargetLanguage,
@@ -27,23 +27,25 @@ export const useStuckWriterEffect = (
   useEffect(() => {
     if (!editor) return;
 
-    logger.info("[useStuckWriterEffect] Effect initialized or dependencies changed.");
+    logger.info(
+      "[useStuckWriterEffect] Effect initialized or dependencies changed.",
+    );
 
     const handleUpdate = () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-      
-      setShowStuckUI(false);
-      setStuckSuggestions(null);
+      // Clear both timers whenever the user types
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
+
+      // Don't hide the UI immediately. Let the dismiss timer handle it.
+      // This allows the user to see the suggestions even if they start typing again.
 
       debounceTimer.current = setTimeout(() => {
-        // --- THE FIX: Add the guard clause here ---
         if (stuckSuggestionsMutation.isPending) {
-          logger.info("[useStuckWriterEffect] Timer fired, but a mutation is already in flight. Skipping.");
+          logger.info(
+            "[useStuckWriterEffect] Timer fired, but a mutation is already in flight. Skipping.",
+          );
           return;
         }
-        // --- END FIX ---
 
         const currentText = editor.getText();
         if (currentText.trim().length > 0 && activeTargetLanguage) {
@@ -60,22 +62,27 @@ export const useStuckWriterEffect = (
 
           stuckSuggestionsMutation.mutate(payload, {
             onSuccess: (data) => {
-              logger.info(
-                "[useStuckWriterEffect] Mutation succeeded.",
-                { response: data },
-              );
+              logger.info("[useStuckWriterEffect] Mutation succeeded.", {
+                response: data,
+              });
               if (data?.suggestions?.length > 0) {
                 setStuckSuggestions(data.suggestions);
                 setShowStuckUI(true);
+
+                // Set a timer to automatically hide the suggestions after 10 seconds
+                dismissTimerRef.current = setTimeout(() => {
+                  setShowStuckUI(false);
+                }, 10000);
               } else {
-                 logger.info("[useStuckWriterEffect] No suggestions returned from AI.");
+                logger.info(
+                  "[useStuckWriterEffect] No suggestions returned from AI.",
+                );
               }
             },
             onError: (error) => {
-              logger.error(
-                "[useStuckWriterEffect] Mutation failed.",
-                { error },
-              );
+              logger.error("[useStuckWriterEffect] Mutation failed.", {
+                error,
+              });
             },
           });
         }
@@ -87,15 +94,15 @@ export const useStuckWriterEffect = (
     return () => {
       logger.info("[useStuckWriterEffect] Effect cleanup.");
       editor.off("update", handleUpdate);
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current);
     };
-    
-  // --- THE FIX: The dependency array must be stable ---
-  // We use stuckSuggestionsMutation.mutate which is a stable function reference
-  // provided by React Query. This prevents the re-render loop.
-  }, [editor, stuckSuggestionsMutation.mutate, topicTitle, activeTargetLanguage]);
+  }, [
+    editor,
+    stuckSuggestionsMutation.mutate,
+    topicTitle,
+    activeTargetLanguage,
+  ]);
 
   return { stuckSuggestions, showStuckUI, setShowStuckUI };
 };

@@ -21,7 +21,6 @@ import {
   getQuestionGenerationPrompt,
   getAnswerEvaluationPrompt,
   getAudioAnswerEvaluationPrompt,
-  getTextTranslationPrompt,
   getSentenceCompletionPrompt,
   getTitleGenerationPrompt,
   getJournalingAidsPrompt,
@@ -232,35 +231,6 @@ export class GeminiQuestionGenerationService
       } catch (unlinkError) {
         // Ignore if file doesn't exist etc.
       }
-    }
-  }
-
-  async translateText(
-    text: string,
-    sourceLanguage: string,
-    targetLanguage: string,
-  ): Promise<string> {
-    const prompt = getTextTranslationPrompt(
-      text,
-      sourceLanguage,
-      targetLanguage,
-    );
-
-    try {
-      const result = await executeGeminiWithRotation((client) =>
-        client.models.generateContent({
-          model: this.model,
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-        }),
-      );
-      const translatedText = result.text;
-      if (!translatedText) {
-        throw new Error("Empty response from Gemini API");
-      }
-      return translatedText.trim();
-    } catch (error) {
-      console.error("Error translating text with Gemini:", error);
-      throw error;
     }
   }
 

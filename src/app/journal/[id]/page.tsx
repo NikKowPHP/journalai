@@ -1,3 +1,4 @@
+
 'use client'
 import React, { useEffect, useRef } from "react";
 import { AnalysisDisplay } from "@/components/AnalysisDisplay";
@@ -15,12 +16,14 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Spinner from "@/components/ui/Spinner";
 import { GuidedPopover } from "@/components/ui/GuidedPopover";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 
 export default function JournalAnalysisPage() {
   const params = useParams();
   const id = params.id as string;
   const { step, setStep } = useOnboardingStore();
   const analysisInitiated = useRef(false);
+  const analytics = useAnalytics();
 
   const completeOnboarding = () => {
     setStep("COMPLETED");
@@ -44,6 +47,12 @@ export default function JournalAnalysisPage() {
       analyzeJournalMutation.mutate(id);
     }
   }, [journal, analyzeJournalMutation, id]);
+
+  useEffect(() => {
+    if (journal?.analysis) {
+      analytics.capture("Analysis Viewed", { journalId: journal.id });
+    }
+  }, [journal?.analysis, journal?.id, analytics]);
 
   const isPageLoading = isLoading || isStudyDeckLoading;
 

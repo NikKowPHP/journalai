@@ -1,8 +1,10 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/services/api-client.service";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useLanguageStore } from "@/lib/stores/language.store";
 import { useToast } from "@/components/ui/use-toast";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 
 export const useCreateSrsFromTranslation = () => {
   const { toast } = useToast();
@@ -11,11 +13,16 @@ export const useCreateSrsFromTranslation = () => {
   const activeTargetLanguage = useLanguageStore(
     (state) => state.activeTargetLanguage,
   );
+  const analytics = useAnalytics();
   return useMutation({
     mutationFn: apiClient.srs.createFromTranslation,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["studyDeck", authUser?.id, activeTargetLanguage],
+      });
+      analytics.capture("SRS Item Added", {
+        source: "translation",
+        language: activeTargetLanguage,
       });
       toast({
         title: "Added to Deck",

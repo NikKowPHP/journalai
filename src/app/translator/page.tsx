@@ -10,12 +10,12 @@ import {
   useUserProfile,
   useStudyDeck,
   useTranslateAndBreakdown,
-  useTranslateText,
 } from "@/lib/hooks/data";
 import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 import { LanguageSelectorPanel } from "@/components/translator/LanguageSelectorPanel";
 import { TranslationInput } from "@/components/translator/TranslationInput";
 import { TranslationOutput } from "@/components/translator/TranslationOutput";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 
 interface Segment {
   source: string;
@@ -26,8 +26,8 @@ interface Segment {
 export default function TranslatorPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useUserProfile();
   const { data: studyDeck } = useStudyDeck();
-  const translateTextMutation = useTranslateText();
   const translateAndBreakdownMutation = useTranslateAndBreakdown();
+  const analytics = useAnalytics();
 
   const [sourceLang, setSourceLang] = useState<string | null>(null);
   const [targetLang, setTargetLang] = useState<string | null>(null);
@@ -70,25 +70,20 @@ export default function TranslatorPage() {
       setFullTranslation("");
       setSegments(null);
 
-      translateTextMutation.mutate(
+      translateAndBreakdownMutation.mutate(
         {
           text: sourceText,
           sourceLanguage: getLanguageName(sourceLang),
           targetLanguage: getLanguageName(targetLang),
         },
         {
-          onSuccess: (data) => {
-            setFullTranslation(data.translatedText);
-            translateAndBreakdownMutation.mutate({
-              text: sourceText,
-              sourceLanguage: getLanguageName(sourceLang),
-              targetLanguage: getLanguageName(targetLang),
-            },
-            {
-              onSuccess: (breakdownData) => {
-                setFullTranslation(breakdownData.fullTranslation);
-                setSegments(breakdownData.segments);
-              },
+          onSuccess: (breakdownData) => {
+            setFullTranslation(breakdownData.fullTranslation);
+            setSegments(breakdownData.segments);
+            analytics.capture("Text Translated", {
+              sourceLanguage: sourceLang,
+              targetLanguage: targetLang,
+              characterCount: sourceText.length,
             });
           },
         },
@@ -97,7 +92,6 @@ export default function TranslatorPage() {
   };
 
   const handleSwapLanguages = () => {
-    translateTextMutation.reset();
     translateAndBreakdownMutation.reset();
 
     setSourceLang(targetLang);
@@ -110,8 +104,7 @@ export default function TranslatorPage() {
   const deckSet = new Set<string>(
     studyDeck?.map((item: { frontContent: string }) => item.frontContent) ?? [],
   );
-  const isTranslating =
-    translateTextMutation.isPending || translateAndBreakdownMutation.isPending;
+  const isTranslating = translateAndBreakdownMutation.isPending;
   const isBreakingDown = translateAndBreakdownMutation.isPending;
 
   if (isProfileLoading) {
@@ -151,9 +144,9 @@ export default function TranslatorPage() {
                 Translate
               </Button>
             </div>
-            {translateTextMutation.error && (
+            {translateAndBreakdownMutation.error && (
               <p className="text-destructive text-sm">
-                {(translateTextMutation.error as Error).message}
+                {(translateAndBreakdownMutation.error as Error).message}
               </p>
             )}
           </CardContent>

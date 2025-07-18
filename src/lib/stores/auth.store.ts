@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 
 interface AuthState {
   user: User | null;
@@ -55,20 +56,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!response.ok) {
         throw new Error(data.error || "Failed to sign in");
       }
-
-      if (data.session) {
-        const supabase = createClient();
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-      }
-      // The listener will handle setting user and loading state
+      const supabase = createClient();
+      await supabase.auth.refreshSession();
+      useAnalytics.getState().capture("User Signed In");
       return { error: null };
     } catch (err: unknown) {
       const error = err as Error;
-      set({ error: error.message, loading: false });
+      set({ error: error.message });
       return { error: error.message };
+    } finally {
+      set({ loading: false });
     }
   },
 
@@ -87,13 +84,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (data.session) {
         const supabase = createClient();
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
+        await supabase.auth.refreshSession();
+        useAnalytics.getState().capture("User Signed Up");
+      } else if (data?.user?.confirmation_sent_at) {
+        useAnalytics.getState().capture("User Signed Up", {
+          verification_required: true,
         });
-        // The listener will handle setting user and loading state
-      } else {
-        // For accounts needing email verification
         set({ loading: false });
       }
 
@@ -107,6 +103,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     set({ loading: true });
+    useAnalytics.getState().capture("User Signed Out");
     const supabase = createClient();
     await supabase.auth.signOut();
     // The listener will handle setting user to null and loading to false.

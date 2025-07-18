@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Sparkles, XCircle } from "lucide-react";
 import { TTSButton } from "./ui/TTSButton";
+import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 
 /**
  * An interactive flashcard component for spaced repetition study.
@@ -17,15 +18,25 @@ interface FlashcardProps {
   frontContent: string;
   backContent: string;
   context?: string;
-  targetLanguage?: string;
+  type?: string;
+  nativeLanguage?: string | null;
+  targetLanguage?: string | null;
   onReview?: (quality: number) => void;
   onOnboardingReview?: () => void;
+}
+
+function getLanguageCode(value: string | null | undefined): string {
+  if (!value) return "";
+  const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+  return lang?.code || value;
 }
 
 export function Flashcard({
   frontContent,
   backContent,
   context,
+  type,
+  nativeLanguage,
   targetLanguage,
   onReview,
   onOnboardingReview,
@@ -50,10 +61,18 @@ export function Flashcard({
     setIsFlipped(false);
   };
 
+  const backLangCode =
+    type === "TRANSLATION"
+      ? getLanguageCode(nativeLanguage)
+      : getLanguageCode(targetLanguage);
+
   return (
     <Card className="p-6 space-y-4 bg-gradient-to-br from-background to-muted/20">
-      <div className="text-lg font-medium text-center p-4">
-        {frontContent}
+      <div className="flex items-center justify-center p-4">
+        <p className="text-lg font-medium text-center">{frontContent}</p>
+        {targetLanguage && (
+          <TTSButton text={frontContent} lang={getLanguageCode(targetLanguage)} />
+        )}
       </div>
 
       {!isFlipped && (
@@ -68,8 +87,8 @@ export function Flashcard({
           <div className="space-y-4">
             <div className="flex items-center justify-center p-4">
               <p className="text-lg font-medium text-center">{backContent}</p>
-              {targetLanguage && (
-                <TTSButton text={backContent} lang={targetLanguage} />
+              {backLangCode && (
+                <TTSButton text={backContent} lang={backLangCode} />
               )}
             </div>
             {context && (

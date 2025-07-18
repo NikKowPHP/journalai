@@ -5,6 +5,7 @@ import { Flashcard } from "@/components/Flashcard";
 import { useReviewSrsItem } from "@/lib/hooks/data";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { useAnalytics } from "@/lib/hooks/useAnalytics";
 
 /**
  * Manages a study session with a deck of flashcards, tracking progress through the deck.
@@ -22,23 +23,36 @@ interface StudyCard {
   backContent: string;
   context: string;
   targetLanguage?: string;
+  type: string;
 }
 
 interface StudySessionProps {
   cards: StudyCard[];
+  nativeLanguage?: string | null;
+  targetLanguage?: string | null;
   onOnboardingReview?: () => void;
 }
 
-export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
+export function StudySession({
+  cards,
+  nativeLanguage,
+  targetLanguage,
+  onOnboardingReview,
+}: StudySessionProps) {
   const [sessionCards, setSessionCards] = useState<StudyCard[]>([]);
   const [initialCardCount, setInitialCardCount] = useState(0);
+  const analytics = useAnalytics();
 
   useEffect(() => {
     setSessionCards(cards);
     if (cards.length > 0) {
       setInitialCardCount(cards.length);
+      analytics.capture("SRS Session Started", {
+        cardCount: cards.length,
+        language: targetLanguage,
+      });
     }
-  }, [cards]);
+  }, [cards, analytics, targetLanguage]);
 
   const queryClient = useQueryClient();
   const reviewMutation = useReviewSrsItem();
@@ -46,6 +60,13 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
 
   const handleReview = (quality: number) => {
     if (!currentCard) return;
+
+    analytics.capture("Card Reviewed", {
+      cardId: currentCard.id,
+      quality,
+      type: currentCard.type,
+      language: targetLanguage,
+    });
 
     // Perform the mutation in the background
     reviewMutation.mutate({ srsItemId: currentCard.id, quality });
@@ -71,9 +92,11 @@ export function StudySession({ cards, onOnboardingReview }: StudySessionProps) {
               frontContent={currentCard.frontContent}
               backContent={currentCard.backContent}
               context={currentCard.context}
+              type={currentCard.type}
+              nativeLanguage={nativeLanguage}
+              targetLanguage={targetLanguage}
               onReview={handleReview}
               onOnboardingReview={onOnboardingReview}
-              targetLanguage={currentCard.targetLanguage}
             />
           </div>
         </>

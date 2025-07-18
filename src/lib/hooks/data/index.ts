@@ -17,7 +17,6 @@ export * from "./useCompleteOnboarding";
 export * from "./useCreateCheckoutSession";
 export * from "./useCreatePortalSession";
 export * from "./useAutocomplete";
-export * from "./useTranslateText";
 export * from "./useStuckWriterSuggestions";
 export * from "./useCreateSrsFromTranslation";
 export * from "./useSuggestedTopics";

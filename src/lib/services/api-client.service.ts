@@ -144,14 +144,6 @@ export const apiClient = {
       const { data } = await axios.post("/api/ai/autocomplete", payload);
       return data;
     },
-    translate: async (payload: {
-      text: string;
-      sourceLanguage: string;
-      targetLanguage: string;
-    }) => {
-      const { data } = await axios.post("/api/ai/translate", payload);
-      return data;
-    },
     getStuckSuggestions: async (payload: {
       topic: string;
       currentText: string;

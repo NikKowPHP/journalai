@@ -34,6 +34,7 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
       return () => {
         if (window.speechSynthesis) {
           window.speechSynthesis.onvoiceschanged = null;
+          window.speechSynthesis.cancel();
         }
       };
     }
@@ -42,17 +43,21 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
   const handleSpeak = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isSupported || !isVoiceAvailable) return;
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
+
+    const voices = window.speechSynthesis.getVoices();
+    const voice = voices.find((v) => v.lang.startsWith(lang));
+    if (voice) {
+      utterance.voice = voice;
+    }
+
     window.speechSynthesis.cancel(); // Cancel any previous speech
     window.speechSynthesis.speak(utterance);
   };
 
-  if (!isSupported) {
-    return null;
-  }
-
-  if (!isVoiceAvailable) {
+  if (!isSupported || !isVoiceAvailable) {
     return (
       <Button
         size="icon"

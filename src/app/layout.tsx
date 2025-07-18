@@ -1,3 +1,4 @@
+
 import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -7,6 +8,7 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { AppShell } from "@/components/layout/AppShell";
 import StoreInitializer from "@/components/layout/StoreInitializer";
 import { Toaster } from "@/components/ui/toaster";
+import { PostHogProvider } from "@/providers/PostHogProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -67,10 +69,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <StoreInitializer />
-          <AppShell>{children}</AppShell>
-          <CookieBanner />
-          <Toaster />
+          <PostHogProvider>
+            <StoreInitializer />
+            <AppShell>{children}</AppShell>
+            <CookieBanner />
+            <Toaster />
+          </PostHogProvider>
         </Providers>
       </body>
     </html>
