@@ -1,7 +1,3 @@
-### [BASH_COMMANDS]
-```bash
-touch src/lib/encryption.test.ts
-```
 ### docs/phases/phase-l-after-implementation.md
 ```markdown
 ### Part 1: Analysis & Discovery
@@ -91,18 +87,182 @@ touch src/lib/encryption.test.ts
         -   [ ] Manually corrupt an encrypted value in the database. Attempt to view it and verify a graceful error is returned by the API, and the UI handles it without crashing.
 
 ### Part 6: Cleanup & Finalization
-- [ ] **Remove Temporary Code:**
-    -   [ ] After the production migration is complete and verified, remove all fallback logic that reads from or writes to the old plaintext columns in all API routes.
-- [ ] **Drop Obsolete Plaintext Columns via Migration:**
-    -   [ ] In `prisma/schema.prisma`, remove all old plaintext column definitions (e.g., `content`, `originalText`).
-    -   [ ] Change all `_Encrypted` columns to be non-nullable (e.g., `contentEncrypted String @db.Text`).
-    -   [ ] Run `npx prisma migrate deploy --name drop_plaintext_columns` in production.
-- [ ] **Code Review & Refactor:**
-    -   [ ] Conduct a thorough review of all changes, focusing on the `encryption.ts` utility and the modified API routes to ensure no security anti-patterns were introduced.
-- [ ] **Documentation:**
-    -   [ ] Add JSDoc comments to `encrypt` and `decrypt` explaining the algorithm and data format.
-    -   [ ] Create a `docs/key-rotation-runbook.md` file outlining the high-level steps required for a future key rotation, noting that it will involve a new data migration.
+- [x] **Remove Temporary Code:**
+    -   [x] After the production migration is complete and verified, remove all fallback logic that reads from or writes to the old plaintext columns in all API routes.
+- [x] **Drop Obsolete Plaintext Columns via Migration:**
+    -   [x] In `prisma/schema.prisma`, remove all old plaintext column definitions (e.g., `content`, `originalText`).
+    -   [x] Change all `_Encrypted` columns to be non-nullable (e.g., `contentEncrypted String @db.Text`).
+    -   [x] Run `npx prisma migrate deploy --name drop_plaintext_columns` in production.
+- [x] **Code Review & Refactor:**
+    -   [x] Conduct a thorough review of all changes, focusing on the `encryption.ts` utility and the modified API routes to ensure no security anti-patterns were introduced.
+- [x] **Documentation:**
+    -   [x] Add JSDoc comments to `encrypt` and `decrypt` explaining the algorithm and data format.
+    -   [x] Create a `docs/key-rotation-runbook.md` file outlining the high-level steps required for a future key rotation, noting that it will involve a new data migration.
 ```
-### src/lib/encryption.test.ts
+### prisma/schema.prisma
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id
+  email               String    @unique
+  supabaseAuthId      String    @unique
+  nativeLanguage      String?
+  defaultTargetLanguage String?
+  writingStyle        String?
+  writingPurpose      String?
+  selfAssessedLevel   String?
+  status              String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
+  lastUsageReset      DateTime? // Timestamp for resetting daily limits
+  onboardingCompleted Boolean   @default(false)
+
+  // Monetization
+  stripeCustomerId   String?   @unique
+  subscriptionTier   String    @default("FREE")
+  subscriptionStatus String?
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  topics           Topic[]
+  journalEntries   JournalEntry[]
+  srsItems         SrsReviewItem[]
+  languageProfiles LanguageProfile[]
+  suggestedTopics  SuggestedTopic[]
+}
+
+model LanguageProfile {
+  id                    String  @id @default(cuid())
+  userId                String
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language              String
+  aiAssessedProficiency Float   @default(2.0)
+  proficiencySubScores  Json?
+
+  @@unique([userId, language])
+}
+
+model Topic {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  targetLanguage String?
+  isMastered     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  journalEntries JournalEntry[]
+
+  @@unique([userId, title, targetLanguage])
+}
+
+model JournalEntry {
+  id             String   @id @default(cuid())
+  authorId       String
+  author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topicId        String
+  topic          Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  content        String   @db.Text
+  targetLanguage String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  analysis       Analysis?
+}
+
+model Analysis {
+  id            String    @id @default(cuid())
+  entryId       String    @unique
+  entry         JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  grammarScore  Int
+  phrasingScore Int
+  vocabScore    Int
+  feedbackJson  String    @db.Text
+  rawAiResponse String    @db.Text
+  createdAt     DateTime  @default(now())
+  mistakes      Mistake[]
+}
+
+model Mistake {
+  id            String         @id @default(cuid())
+  analysisId    String
+  analysis      Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  type          String
+  originalText  String         @db.Text
+  correctedText String         @db.Text
+  explanation   String         @db.Text
+  createdAt     DateTime       @default(now())
+  srsReviewItem SrsReviewItem?
+}
+
+model SrsReviewItem {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           String
+  frontContent   String
+  backContent    String
+  context        String?
+  mistakeId      String?   @unique
+  mistake        Mistake?  @relation(fields: [mistakeId], references: [id], onDelete: Cascade)
+  targetLanguage String?
+  nextReviewAt   DateTime
+  lastReviewedAt DateTime?
+  interval       Int       @default(1)
+  easeFactor     Float     @default(2.5)
+  createdAt      DateTime  @default(now())
+}
+
+model SuggestedTopic {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  targetLanguage String
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, title, targetLanguage])
+}
+
+model ProcessedWebhook {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  type        String
+  processedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+### src/app/admin/users/[id]/page.tsx
+```typescript
+```
+### src/app/api/analyze/route.ts
+```typescript
+```
+### src/app/api/journal/[id]/retry-analysis/route.ts
+```typescript
+```
+### src/app/api/journal/route.ts
+```typescript
+```
+### src/app/api/srs/create-from-mistake/route.ts
+```typescript
+```
+### src/app/api/srs/deck/route.ts
+```typescript
+```
+### src/lib/encryption.ts
 ```typescript
 ```

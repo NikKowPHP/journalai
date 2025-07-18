@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
-import { decrypt } from "@/lib/encryption";
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
@@ -39,27 +38,5 @@ export async function GET(req: NextRequest) {
     take: 30,
   });
 
-  const decryptedSrsItems = srsItems.map((item) => {
-    if (item.mistake) {
-      const m = { ...item.mistake } as typeof item.mistake & {
-        originalTextEncrypted?: string | null;
-        correctedTextEncrypted?: string | null;
-        explanationEncrypted?: string | null;
-      };
-      if (m.originalTextEncrypted) {
-        m.originalText = decrypt(m.originalTextEncrypted) || m.originalText;
-      }
-      if (m.correctedTextEncrypted) {
-        m.correctedText =
-          decrypt(m.correctedTextEncrypted) || m.correctedText;
-      }
-      if (m.explanationEncrypted) {
-        m.explanation = decrypt(m.explanationEncrypted) || m.explanation;
-      }
-      return { ...item, mistake: m };
-    }
-    return item;
-  });
-
-  return NextResponse.json(decryptedSrsItems);
+  return NextResponse.json(srsItems);
 }

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { getQuestionGenerationService } from "@/lib/ai";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 const analyzeSchema = z.object({
   journalId: z.string(),
@@ -52,15 +52,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Journal not found" }, { status: 404 });
     }
 
-    // --- ROBUSTNESS FIX ---
-    // If an analysis already exists, return it immediately. This makes the endpoint idempotent.
     if (journal.analysis) {
       logger.warn(
         `Analysis already exists for journal ${journalId}. Returning existing analysis.`,
       );
       return NextResponse.json(journal.analysis);
     }
-    // --- END FIX ---
 
     const targetLanguage = journal.targetLanguage;
 
@@ -74,6 +71,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Decrypt content before sending to AI
+    const decryptedContent = decrypt(journal.content);
+    if (decryptedContent === null) {
+      throw new Error(`Failed to decrypt content for journal ${journalId}`);
+    }
+
     // 2. Get user's current proficiency score for the language
     const languageProfile = await prisma.languageProfile.findUnique({
       where: {
@@ -85,7 +88,7 @@ export async function POST(req: NextRequest) {
     // 3. Call the AI service
     const aiService = getQuestionGenerationService();
     const analysisResult = await aiService.analyzeJournalEntry(
-      journal.content,
+      decryptedContent,
       targetLanguage,
       proficiencyScore,
       dbUser.nativeLanguage,
@@ -93,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     if (journal.topic?.title === "Free Write") {
       const generatedTitle = await aiService.generateTitleForEntry(
-        journal.content,
+        decryptedContent,
       );
       await prisma.topic.update({
         where: { id: journal.topicId },
@@ -108,19 +111,14 @@ export async function POST(req: NextRequest) {
         grammarScore: analysisResult.grammarScore,
         phrasingScore: analysisResult.phrasingScore,
         vocabScore: analysisResult.vocabularyScore,
-        feedbackJson: analysisResult.feedback,
-        feedbackJsonEncrypted: encrypt(analysisResult.feedback),
-        rawAiResponse: JSON.stringify(analysisResult),
-        rawAiResponseEncrypted: encrypt(JSON.stringify(analysisResult)),
+        feedbackJson: encrypt(analysisResult.feedback),
+        rawAiResponse: encrypt(JSON.stringify(analysisResult)),
         mistakes: {
           create: analysisResult.mistakes.map((mistake) => ({
             type: mistake.type,
-            originalText: mistake.original,
-            originalTextEncrypted: encrypt(mistake.original),
-            correctedText: mistake.corrected,
-            correctedTextEncrypted: encrypt(mistake.corrected),
-            explanation: mistake.explanation,
-            explanationEncrypted: encrypt(mistake.explanation),
+            originalText: encrypt(mistake.original),
+            correctedText: encrypt(mistake.corrected),
+            explanation: encrypt(mistake.explanation),
           })),
         },
       },

@@ -28,20 +28,26 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       content: true,
-      contentEncrypted: true,
       createdAt: true,
       topic: { select: { title: true } },
       analysis: true,
     },
   });
 
-  const decryptedJournals = journals.map((journal) => {
-    const j = journal as typeof journal & { contentEncrypted?: string | null };
-    if (j.contentEncrypted) {
-      return { ...j, content: decrypt(j.contentEncrypted) || j.content };
-    }
-    return j;
-  });
+  const decryptedJournals = journals.reduce(
+    (acc: typeof journals, journal) => {
+      const decryptedContent = decrypt(journal.content);
+      if (decryptedContent !== null) {
+        acc.push({ ...journal, content: decryptedContent });
+      } else {
+        logger.error(
+          `Failed to decrypt journal entry content for id: ${journal.id}. Skipping.`,
+        );
+      }
+      return acc;
+    },
+    [],
+  );
 
   return NextResponse.json(decryptedJournals);
 }
@@ -89,8 +95,7 @@ export async function POST(req: NextRequest) {
 
     const newJournal = await prisma.journalEntry.create({
       data: {
-        content,
-        contentEncrypted: encrypt(content),
+        content: encrypt(content),
         topicId: topic.id,
         authorId: user.id,
         targetLanguage,

@@ -47,14 +47,12 @@ const UserDetailPage = async ({ params }: UserDetailPageProps) => {
   }
 
   // Decrypt journal content for display
-  user.journalEntries = user.journalEntries.map((entry) => {
-    const e = { ...entry } as JournalEntryWithRelations & {
-      contentEncrypted?: string | null;
+  const decryptedJournalEntries = user.journalEntries.map((entry) => {
+    const decryptedContent = decrypt(entry.content);
+    return {
+      ...entry,
+      content: decryptedContent || "[Decryption Failed]",
     };
-    if (e.contentEncrypted) {
-      e.content = decrypt(e.contentEncrypted) || e.content;
-    }
-    return e;
   });
 
   return (
@@ -95,29 +93,31 @@ const UserDetailPage = async ({ params }: UserDetailPageProps) => {
 
         <div className="space-y-4">
           <h3 className="text-lg font-medium">Journal Entries</h3>
-          {user.journalEntries?.length ? (
+          {decryptedJournalEntries?.length ? (
             <>
               {/* Mobile View */}
               <div className="md:hidden space-y-2">
-                {user.journalEntries.map((entry: JournalEntryWithRelations) => (
-                  <Link href={`/journal/${entry.id}`} key={entry.id}>
-                    <Card className="hover:bg-accent/50 transition-colors">
-                      <CardContent className="p-4">
-                        <p className="font-semibold">
-                          {entry.topic?.title || "Free Write"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(entry.createdAt).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm mt-1">
-                          {entry.analysis
-                            ? "Analysis available"
-                            : "No analysis"}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                ))}
+                {decryptedJournalEntries.map(
+                  (entry: JournalEntryWithRelations) => (
+                    <Link href={`/journal/${entry.id}`} key={entry.id}>
+                      <Card className="hover:bg-accent/50 transition-colors">
+                        <CardContent className="p-4">
+                          <p className="font-semibold">
+                            {entry.topic?.title || "Free Write"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(entry.createdAt).toLocaleDateString()}
+                          </p>
+                          <p className="text-sm mt-1">
+                            {entry.analysis
+                              ? "Analysis available"
+                              : "No analysis"}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  ),
+                )}
               </div>
               {/* Desktop View */}
               <div className="hidden md:block">
@@ -130,7 +130,7 @@ const UserDetailPage = async ({ params }: UserDetailPageProps) => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {user.journalEntries.map(
+                    {decryptedJournalEntries.map(
                       (entry: JournalEntryWithRelations) => (
                         <TableRow key={entry.id}>
                           <TableCell>

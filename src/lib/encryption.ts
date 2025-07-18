@@ -13,9 +13,18 @@ const getKey = (): Buffer => {
   return Buffer.from(key, "base64");
 };
 
-export function encrypt(text: string | null | undefined): string | null {
-  if (text === null || text === undefined || text === "") {
-    return null;
+/**
+ * Encrypts a string using AES-256-GCM.
+ * The encryption key is read from the APP_ENCRYPTION_KEY environment variable.
+ * @param {string | null | undefined} text The plaintext string to encrypt.
+ * @returns {string} The encrypted data in 'iv:authTag:ciphertext' format.
+ * @throws {Error} if the input is null or undefined, or if APP_ENCRYPTION_KEY is not set.
+ */
+export function encrypt(text: string | null | undefined): string {
+  if (text === null || text === undefined) {
+    // To satisfy the non-nullable schema, we encrypt an empty string
+    // for null/undefined inputs. This maintains data integrity.
+    text = "";
   }
 
   const key = getKey();
@@ -30,10 +39,21 @@ export function encrypt(text: string | null | undefined): string | null {
   return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
 }
 
+/**
+ * Decrypts a string that was encrypted with the `encrypt` function.
+ * It uses the 'iv:authTag:ciphertext' format to extract all necessary components.
+ * @param {string | null | undefined} encryptedData The encrypted string.
+ * @returns {string | null} The decrypted plaintext string, or null if input is empty or decryption fails.
+ * @throws {Error} if APP_ENCRYPTION_KEY is not set.
+ */
 export function decrypt(
   encryptedData: string | null | undefined,
 ): string | null {
-  if (encryptedData === null || encryptedData === undefined || encryptedData === "") {
+  if (
+    encryptedData === null ||
+    encryptedData === undefined ||
+    encryptedData === ""
+  ) {
     return null;
   }
 

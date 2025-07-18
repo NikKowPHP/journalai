@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { getQuestionGenerationService } from "@/lib/ai";
 import { logger } from "@/lib/logger";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function POST(
   req: Request,
@@ -66,6 +66,11 @@ export async function POST(
       );
     }
 
+    const decryptedContent = decrypt(journal.content);
+    if (decryptedContent === null) {
+      throw new Error(`Failed to decrypt content for journal ${journalId}`);
+    }
+
     const languageProfile = await prisma.languageProfile.findUnique({
       where: {
         userId_language: { userId: user.id, language: targetLanguage },
@@ -75,14 +80,14 @@ export async function POST(
 
     const aiService = getQuestionGenerationService();
     const analysisResult = await aiService.analyzeJournalEntry(
-      journal.content,
+      decryptedContent,
       targetLanguage,
       proficiencyScore,
       dbUser.nativeLanguage,
     );
 
     if (journal.topic?.title === "Free Write") {
-      generatedTitle = await aiService.generateTitleForEntry(journal.content);
+      generatedTitle = await aiService.generateTitleForEntry(decryptedContent);
     }
 
     const newAnalysis = await prisma.$transaction(async (tx) => {
@@ -105,19 +110,14 @@ export async function POST(
           grammarScore: analysisResult.grammarScore,
           phrasingScore: analysisResult.phrasingScore,
           vocabScore: analysisResult.vocabularyScore,
-          feedbackJson: analysisResult.feedback,
-          feedbackJsonEncrypted: encrypt(analysisResult.feedback),
-          rawAiResponse: JSON.stringify(analysisResult),
-          rawAiResponseEncrypted: encrypt(JSON.stringify(analysisResult)),
+          feedbackJson: encrypt(analysisResult.feedback),
+          rawAiResponse: encrypt(JSON.stringify(analysisResult)),
           mistakes: {
             create: analysisResult.mistakes.map((mistake) => ({
               type: mistake.type,
-              originalText: mistake.original,
-              originalTextEncrypted: encrypt(mistake.original),
-              correctedText: mistake.corrected,
-              correctedTextEncrypted: encrypt(mistake.corrected),
-              explanation: mistake.explanation,
-              explanationEncrypted: encrypt(mistake.explanation),
+              originalText: encrypt(mistake.original),
+              correctedText: encrypt(mistake.corrected),
+              explanation: encrypt(mistake.explanation),
             })),
           },
         },

@@ -60,18 +60,27 @@ export async function POST(request: Request) {
       return NextResponse.json(existingSrsItem);
     }
 
-    const m = mistake as typeof mistake & { explanationEncrypted?: string | null };
-    const explanation = m.explanationEncrypted
-      ? decrypt(m.explanationEncrypted) || m.explanation
-      : m.explanation;
+    const frontContent = decrypt(mistake.originalText);
+    const backContent = decrypt(mistake.correctedText);
+    const context = decrypt(mistake.explanation);
+
+    if (frontContent === null || backContent === null) {
+      logger.error(
+        `Failed to decrypt mistake data for mistakeId: ${mistakeId}`,
+      );
+      return NextResponse.json(
+        { error: "Data integrity error" },
+        { status: 500 },
+      );
+    }
 
     const srsItem = await prisma.srsReviewItem.create({
       data: {
         userId: user.id,
         type: "MISTAKE",
-        frontContent: mistake.originalText,
-        backContent: mistake.correctedText,
-        context: explanation,
+        frontContent: frontContent,
+        backContent: backContent,
+        context: context,
         mistakeId: mistake.id,
         targetLanguage: mistake.analysis.entry.targetLanguage,
         nextReviewAt: new Date(),
