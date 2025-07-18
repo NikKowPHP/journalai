@@ -1,12 +1,8 @@
-
 /** @jest-environment jsdom */
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import TranslatorPage from "./page";
-import {
-  useTranslateAndBreakdown,
-  useTranslateText,
-} from "@/lib/hooks/data";
+import { useTranslateAndBreakdown } from "@/lib/hooks/data";
 
 jest.mock("@/lib/hooks/data", () => ({
   useUserProfile: jest.fn(() => ({
@@ -21,19 +17,12 @@ jest.mock("@/lib/hooks/data", () => ({
   useTranslateAndBreakdown: jest.fn(),
 }));
 
-const mockTranslateTextMutate = jest.fn();
-const mockTranslateTextReset = jest.fn();
 const mockTranslateBreakdownMutate = jest.fn();
 const mockTranslateBreakdownReset = jest.fn();
 
 describe("TranslatorPage Integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (useTranslateText as jest.Mock).mockReturnValue({
-      mutate: mockTranslateTextMutate,
-      reset: mockTranslateTextReset,
-      isPending: false,
-    });
     (useTranslateAndBreakdown as jest.Mock).mockReturnValue({
       mutate: mockTranslateBreakdownMutate,
       reset: mockTranslateBreakdownReset,
@@ -42,8 +31,11 @@ describe("TranslatorPage Integration", () => {
   });
 
   it("resets mutations when swapping languages", async () => {
-    mockTranslateTextMutate.mockImplementation((_payload, options) => {
-      options?.onSuccess?.({ translatedText: "Hola" });
+    mockTranslateBreakdownMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.({
+        fullTranslation: "Hola",
+        segments: [],
+      });
     });
 
     render(<TranslatorPage />);
@@ -55,15 +47,14 @@ describe("TranslatorPage Integration", () => {
     fireEvent.click(translateButton);
 
     await waitFor(() => {
-      expect(mockTranslateTextMutate).toHaveBeenCalled();
+      expect(mockTranslateBreakdownMutate).toHaveBeenCalled();
     });
 
     // Now swap languages
     const swapButton = screen.getByLabelText("Swap languages");
     fireEvent.click(swapButton);
 
-    // Check that reset was called on both mutations
-    expect(mockTranslateTextReset).toHaveBeenCalledTimes(1);
+    // Check that reset was called on the mutation
     expect(mockTranslateBreakdownReset).toHaveBeenCalledTimes(1);
   });
 });

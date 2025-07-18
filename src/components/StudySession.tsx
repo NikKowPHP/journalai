@@ -1,22 +1,13 @@
 
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Flashcard } from "@/components/Flashcard";
 import { useReviewSrsItem } from "@/lib/hooks/data";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
 
-/**
- * Manages a study session with a deck of flashcards, tracking progress through the deck.
- * @param {object} props - The component props.
- * @param {Array} props.cards - The array of cards to study, each containing:
- * @param {string} props.cards[].id - The card's unique identifier.
- * @param {string} props.cards[].front - The front side content of the card.
- * @param {string} props.cards[].back - The back side content of the card.
- * @param {string} props.cards[].context - Additional context for the back content.
- * @returns {React.ReactElement} A study session interface with progress tracking.
- */
+
 interface StudyCard {
   id: string;
   frontContent: string;
@@ -42,17 +33,26 @@ export function StudySession({
   const [sessionCards, setSessionCards] = useState<StudyCard[]>([]);
   const [initialCardCount, setInitialCardCount] = useState(0);
   const analytics = useAnalytics();
+  const sessionStarted = useRef(false);
 
   useEffect(() => {
+  
     setSessionCards(cards);
-    if (cards.length > 0) {
-      setInitialCardCount(cards.length);
+    setInitialCardCount(cards.length);
+ 
+    sessionStarted.current = false;
+  }, [cards]);
+
+  useEffect(() => {
+   
+    if (initialCardCount > 0 && !sessionStarted.current) {
       analytics.capture("SRS Session Started", {
-        cardCount: cards.length,
+        cardCount: initialCardCount,
         language: targetLanguage,
       });
+      sessionStarted.current = true;
     }
-  }, [cards, analytics, targetLanguage]);
+  }, [initialCardCount, targetLanguage, analytics]);
 
   const queryClient = useQueryClient();
   const reviewMutation = useReviewSrsItem();

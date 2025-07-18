@@ -98,11 +98,13 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
               title="Translate Anything"
               description="You can select any text on this platform, like this topic title, to get an instant translation."
           >
-             <div ref={titleRef}>
-              <CardTitle className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help">
+             
+            <CardTitle className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help">
+              <div ref={titleRef}>
                 Topic: {topicTitle}
+                 </div>
               </CardTitle>
-              </div>
+             
             </GuidedPopover>
           
         </CardHeader>

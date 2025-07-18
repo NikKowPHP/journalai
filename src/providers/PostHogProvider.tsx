@@ -7,7 +7,7 @@ import posthog from "posthog-js";
 import { PostHogProvider as Provider } from "posthog-js/react";
 import { useAuthStore } from "@/lib/stores/auth.store";
 
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && process.env.NODE_ENV != 'development' ) {
   // Only initialize if the key is provided
   if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     try {

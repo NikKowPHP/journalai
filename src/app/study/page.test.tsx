@@ -3,7 +3,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import StudyPage from "./page";
 import { useLanguageStore } from "@/lib/stores/language.store";
-import { useStudyDeck } from "@/lib/hooks/data";
+import { useStudyDeck, useUserProfile } from "@/lib/hooks/data";
 import { useOnboardingStore } from "@/lib/stores/onboarding.store";
 
 // Mock dependencies
@@ -11,6 +11,7 @@ jest.mock("@/lib/stores/language.store");
 jest.mock("@/lib/stores/onboarding.store");
 jest.mock("@/lib/hooks/data", () => ({
   useStudyDeck: jest.fn(),
+  useUserProfile: jest.fn(),
 }));
 jest.mock("@/components/StudySession", () => ({
   StudySession: () => <div data-testid="study-session" />,
@@ -24,6 +25,7 @@ jest.mock("@/components/ui/skeleton", () => ({
 
 const mockedUseLanguageStore = useLanguageStore as unknown as jest.Mock;
 const mockedUseStudyDeck = useStudyDeck as jest.Mock;
+const mockedUseUserProfile = useUserProfile as jest.Mock;
 const mockedUseOnboardingStore = useOnboardingStore as unknown as jest.Mock;
 
 describe("StudyPage", () => {
@@ -33,6 +35,11 @@ describe("StudyPage", () => {
     mockedUseOnboardingStore.mockReturnValue({
       step: "INACTIVE",
       setStep: jest.fn(),
+    });
+    // Default mock for user profile
+    mockedUseUserProfile.mockReturnValue({
+      data: { nativeLanguage: "english" },
+      isLoading: false,
     });
   });
 
