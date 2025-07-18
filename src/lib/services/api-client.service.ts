@@ -152,6 +152,14 @@ export const apiClient = {
       const { data } = await axios.post("/api/ai/stuck-helper", payload);
       return data;
     },
+     translate: async (payload: {
+      text: string;
+      sourceLanguage: string;
+      targetLanguage: string;
+    }) => {
+      const { data } = await axios.post("/api/ai/translate", payload);
+      return data;
+    },
     translateAndBreakdown: async (payload: {
       text: string;
       sourceLanguage: string;

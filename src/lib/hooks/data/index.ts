@@ -21,3 +21,4 @@ export * from "./useStuckWriterSuggestions";
 export * from "./useCreateSrsFromTranslation";
 export * from "./useSuggestedTopics";
 export * from "./useTranslateAndBreakdown";
+export * from "./useTranslateText";

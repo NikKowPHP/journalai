@@ -9,3 +9,4 @@ export * from "./roleRefinement.prompt";
 export * from "./topicGeneration.prompt";
 export * from "./stuckWriter.prompt";
 export * from "./paragraphBreakdown.prompt";
+export * from "./textTranslation.prompt";
