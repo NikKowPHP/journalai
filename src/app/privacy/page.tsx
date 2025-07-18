@@ -2,7 +2,7 @@ export default function PrivacyPage() {
   return (
     <div className="container mx-auto p-4 md:p-8 prose dark:prose-invert max-w-4xl">
       <h1 className="text-2xl font-bold mb-4">Privacy Policy</h1>
-      <p>Last updated: July 16, 2024</p>
+      <p>Last updated: July 18, 2025</p>
 
       <p>
         LinguaScribe ("we," "our," or "us") is committed to protecting your
@@ -119,6 +119,24 @@ export default function PrivacyPage() {
         data transmission can be guaranteed against any interception or other
         type of misuse.
       </p>
+      <p>Specifically, we implement the following key security measures:</p>
+      <ul>
+        <li>
+          <strong>Encryption at Rest:</strong> All of your user-generated
+          content, including journal entries and AI feedback, is encrypted at
+          rest in our database using industry-standard AES-256-GCM encryption.
+        </li>
+        <li>
+          <strong>Secure Authentication:</strong> User authentication is handled
+          by Supabase, which provides secure management of passwords and login
+          sessions.
+        </li>
+        <li>
+          <strong>Secure Payments:</strong> We do not store your payment card
+          details. All payment processing is handled securely by Stripe, a
+          PCI-compliant payment processor.
+        </li>
+      </ul>
     </div>
   );
 }

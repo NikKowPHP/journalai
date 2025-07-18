@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -59,10 +58,11 @@ export async function GET(
     };
 
     if (analysisWithEncrypted.feedbackJsonEncrypted) {
-      const decryptedJson = decrypt(analysisWithEncrypted.feedbackJsonEncrypted);
-      journal.analysis.feedbackJson = decryptedJson
-        ? JSON.parse(decryptedJson)
-        : journal.analysis.feedbackJson;
+      const decryptedString = decrypt(
+        analysisWithEncrypted.feedbackJsonEncrypted,
+      );
+      journal.analysis.feedbackJson =
+        decryptedString ?? journal.analysis.feedbackJson;
     }
     if (analysisWithEncrypted.rawAiResponseEncrypted) {
       const decryptedJson = decrypt(

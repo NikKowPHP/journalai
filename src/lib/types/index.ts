@@ -81,7 +81,7 @@ export interface GeneratedQuestion {
 
 // From admin/users/[id]/page.tsx
 export type JournalEntryWithRelations = JournalEntry & {
-  topic: Topic | null;
+  topic: Topic;
   analysis: (Analysis & { mistakes: Mistake[] }) | null;
 };
 
