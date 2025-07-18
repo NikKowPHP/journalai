@@ -32,7 +32,7 @@ export default function JournalAnalysisPage() {
   const isTourActive = step === "VIEW_ANALYSIS";
 
   const { data: journal, isLoading, error } = useJournalEntry(id);
-  const { data: studyDeck, isLoading: isStudyDeckLoading } = useStudyDeck();
+  const { data: studyDeck, isLoading: isStudyDeckLoading } = useStudyDeck({ includeAll: true });
   const retryAnalysisMutation = useRetryJournalAnalysis();
   const analyzeJournalMutation = useAnalyzeJournal();
 
@@ -87,6 +87,12 @@ export default function JournalAnalysisPage() {
       content={journal.content}
       highlights={(journal.analysis?.rawAiResponse as any)?.highlights || []}
     />
+  );
+  
+  const addedMistakeIds = new Set(
+    studyDeck
+      ?.map((item: any) => item.mistakeId)
+      .filter(Boolean)
   );
 
   return (
@@ -151,10 +157,7 @@ export default function JournalAnalysisPage() {
                 journal.analysis.mistakes.length > 0 ? (
                   journal.analysis.mistakes.map(
                     (feedback: any, index: number) => {
-                      const isAlreadyInDeck =
-                        studyDeck?.some(
-                          (item: any) => item.mistakeId === feedback.id,
-                        ) ?? false;
+                      const isAlreadyInDeck = addedMistakeIds.has(feedback.id);
                       return (
                         <div
                           key={feedback.id}

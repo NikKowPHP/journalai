@@ -48,7 +48,7 @@ export const apiClient = {
     },
   },
   srs: {
-    getDeck: async (params: { targetLanguage: string }) => {
+    getDeck: async (params: { targetLanguage: string, includeAll?: boolean }) => {
       const { data } = await axios.get("/api/srs/deck", { params });
       return data;
     },

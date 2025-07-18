@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { Card } from "@/components/ui/card";
@@ -32,13 +33,7 @@ function AddToDeckButton({
 }) {
   const { mutate, isPending, isSuccess } = useCreateSrsFromMistake();
 
-  if (isSuccess || isAlreadyInDeck) {
-    return (
-      <Button variant="secondary" className="w-full" disabled>
-        {isAlreadyInDeck ? "Already in Deck" : "Added to Deck!"}
-      </Button>
-    );
-  }
+  const showAddedState = isSuccess || isAlreadyInDeck;
 
   return (
     <Button
@@ -49,9 +44,15 @@ function AddToDeckButton({
           onSuccess: () => onOnboardingAddToDeck?.(),
         });
       }}
-      disabled={isPending}
+      disabled={isPending || showAddedState}
     >
-      {isPending ? "Adding..." : "Add to Study Deck"}
+      {isPending
+        ? "Adding..."
+        : showAddedState
+        ? isAlreadyInDeck
+          ? "Already in Deck"
+          : "Added to Deck!"
+        : "Add to Study Deck"}
     </Button>
   );
 }
