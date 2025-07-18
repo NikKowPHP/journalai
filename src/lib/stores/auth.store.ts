@@ -1,8 +1,7 @@
-
 import { create } from "zustand";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { useAnalytics } from "@/lib/hooks/useAnalytics";
+import posthog from "posthog-js";
 
 interface AuthState {
   user: User | null;
@@ -58,7 +57,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       const supabase = createClient();
       await supabase.auth.refreshSession();
-      useAnalytics.getState().capture("User Signed In");
+      if (posthog) posthog.capture("User Signed In");
       return { error: null };
     } catch (err: unknown) {
       const error = err as Error;
@@ -85,11 +84,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (data.session) {
         const supabase = createClient();
         await supabase.auth.refreshSession();
-        useAnalytics.getState().capture("User Signed Up");
+        if (posthog) posthog.capture("User Signed Up");
       } else if (data?.user?.confirmation_sent_at) {
-        useAnalytics.getState().capture("User Signed Up", {
-          verification_required: true,
-        });
+        if (posthog)
+          posthog.capture("User Signed Up", {
+            verification_required: true,
+          });
         set({ loading: false });
       }
 
@@ -103,7 +103,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signOut: async () => {
     set({ loading: true });
-    useAnalytics.getState().capture("User Signed Out");
+    if (posthog) posthog.capture("User Signed Out");
     const supabase = createClient();
     await supabase.auth.signOut();
     // The listener will handle setting user to null and loading to false.
