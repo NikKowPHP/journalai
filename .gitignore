@@ -50,3 +50,5 @@ logs/
 
 public/workbox-0710f85d.js
 public/sw.js
+public/sw.js.*
+public/workbox*

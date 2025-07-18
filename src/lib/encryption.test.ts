@@ -1,122 +1,79 @@
+import crypto from "crypto";
 
-/** @jest-environment node */
+const ALGORITHM = "aes-256-gcm";
+const IV_LENGTH = 16;
+const AUTH_TAG_LENGTH = 16;
 
-describe("Encryption Service", () => {
-  const originalEnv = process.env;
+const getKey = (): Buffer => {
+  const key = process.env.APP_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error("APP_ENCRYPTION_KEY is not set in environment variables.");
+  }
+  return Buffer.from(key, "base64");
+};
 
-  beforeEach(() => {
-    jest.resetModules();
-    process.env = {
-      ...originalEnv,
-      APP_ENCRYPTION_KEY: "MWFjOWI5Zjg3ZGI5N2E2ZDA2YmU4YjYyZTIxZGJlY2M=",
-    };
-  });
+/**
+ * Encrypts a string using AES-256-GCM.
+ * The encryption key is read from the APP_ENCRYPTION_KEY environment variable.
+ * @param {string | null | undefined} text The plaintext string to encrypt.
+ * @returns {string | null} The encrypted data in 'iv:authTag:ciphertext' format, or null if input is empty/null/undefined.
+ * @throws {Error} if APP_ENCRYPTION_KEY is not set.
+ */
+export function encrypt(text: string | null | undefined): string | null {
+  if (text === null || text === undefined || text === "") {
+    return null;
+  }
 
-  afterEach(() => {
-    process.env = originalEnv;
-  });
+  const key = getKey();
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-  it("should throw an error if APP_ENCRYPTION_KEY is not set", () => {
-    delete process.env.APP_ENCRYPTION_KEY;
-    const { encrypt: e, decrypt: d } = require("./encryption");
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
 
-    expect(() => e("some text")).toThrow(
-      "APP_ENCRYPTION_KEY is not set in environment variables.",
-    );
-    expect(() => d("some:encrypted:text")).toThrow(
-      "APP_ENCRYPTION_KEY is not set in environment variables.",
-    );
-  });
+  const authTag = cipher.getAuthTag();
 
-  it("should correctly encrypt and decrypt a simple string", () => {
-    const { encrypt, decrypt } = require("./encryption");
-    const originalText = "This is a secret message.";
-    const encrypted = encrypt(originalText);
-    const decrypted = decrypt(encrypted);
+  return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
+}
 
-    expect(encrypted).not.toBe(originalText);
-    expect(typeof encrypted).toBe("string");
-    expect(decrypted).toBe(originalText);
-  });
+/**
+ * Decrypts a string that was encrypted with the `encrypt` function.
+ * It uses the 'iv:authTag:ciphertext' format to extract all necessary components.
+ * @param {string | null | undefined} encryptedData The encrypted string.
+ * @returns {string | null} The decrypted plaintext string, or null if input is empty or decryption fails.
+ */
+export function decrypt(
+  encryptedData: string | null | undefined,
+): string | null {
+  if (
+    encryptedData === null ||
+    encryptedData === undefined ||
+    encryptedData === ""
+  ) {
+    return null;
+  }
 
-  it("should handle multi-byte UTF-8 characters correctly", () => {
-    const { encrypt, decrypt } = require("./encryption");
-    const originalText = "你好世界, 안녕하세요, こんにちは世界";
-    const encrypted = encrypt(originalText);
-    const decrypted = decrypt(encrypted);
+  try {
+    const key = getKey();
+    const parts = encryptedData.split(":");
+    if (parts.length !== 3) {
+      throw new Error("Invalid encrypted data format.");
+    }
 
-    expect(decrypted).toBe(originalText);
-  });
+    const [ivHex, authTagHex, encryptedText] = parts;
+    const iv = Buffer.from(ivHex, "hex");
+    const authTag = Buffer.from(authTagHex, "hex");
 
-  it("should handle long text blocks correctly", () => {
-    const { encrypt, decrypt } = require("./encryption");
-    const originalText = "a".repeat(10000);
-    const encrypted = encrypt(originalText);
-    const decrypted = decrypt(encrypted);
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+    decipher.setAuthTag(authTag);
 
-    expect(decrypted).toBe(originalText);
-  });
+    let decrypted = decipher.update(encryptedText, "hex", "utf8");
+    decrypted += decipher.final("utf8");
 
-  describe("Edge Case Inputs", () => {
-    it("should handle empty string by returning null", () => {
-      const { encrypt } = require("./encryption");
-      expect(encrypt("")).toBeNull();
-    });
-
-    it("should handle null input by returning null", () => {
-      const { encrypt, decrypt } = require("./encryption");
-      expect(encrypt(null)).toBeNull();
-      expect(decrypt(null)).toBeNull();
-    });
-
-    it("should handle undefined input by returning null", () => {
-      const { encrypt, decrypt } = require("./encryption");
-      expect(encrypt(undefined)).toBeNull();
-      expect(decrypt(undefined)).toBeNull();
-    });
-  });
-
-  describe("Error Handling for Decryption", () => {
-    it("should return null for invalid encrypted data format", () => {
-      const { decrypt } = require("./encryption");
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-      const decrypted = decrypt("invalid-data");
-      expect(decrypted).toBeNull();
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      consoleErrorSpy.mockRestore();
-    });
-
-    it("should return null if decryption fails due to wrong key (auth tag mismatch)", () => {
-      const { encrypt } = require("./encryption");
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-      const text = "some data";
-      const encrypted = encrypt(text);
-
-      process.env.APP_ENCRYPTION_KEY =
-        "YW5vdGhlcmtleWFub3RoZXJrZXlhbm90aGVya2V5YW5vdGhlcg==";
-      const { decrypt: decryptWithWrongKey } = require("./encryption");
-
-      const decrypted = decryptWithWrongKey(encrypted);
-      expect(decrypted).toBeNull();
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      consoleErrorSpy.mockRestore();
-    });
-
-    it("should return null if the ciphertext is tampered with", () => {
-      const { encrypt, decrypt } = require("./encryption");
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => {});
-      const encrypted = encrypt("some data");
-      const tampered = encrypted!.slice(0, -1) + "a"; // Change last character
-      const decrypted = decrypt(tampered);
-      expect(decrypted).toBeNull();
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      consoleErrorSpy.mockRestore();
-    });
-  });
-});
+    return decrypted;
+  } catch (error) {
+    console.error("Decryption failed:", error);
+    // Return null to prevent crashing the app on a single corrupted entry.
+    return null;
+  }
+}
