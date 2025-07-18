@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getQuestionGenerationService } from "@/lib/ai";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { encrypt } from "@/lib/encryption";
 
 const analyzeSchema = z.object({
   journalId: z.string(),
@@ -108,13 +109,18 @@ export async function POST(req: NextRequest) {
         phrasingScore: analysisResult.phrasingScore,
         vocabScore: analysisResult.vocabularyScore,
         feedbackJson: analysisResult.feedback,
+        feedbackJsonEncrypted: encrypt(analysisResult.feedback),
         rawAiResponse: JSON.stringify(analysisResult),
+        rawAiResponseEncrypted: encrypt(JSON.stringify(analysisResult)),
         mistakes: {
           create: analysisResult.mistakes.map((mistake) => ({
             type: mistake.type,
             originalText: mistake.original,
+            originalTextEncrypted: encrypt(mistake.original),
             correctedText: mistake.corrected,
+            correctedTextEncrypted: encrypt(mistake.corrected),
             explanation: mistake.explanation,
+            explanationEncrypted: encrypt(mistake.explanation),
           })),
         },
       },

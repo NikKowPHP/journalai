@@ -8,25 +8,25 @@ datasource db {
 }
 
 model User {
-  id                  String    @id
-  email               String    @unique
-  supabaseAuthId      String    @unique
-  nativeLanguage      String?
+  id                    String    @id
+  email                 String    @unique
+  supabaseAuthId        String    @unique
+  nativeLanguage        String?
   defaultTargetLanguage String?
-  writingStyle        String?
-  writingPurpose      String?
-  selfAssessedLevel   String?
-  status              String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
-  lastUsageReset      DateTime? // Timestamp for resetting daily limits
-  onboardingCompleted Boolean   @default(false)
+  writingStyle          String?
+  writingPurpose        String?
+  selfAssessedLevel     String?
+  status                String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
+  lastUsageReset        DateTime? // Timestamp for resetting daily limits
+  onboardingCompleted   Boolean   @default(false)
 
   // Monetization
-  stripeCustomerId   String?   @unique
-  subscriptionTier   String    @default("FREE")
+  stripeCustomerId   String? @unique
+  subscriptionTier   String  @default("FREE")
   subscriptionStatus String?
 
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   topics           Topic[]
   journalEntries   JournalEntry[]
@@ -36,66 +36,72 @@ model User {
 }
 
 model LanguageProfile {
-  id                    String  @id @default(cuid())
+  id                    String @id @default(cuid())
   userId                String
-  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   language              String
-  aiAssessedProficiency Float   @default(2.0)
+  aiAssessedProficiency Float  @default(2.0)
   proficiencySubScores  Json?
 
   @@unique([userId, language])
 }
 
 model Topic {
-  id             String   @id @default(cuid())
+  id             String         @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   title          String
   targetLanguage String?
-  isMastered     Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  isMastered     Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   journalEntries JournalEntry[]
 
   @@unique([userId, title, targetLanguage])
 }
 
 model JournalEntry {
-  id             String   @id @default(cuid())
-  authorId       String
-  author         User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  topicId        String
-  topic          Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  content        String   @db.Text
-  targetLanguage String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  analysis       Analysis?
+  id               String    @id @default(cuid())
+  authorId         String
+  author           User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topicId          String
+  topic            Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  content          String    @db.Text
+  contentEncrypted String?   @db.Text
+  targetLanguage   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  analysis         Analysis?
 }
 
 model Analysis {
-  id            String    @id @default(cuid())
-  entryId       String    @unique
-  entry         JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  grammarScore  Int
-  phrasingScore Int
-  vocabScore    Int
-  feedbackJson  Json
-  rawAiResponse Json
-  createdAt     DateTime  @default(now())
-  mistakes      Mistake[]
+  id                     String       @id @default(cuid())
+  entryId                String       @unique
+  entry                  JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  grammarScore           Int
+  phrasingScore          Int
+  vocabScore             Int
+  feedbackJson           Json
+  feedbackJsonEncrypted  String?      @db.Text
+  rawAiResponse          Json
+  rawAiResponseEncrypted String?      @db.Text
+  createdAt              DateTime     @default(now())
+  mistakes               Mistake[]
 }
 
 model Mistake {
-  id            String         @id @default(cuid())
-  analysisId    String
-  analysis      Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  type          String
-  originalText  String
-  correctedText String
-  explanation   String
-  createdAt     DateTime       @default(now())
-  srsReviewItem SrsReviewItem?
+  id                     String         @id @default(cuid())
+  analysisId             String
+  analysis               Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  type                   String
+  originalText           String
+  originalTextEncrypted  String?        @db.Text
+  correctedText          String
+  correctedTextEncrypted String?        @db.Text
+  explanation            String
+  explanationEncrypted   String?        @db.Text
+  createdAt              DateTime       @default(now())
+  srsReviewItem          SrsReviewItem?
 }
 
 model SrsReviewItem {

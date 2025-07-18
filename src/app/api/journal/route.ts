@@ -1,8 +1,10 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { encrypt, decrypt } from "@/lib/encryption";
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
@@ -26,13 +28,22 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       content: true,
+      contentEncrypted: true,
       createdAt: true,
       topic: { select: { title: true } },
       analysis: true,
     },
   });
 
-  return NextResponse.json(journals);
+  const decryptedJournals = journals.map((journal) => {
+    const j = journal as typeof journal & { contentEncrypted?: string | null };
+    if (j.contentEncrypted) {
+      return { ...j, content: decrypt(j.contentEncrypted) || j.content };
+    }
+    return j;
+  });
+
+  return NextResponse.json(decryptedJournals);
 }
 
 const journalSchema = z.object({
@@ -79,6 +90,7 @@ export async function POST(req: NextRequest) {
     const newJournal = await prisma.journalEntry.create({
       data: {
         content,
+        contentEncrypted: encrypt(content),
         topicId: topic.id,
         authorId: user.id,
         targetLanguage,

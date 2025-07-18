@@ -1,8 +1,10 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
+import { decrypt } from "@/lib/encryption";
 
 // GET handler to fetch a single journal with its analysis
 export async function GET(
@@ -40,6 +42,58 @@ export async function GET(
 
   if (!journal)
     return NextResponse.json({ error: "Journal not found" }, { status: 404 });
+
+  // Decrypt fields if they exist
+  const journalWithEncrypted = journal as typeof journal & {
+    contentEncrypted?: string | null;
+  };
+  if (journalWithEncrypted.contentEncrypted) {
+    journal.content =
+      decrypt(journalWithEncrypted.contentEncrypted) || journal.content;
+  }
+
+  if (journal.analysis) {
+    const analysisWithEncrypted = journal.analysis as typeof journal.analysis & {
+      feedbackJsonEncrypted?: string | null;
+      rawAiResponseEncrypted?: string | null;
+    };
+
+    if (analysisWithEncrypted.feedbackJsonEncrypted) {
+      const decryptedJson = decrypt(analysisWithEncrypted.feedbackJsonEncrypted);
+      journal.analysis.feedbackJson = decryptedJson
+        ? JSON.parse(decryptedJson)
+        : journal.analysis.feedbackJson;
+    }
+    if (analysisWithEncrypted.rawAiResponseEncrypted) {
+      const decryptedJson = decrypt(
+        analysisWithEncrypted.rawAiResponseEncrypted,
+      );
+      journal.analysis.rawAiResponse = decryptedJson
+        ? JSON.parse(decryptedJson)
+        : journal.analysis.rawAiResponse;
+    }
+    if (journal.analysis.mistakes) {
+      journal.analysis.mistakes = journal.analysis.mistakes.map((mistake) => {
+        const m = { ...mistake } as typeof mistake & {
+          originalTextEncrypted?: string | null;
+          correctedTextEncrypted?: string | null;
+          explanationEncrypted?: string | null;
+        };
+        if (m.originalTextEncrypted) {
+          m.originalText =
+            decrypt(m.originalTextEncrypted) || m.originalText;
+        }
+        if (m.correctedTextEncrypted) {
+          m.correctedText =
+            decrypt(m.correctedTextEncrypted) || m.correctedText;
+        }
+        if (m.explanationEncrypted) {
+          m.explanation = decrypt(m.explanationEncrypted) || m.explanation;
+        }
+        return m;
+      });
+    }
+  }
 
   return NextResponse.json(journal);
 }

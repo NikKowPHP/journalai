@@ -3,6 +3,14 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // Startup health check for encryption key
+  if (!process.env.APP_ENCRYPTION_KEY) {
+    console.error(
+      "FATAL: APP_ENCRYPTION_KEY is not defined. Application cannot start securely.",
+    );
+    return new NextResponse("Server configuration error.", { status: 500 });
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,

@@ -1,3 +1,4 @@
+
 import { getUserById } from "@/lib/user";
 import { UpdateSubscriptionForm } from "@/app/admin/users/[id]/UpdateSubscriptionForm";
 import {
@@ -11,6 +12,7 @@ import {
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import type { JournalEntryWithRelations } from "@/lib/types";
+import { decrypt } from "@/lib/encryption";
 
 // Define props interface for clarity and type safety
 interface UserDetailPageProps {
@@ -43,6 +45,17 @@ const UserDetailPage = async ({ params }: UserDetailPageProps) => {
   if (!user) {
     return <div className="p-4">User not found</div>;
   }
+
+  // Decrypt journal content for display
+  user.journalEntries = user.journalEntries.map((entry) => {
+    const e = { ...entry } as JournalEntryWithRelations & {
+      contentEncrypted?: string | null;
+    };
+    if (e.contentEncrypted) {
+      e.content = decrypt(e.contentEncrypted) || e.content;
+    }
+    return e;
+  });
 
   return (
     <div className="p-6">

@@ -1,7 +1,9 @@
+
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { decrypt } from "@/lib/encryption";
 
 export async function POST(request: Request) {
   try {
@@ -58,13 +60,18 @@ export async function POST(request: Request) {
       return NextResponse.json(existingSrsItem);
     }
 
+    const m = mistake as typeof mistake & { explanationEncrypted?: string | null };
+    const explanation = m.explanationEncrypted
+      ? decrypt(m.explanationEncrypted) || m.explanation
+      : m.explanation;
+
     const srsItem = await prisma.srsReviewItem.create({
       data: {
         userId: user.id,
         type: "MISTAKE",
         frontContent: mistake.originalText,
         backContent: mistake.correctedText,
-        context: mistake.explanation,
+        context: explanation,
         mistakeId: mistake.id,
         targetLanguage: mistake.analysis.entry.targetLanguage,
         nextReviewAt: new Date(),
