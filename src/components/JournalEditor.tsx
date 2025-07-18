@@ -28,29 +28,21 @@ import { SUPPORTED_LANGUAGES } from "@/lib/constants";
 import { useFeatureFlag } from "@/lib/hooks/useFeatureFlag";
 import { GuidedPopover } from "./ui/GuidedPopover";
 
-// --- WritingAids Sub-component ---
+// --- WritingAids Sub-component (Now simplified) ---
 interface WritingAidsProps {
   topicTitle: string;
   editor: any; // TipTap Editor instance
+  containerRef: React.Ref<HTMLDivElement>;
 }
 
-const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
-  const titleRef = useRef<HTMLDivElement>(null);
-  const { data: userProfile } = useUserProfile();
-  const { activeTargetLanguage } = useLanguageStore();
-  const { isVisible, selectedText, position, close } = useSelection(titleRef);
+const WritingAids: React.FC<WritingAidsProps> = ({
+  topicTitle,
+  editor,
+  containerRef,
+}) => {
   const [isTranslateNew, markTranslateAsSeen] = useFeatureFlag(
     "highlight_text_translation",
   );
-
-  const shouldEnableTranslation =
-    userProfile?.nativeLanguage && activeTargetLanguage;
-
-  const getLanguageName = (value: string | null | undefined): string => {
-    if (!value) return "";
-    const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
-    return lang ? lang.name : value;
-  };
 
   const {
     data: aids,
@@ -61,15 +53,22 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
       fetch("/api/journal/helpers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic, targetLanguage: activeTargetLanguage }),
+        body: JSON.stringify({
+          topic,
+          targetLanguage: useLanguageStore.getState().activeTargetLanguage,
+        }),
       }).then((res) => res.json()),
   });
 
   useEffect(() => {
-    if (topicTitle && topicTitle !== "Free Write" && activeTargetLanguage) {
+    if (
+      topicTitle &&
+      topicTitle !== "Free Write" &&
+      useLanguageStore.getState().activeTargetLanguage
+    ) {
       fetchAids(topicTitle);
     }
-  }, [topicTitle, fetchAids, activeTargetLanguage]);
+  }, [topicTitle, fetchAids]);
 
   if (topicTitle === "Free Write" || (!isPending && !aids)) {
     return null;
@@ -98,7 +97,7 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
             description="You can select any text on this platform, like this topic title, to get an instant translation."
           >
             <CardTitle
-              ref={titleRef}
+              ref={containerRef}
               className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
             >
               Topic: {topicTitle}
@@ -156,43 +155,23 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
           )}
         </CardContent>
       </Card>
-      {shouldEnableTranslation && isVisible && selectedText && (
-        <TranslationTooltip
-          selectedText={selectedText}
-          sourceLang={getLanguageName(activeTargetLanguage)}
-          targetLang={getLanguageName(userProfile.nativeLanguage)}
-          position={position}
-          onClose={close}
-        />
-      )}
     </div>
   );
 };
 
-// --- Stuck Writer Helper UI ---
+// --- Stuck Writer Helper UI (Now simplified) ---
 const StuckWriterHelper = ({
   suggestions,
   onDismiss,
+  containerRef,
 }: {
   suggestions: string[];
   onDismiss: () => void;
+  containerRef: React.Ref<HTMLUListElement>;
 }) => {
-  const containerRef = useRef<HTMLUListElement>(null);
-  const { data: userProfile } = useUserProfile();
-  const { activeTargetLanguage } = useLanguageStore();
-  const { isVisible, selectedText, position, close } =
-    useSelection(containerRef);
   const [isTranslateNew, markTranslateAsSeen] = useFeatureFlag(
     "highlight_text_translation",
   );
-  const shouldEnableTranslation =
-    userProfile?.nativeLanguage && activeTargetLanguage;
-
-  const getLanguageName = (value: string | null | undefined): string => {
-    if (!value) return "";
-    const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
-    return lang ? lang.name : value;
-  };
 
   return (
     <Card className="mt-4 p-4 border-primary/50 bg-secondary/30 relative animate-in fade-in slide-in-from-top-2 duration-500">
@@ -227,15 +206,6 @@ const StuckWriterHelper = ({
           </ul>
         </GuidedPopover>
       </CardContent>
-      {shouldEnableTranslation && isVisible && selectedText && (
-        <TranslationTooltip
-          selectedText={selectedText}
-          sourceLang={getLanguageName(activeTargetLanguage!)}
-          targetLang={getLanguageName(userProfile.nativeLanguage!)}
-          position={position}
-          onClose={close}
-        />
-      )}
     </Card>
   );
 };
@@ -270,6 +240,22 @@ export function JournalEditor({
   const [statusMessage, setStatusMessage] = useState("");
   const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
   const router = useRouter();
+
+  // --- START: Lifted Tooltip State ---
+  const writingAidsRef = useRef<HTMLDivElement>(null);
+  const stuckHelperRef = useRef<HTMLUListElement>(null);
+  const { data: userProfile } = useUserProfile();
+  const { activeTargetLanguage } = useLanguageStore();
+
+  const writingAidsSelection = useSelection(writingAidsRef);
+  const stuckHelperSelection = useSelection(stuckHelperRef);
+
+  const getLanguageName = (value: string | null | undefined): string => {
+    if (!value) return "";
+    const lang = SUPPORTED_LANGUAGES.find((l) => l.value === value);
+    return lang ? lang.name : value;
+  };
+  // --- END: Lifted Tooltip State ---
 
   const onTabRef = useRef<() => boolean>(() => false);
 
@@ -348,13 +334,46 @@ export function JournalEditor({
     return null;
   }
 
+  const shouldEnableTranslation =
+    userProfile?.nativeLanguage && activeTargetLanguage;
+
   return (
     <div>
-      <WritingAids topicTitle={topicTitle} editor={editor} />
+      {/* --- START: Render Tooltip at top level --- */}
+      {shouldEnableTranslation &&
+        writingAidsSelection.isVisible &&
+        writingAidsSelection.selectedText && (
+          <TranslationTooltip
+            selectedText={writingAidsSelection.selectedText}
+            sourceLang={getLanguageName(activeTargetLanguage)}
+            targetLang={getLanguageName(userProfile.nativeLanguage)}
+            position={writingAidsSelection.position}
+            onClose={writingAidsSelection.close}
+          />
+        )}
+      {shouldEnableTranslation &&
+        stuckHelperSelection.isVisible &&
+        stuckHelperSelection.selectedText && (
+          <TranslationTooltip
+            selectedText={stuckHelperSelection.selectedText}
+            sourceLang={getLanguageName(activeTargetLanguage)}
+            targetLang={getLanguageName(userProfile.nativeLanguage)}
+            position={stuckHelperSelection.position}
+            onClose={stuckHelperSelection.close}
+          />
+        )}
+      {/* --- END: Render Tooltip at top level --- */}
+
+      <WritingAids
+        topicTitle={topicTitle}
+        editor={editor}
+        containerRef={writingAidsRef}
+      />
       {showStuckUI && stuckSuggestions && (
         <StuckWriterHelper
           suggestions={stuckSuggestions}
           onDismiss={() => setShowStuckUI(false)}
+          containerRef={stuckHelperRef}
         />
       )}
       <div className="border rounded-lg overflow-hidden mt-4">
