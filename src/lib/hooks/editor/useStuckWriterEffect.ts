@@ -1,6 +1,4 @@
 
-// src/lib/hooks/editor/useStuckWriterEffect.ts
-
 import { useEffect, useState, useRef } from "react";
 import { useStuckWriterSuggestions } from "@/lib/hooks/data";
 import type { Editor } from "@tiptap/react";
@@ -69,10 +67,10 @@ export const useStuckWriterEffect = (
                 setStuckSuggestions(data.suggestions);
                 setShowStuckUI(true);
 
-                // Set a timer to automatically hide the suggestions after 10 seconds
+                // Set a timer to automatically hide the suggestions after 2 minutes
                 dismissTimerRef.current = setTimeout(() => {
                   setShowStuckUI(false);
-                }, 10000);
+                }, 120000); // Changed from 10000 to 120000
               } else {
                 logger.info(
                   "[useStuckWriterEffect] No suggestions returned from AI.",
