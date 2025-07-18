@@ -1,3 +1,4 @@
+
 # **LinguaScribe: Technical Application Description (v7 - Final)**
 
 ## 1. Vision & Architectural Philosophy
@@ -102,54 +103,69 @@ model User {
   id                    String    @id @default(uuid())
   email                 String    @unique
   supabaseAuthId        String    @unique
-  nativeLanguage        String    // Used for contextual translation
-  targetLanguage        String
-  writingStyle          String
-  writingPurpose        String
-  selfAssessedLevel     String
-  aiAssessedProficiency Float     @default(2.0)
-  proficiencySubScores  Json?
+  nativeLanguage        String?   // Used for contextual translation
+  targetLanguage        String?
+  writingStyle          String?
+  writingPurpose        String?
+  selfAssessedLevel     String?
+  // aiAssessedProficiency is now in LanguageProfile
+  // proficiencySubScores is now in LanguageProfile
 
   // For soft-deletion and daily limits
   status                String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
   lastUsageReset        DateTime? // Timestamp for resetting daily limits (e.g., autocomplete)
+  onboardingCompleted   Boolean   @default(false)
 
   // Monetization
   stripeCustomerId   String?   @unique
   subscriptionTier   String    @default("FREE")
   subscriptionStatus String?
 
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  topics         Topic[]
-  journalEntries JournalEntry[]
-  srsItems       SrsReviewItem[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  topics           Topic[]
+  journalEntries   JournalEntry[]
+  srsItems         SrsReviewItem[]
+  languageProfiles LanguageProfile[]
 }
 
+model LanguageProfile {
+  id                    String @id @default(cuid())
+  userId                String
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language              String
+  aiAssessedProficiency Float  @default(2.0)
+  proficiencySubScores  Json?
+
+  @@unique([userId, language])
+}
+
+
 model Topic {
-  id             String   @id @default(cuid())
+  id             String       @id @default(cuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
+  user           User         @relation(fields: [userId], references: [id])
   title          String
-  isMastered     Boolean  @default(false) // Mastery is determined by analyzing scores from related journal entries
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  targetLanguage String?
+  isMastered     Boolean      @default(false) // Mastery is determined by analyzing scores from related journal entries
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   journalEntries JournalEntry[]
 
-  @@unique([userId, title])
+  @@unique([userId, title, targetLanguage])
 }
 
 model JournalEntry {
-  id        String   @id @default(cuid())
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-  topicId   String
-  topic     Topic    @relation(fields: [topicId], references: [id])
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  analysis  Analysis?
+  id             String    @id @default(cuid())
+  authorId       String
+  author         User      @relation(fields: [authorId], references: [id])
+  topicId        String
+  topic          Topic     @relation(fields: [topicId], references: [id])
+  content        String    @db.Text // Encrypted at rest
+  targetLanguage String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  analysis       Analysis?
 }
 
 model Analysis {
@@ -159,8 +175,8 @@ model Analysis {
   grammarScore  Int
   phrasingScore Int
   vocabScore    Int
-  feedbackJson  Json
-  rawAiResponse Json
+  feedbackJson  String    @db.Text // Encrypted at rest
+  rawAiResponse String    @db.Text // Encrypted at rest
   createdAt     DateTime  @default(now())
   mistakes      Mistake[]
 }
@@ -170,9 +186,9 @@ model Mistake {
   analysisId    String
   analysis      Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
   type          String
-  originalText  String
-  correctedText String
-  explanation   String
+  originalText  String         @db.Text // Encrypted at rest
+  correctedText String         @db.Text // Encrypted at rest
+  explanation   String         @db.Text // Encrypted at rest
   createdAt     DateTime       @default(now())
   srsReviewItem SrsReviewItem?
 }
@@ -188,6 +204,7 @@ model SrsReviewItem {
   context        String?   // Provides full sentence context for the review item
   mistakeId      String?   @unique
   mistake        Mistake?  @relation(fields: [mistakeId], references: [id], onDelete: Cascade)
+  targetLanguage String?
   nextReviewAt   DateTime
   lastReviewedAt DateTime?
   interval       Int       @default(1)

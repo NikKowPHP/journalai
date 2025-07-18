@@ -1,4 +1,5 @@
 
+// Note: This route handles decryption of sensitive user data before sending it to the client.
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -44,37 +45,32 @@ export async function GET(
     return NextResponse.json({ error: "Journal not found" }, { status: 404 });
 
   // Decrypt fields
-  const contentToDecrypt =
-    (journal as any).contentEncrypted ?? (journal.content as string);
-  journal.content = decrypt(contentToDecrypt);
+  const decryptedContent = decrypt(journal.content);
+  if (decryptedContent === null) {
+    logger.error(
+      `Failed to decrypt critical content for journal ${id}. Cannot proceed.`,
+    );
+    return NextResponse.json(
+      { error: "Failed to decrypt journal content" },
+      { status: 500 },
+    );
+  }
+  journal.content = decryptedContent;
 
   if (journal.analysis) {
     const analysis = journal.analysis as any;
-    const feedbackToDecrypt =
-      analysis.feedbackJsonEncrypted ?? analysis.feedbackJson;
-    analysis.feedbackJson = decrypt(feedbackToDecrypt);
+    analysis.feedbackJson = decrypt(analysis.feedbackJson);
 
-    const rawResponseToDecrypt =
-      analysis.rawAiResponseEncrypted ?? analysis.rawAiResponse;
-    const decryptedRawResponse = decrypt(rawResponseToDecrypt);
+    const decryptedRawResponse = decrypt(analysis.rawAiResponse);
     analysis.rawAiResponse = decryptedRawResponse
       ? JSON.parse(decryptedRawResponse)
       : null;
 
     if (analysis.mistakes) {
       analysis.mistakes = analysis.mistakes.map((mistake: any) => {
-        const originalToDecrypt =
-          mistake.originalTextEncrypted ?? mistake.originalText;
-        mistake.originalText = decrypt(originalToDecrypt);
-
-        const correctedToDecrypt =
-          mistake.correctedTextEncrypted ?? mistake.correctedText;
-        mistake.correctedText = decrypt(correctedToDecrypt);
-
-        const explanationToDecrypt =
-          mistake.explanationEncrypted ?? mistake.explanation;
-        mistake.explanation = decrypt(explanationToDecrypt);
-
+        mistake.originalText = decrypt(mistake.originalText);
+        mistake.correctedText = decrypt(mistake.correctedText);
+        mistake.explanation = decrypt(mistake.explanation);
         return mistake;
       });
     }
@@ -124,8 +120,7 @@ export async function PUT(
         authorId: user.id,
       },
       data: {
-        contentEncrypted: encrypt(content),
-        content: null, // Do not write to plaintext field
+        content: encrypt(content),
         topicId,
       },
     });

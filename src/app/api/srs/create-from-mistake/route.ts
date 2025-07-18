@@ -1,4 +1,5 @@
 
+// Note: This route handles decryption of Mistake content.
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/supabase/server";
@@ -60,24 +61,9 @@ export async function POST(request: Request) {
       return NextResponse.json(existingSrsItem);
     }
 
-    const mistakeWithEncrypted = mistake as typeof mistake & {
-      originalTextEncrypted?: string | null;
-      correctedTextEncrypted?: string | null;
-      explanationEncrypted?: string | null;
-    };
-
-    const frontContent = decrypt(
-      mistakeWithEncrypted.originalTextEncrypted ??
-        mistakeWithEncrypted.originalText,
-    );
-    const backContent = decrypt(
-      mistakeWithEncrypted.correctedTextEncrypted ??
-        mistakeWithEncrypted.correctedText,
-    );
-    const context = decrypt(
-      mistakeWithEncrypted.explanationEncrypted ??
-        mistakeWithEncrypted.explanation,
-    );
+    const frontContent = decrypt(mistake.originalText);
+    const backContent = decrypt(mistake.correctedText);
+    const context = decrypt(mistake.explanation);
 
     if (frontContent === null || backContent === null) {
       logger.error(

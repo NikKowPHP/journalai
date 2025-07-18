@@ -1,3 +1,5 @@
+
+// Note: This route handles decryption of JournalEntry content before sending to the client.
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -27,7 +29,6 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       content: true,
-      contentEncrypted: true,
       createdAt: true,
       topic: { select: { title: true } },
       analysis: true,
@@ -36,8 +37,7 @@ export async function GET(req: NextRequest) {
 
   const decryptedJournals = journals
     .map((journal) => {
-      const contentToDecrypt = journal.contentEncrypted ?? journal.content;
-      const decryptedContent = decrypt(contentToDecrypt);
+      const decryptedContent = decrypt(journal.content);
 
       if (decryptedContent === null) {
         logger.error(
@@ -95,8 +95,7 @@ export async function POST(req: NextRequest) {
 
     const newJournal = await prisma.journalEntry.create({
       data: {
-        contentEncrypted: encrypt(content),
-        content: null, // Don't write to plaintext field
+        content: encrypt(content),
         topicId: topic.id,
         authorId: user.id,
         targetLanguage,
