@@ -91,22 +91,19 @@ const WritingAids: React.FC<WritingAidsProps> = ({ topicTitle, editor }) => {
     <div>
       <Card className="mb-4 bg-secondary/30">
         <CardHeader>
-         
-            <GuidedPopover
-              isOpen={isTranslateNew}
-              onDismiss={markTranslateAsSeen}
-              title="Translate Anything"
-              description="You can select any text on this platform, like this topic title, to get an instant translation."
+          <GuidedPopover
+            isOpen={isTranslateNew}
+            onDismiss={markTranslateAsSeen}
+            title="Translate Anything"
+            description="You can select any text on this platform, like this topic title, to get an instant translation."
           >
-             
-            <CardTitle className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help">
-              <div ref={titleRef}>
-                Topic: {topicTitle}
-                 </div>
-              </CardTitle>
-             
-            </GuidedPopover>
-          
+            <CardTitle
+              ref={titleRef}
+              className="text-lg underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
+            >
+              Topic: {topicTitle}
+            </CardTitle>
+          </GuidedPopover>
         </CardHeader>
         <CardContent className="space-y-4">
           {isPending && (
