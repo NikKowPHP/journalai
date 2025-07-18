@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -29,6 +30,17 @@ export async function POST(
   );
 
   try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { nativeLanguage: true },
+    });
+    if (!dbUser?.nativeLanguage) {
+      return NextResponse.json(
+        { error: "User native language not set" },
+        { status: 400 },
+      );
+    }
+
     let generatedTitle: string | undefined;
     const journal = await prisma.journalEntry.findFirst({
       where: { id: journalId, authorId: user.id },
@@ -65,6 +77,7 @@ export async function POST(
       journal.content,
       targetLanguage,
       proficiencyScore,
+      dbUser.nativeLanguage,
     );
 
     if (journal.topic?.title === "Free Write") {

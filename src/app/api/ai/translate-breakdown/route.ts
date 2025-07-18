@@ -39,8 +39,12 @@ export async function POST(req: NextRequest) {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { subscriptionTier: true },
+      select: { subscriptionTier: true, nativeLanguage: true },
     });
+
+    if (!dbUser?.nativeLanguage) {
+      return new NextResponse("User native language not set.", { status: 400 });
+    }
 
     // Rate limit based on user's subscription tier
     const rateLimitResult = tieredRateLimiter(
@@ -72,6 +76,7 @@ export async function POST(req: NextRequest) {
       text,
       sourceLanguage,
       targetLanguage,
+      dbUser.nativeLanguage,
     );
 
     const parsedResult = translateBreakdownResponseSchema.safeParse(result);

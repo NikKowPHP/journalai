@@ -30,8 +30,9 @@ export interface QuestionGenerationService {
    */
   analyzeJournalEntry(
     journalContent: string,
-    targetLanguage?: string,
-    proficiencyScore?: number,
+    targetLanguage: string,
+    proficiencyScore: number,
+    nativeLanguage: string,
   ): Promise<JournalAnalysisResult>;
 
   /**
@@ -105,6 +106,7 @@ export interface QuestionGenerationService {
     text: string,
     sourceLang: string,
     targetLang: string,
+    nativeLanguage: string,
   ): Promise<{
     fullTranslation: string;
     segments: {

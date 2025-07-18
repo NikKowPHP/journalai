@@ -1,3 +1,4 @@
+
 import { QuestionGenerationService } from "./generation-service";
 import type {
   GeneratedQuestion,
@@ -47,11 +48,13 @@ export class GeminiQuestionGenerationService
     journalContent: string,
     targetLanguage: string = "English",
     proficiencyScore: number,
+    nativeLanguage: string,
   ): Promise<JournalAnalysisResult> {
     const prompt = getJournalAnalysisPrompt(
       journalContent,
       targetLanguage,
       proficiencyScore,
+      nativeLanguage,
     );
 
     try {
@@ -430,11 +433,17 @@ export class GeminiQuestionGenerationService
     text: string,
     sourceLang: string,
     targetLang: string,
+    nativeLanguage: string,
   ): Promise<{
     fullTranslation: string;
     segments: { source: string; translation: string; explanation: string }[];
   }> {
-    const prompt = getParagraphBreakdownPrompt(text, sourceLang, targetLang);
+    const prompt = getParagraphBreakdownPrompt(
+      text,
+      sourceLang,
+      targetLang,
+      nativeLanguage,
+    );
     try {
       const result = await executeGeminiWithRotation((client) =>
         client.models.generateContent({

@@ -1,7 +1,9 @@
+
 export const getJournalAnalysisPrompt = (
   journalContent: string,
   targetLanguage: string,
   proficiencyScore: number,
+  nativeLanguage: string,
 ) => {
   const proficiencyDescription =
     proficiencyScore < 30
@@ -11,7 +13,7 @@ export const getJournalAnalysisPrompt = (
         : "advanced";
 
   return `
-      You are an expert AI language tutor. Your task is to analyze a user's journal entry in ${targetLanguage} and provide structured, helpful feedback. The user's proficiency level is ${proficiencyScore}/100 (${proficiencyDescription}).
+      You are an expert AI language tutor. Your task is to analyze a user's journal entry in ${targetLanguage} and provide structured, helpful feedback. The user's proficiency level is ${proficiencyScore}/100 (${proficiencyDescription}). The user's native language is ${nativeLanguage}.
 
       **CONTEXT:**
       *   **Journal Entry:** "${journalContent}"
@@ -22,13 +24,13 @@ export const getJournalAnalysisPrompt = (
         "grammarScore": "A numerical score from 0 to 100 on grammar and syntax.",
         "phrasingScore": "A numerical score from 0 to 100 on natural phrasing and idiomatic language use.",
         "vocabularyScore": "A numerical score from 0 to 100 on vocabulary choice and richness.",
-        "feedback": "A concise, encouraging summary paragraph of the overall performance.",
+        "feedback": "A concise, encouraging summary paragraph of the overall performance. This summary must be in ${targetLanguage}.",
         "mistakes": [
           {
             "type": "grammar" | "phrasing" | "vocabulary",
             "original": "The incorrect phrase or sentence from the user's text.",
             "corrected": "The corrected version of the phrase or sentence.",
-            "explanation": "A simple explanation of why it was wrong and why the correction is better, suitable for a ${proficiencyDescription} learner."
+            "explanation": "A simple explanation of why it was wrong and why the correction is better, suitable for a ${proficiencyDescription} learner. This explanation MUST be written in the user's native language: ${nativeLanguage}."
           }
         ],
         "highlights": [
@@ -44,6 +46,7 @@ export const getJournalAnalysisPrompt = (
       1.  Be lenient for beginners and more critical for advanced learners.
       2.  Identify 2-5 key mistakes. If there are no mistakes, return an empty "mistakes" array and an empty "highlights" array.
       3.  The "highlights" array must correspond to the "mistakes" found, using character indices from the original journal entry.
+      4.  CRITICAL: All "explanation" fields MUST be in ${nativeLanguage}. The "feedback" summary must be in ${targetLanguage}.
 
       Now, analyze the journal entry.
     `;

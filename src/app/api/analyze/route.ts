@@ -28,6 +28,17 @@ export async function POST(req: NextRequest) {
 
     const { journalId } = parsed.data;
 
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { nativeLanguage: true },
+    });
+    if (!dbUser?.nativeLanguage) {
+      return NextResponse.json(
+        { error: "User native language not set" },
+        { status: 400 },
+      );
+    }
+
     // 1. Fetch the journal entry to ensure user owns it AND check for existing analysis
     const journal = await prisma.journalEntry.findFirst({
       where: { id: journalId, authorId: user.id },
@@ -76,6 +87,7 @@ export async function POST(req: NextRequest) {
       journal.content,
       targetLanguage,
       proficiencyScore,
+      dbUser.nativeLanguage,
     );
 
     if (journal.topic?.title === "Free Write") {

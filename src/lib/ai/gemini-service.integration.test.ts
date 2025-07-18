@@ -32,6 +32,7 @@ describeIfApiKey("GeminiQuestionGenerationService Integration Tests", () => {
       journalContent,
       "English",
       50,
+      "Spanish",
     );
 
     expect(result).toBeDefined();
@@ -145,6 +146,7 @@ describeIfApiKey("GeminiQuestionGenerationService Integration Tests", () => {
       text,
       sourceLang,
       targetLang,
+      "English",
     );
     expect(result).toBeDefined();
     expect(result).toHaveProperty("fullTranslation");
