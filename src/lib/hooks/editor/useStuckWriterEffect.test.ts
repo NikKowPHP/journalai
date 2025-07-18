@@ -130,7 +130,7 @@ describe("useStuckWriterEffect", () => {
     expect(mockMutate).toHaveBeenCalledTimes(1);
   });
 
-  it("should show UI on success and hide it after 10 seconds", () => {
+  it("should show UI on success and hide it after 2 minutes", () => {
     const { result } = renderHook(() =>
       useStuckWriterEffect(mockEditor as any, "Test Topic"),
     );
@@ -157,11 +157,11 @@ describe("useStuckWriterEffect", () => {
 
     // Advance time, but not enough to trigger the dismiss timer
     act(() => {
-      jest.advanceTimersByTime(9999);
+      jest.advanceTimersByTime(119999); // 1 millisecond short of 2 minutes
     });
     expect(result.current.showStuckUI).toBe(true);
 
-    // Advance time past the 10-second dismiss threshold
+    // Advance time past the 2-minute dismiss threshold
     act(() => {
       jest.advanceTimersByTime(1);
     });
