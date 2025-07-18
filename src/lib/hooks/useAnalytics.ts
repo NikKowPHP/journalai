@@ -2,6 +2,13 @@
 // src/lib/hooks/useAnalytics.ts
 import { usePostHog } from "posthog-js/react";
 
+const mockPostHog = {
+  capture: () => {},
+  identify: () => {},
+  reset: () => {},
+  // Add any other methods you might call to the mock
+};
+
 /**
  * A safe hook to access the PostHog instance.
  * In environments where PostHog is not available (e.g., during tests or if it fails to initialize),
@@ -10,36 +17,28 @@ import { usePostHog } from "posthog-js/react";
  */
 export const useAnalytics = () => {
   try {
-    // usePostHog throws an error if the provider is not in the tree
+    // This will throw if the provider is not found
     const posthog = usePostHog();
 
-    // Wrap in a safety check for production environments
-    const capture = (...args: Parameters<typeof posthog.capture>) => {
-      if (process.env.NODE_ENV === "production" && posthog) {
-        try {
-          posthog.capture(...args);
-        } catch (e) {
-          console.error("PostHog capture error:", e);
-        }
-      } else if (posthog) {
-        // In development, just call it directly to see debug logs
+    // A safe wrapper for the capture function
+    const capture: typeof posthog.capture = (...args) => {
+      // Don't do anything if PostHog isn't configured to run
+      if (!posthog || !process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+        return;
+      }
+      try {
         posthog.capture(...args);
+      } catch (e) {
+        console.error("PostHog capture error:", e);
       }
     };
 
     return {
       ...posthog,
-      capture,
+      capture, // Override with the safe version
     };
   } catch (error) {
-    // This can happen in environments where the provider is not available.
-    // Return a mock object to prevent crashes.
     console.warn("PostHog context not found. Analytics will be disabled.");
-    return {
-      capture: () => {},
-      identify: () => {},
-      reset: () => {},
-      // Add other methods as needed, with mock implementations
-    };
+    return mockPostHog;
   }
 };
