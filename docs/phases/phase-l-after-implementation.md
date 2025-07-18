@@ -67,9 +67,9 @@ The previous data encryption migration highlighted a critical risk with Prisma's
         }
         // ... Re-add all other `...Encrypted` fields to Analysis and Mistake models
         ```
-    -   [ ] Run a new migration to apply this fix: `npx prisma migrate dev --name fix_restore_encrypted_columns`. This creates a new migration file that adds the columns back to your database.
+    -   [x] Run a new migration to apply this fix: `npx prisma migrate dev --name fix_restore_encrypted_columns`. This creates a new migration file that adds the columns back to your database.
 
-- [ ] **Phase 2: Re-run the Data Encryption Script:**
+- [x] **Phase 2: Re-run the Data Encryption Script:**
     -   [ ] **Test on a Clone First:** Before touching production, restore a backup of your production DB to a staging environment. Run the script against this clone to ensure it completes successfully and to estimate the runtime.
     -   [ ] Run the backfill script on the production database: `npm run db:encrypt`.
     -   [ ] **Verify Success:** After the script finishes, connect to your production DB. Run a query to confirm there are no `NULL` values in the `...Encrypted` columns for rows that have plaintext content. `SELECT count(*) FROM "JournalEntry" WHERE content IS NOT NULL AND "contentEncrypted" IS NULL;` This query must return `0`. Repeat for `Analysis` and `Mistake` tables.

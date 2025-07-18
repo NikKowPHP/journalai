@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -61,47 +62,41 @@ model Topic {
 }
 
 model JournalEntry {
-  id               String    @id @default(cuid())
-  authorId         String
-  author           User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  topicId          String
-  topic            Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  content          String?   @db.Text
-  contentEncrypted String?   @db.Text
-  targetLanguage   String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  analysis         Analysis?
+  id             String    @id @default(cuid())
+  authorId       String
+  author         User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topicId        String
+  topic          Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  content        String    @db.Text
+  targetLanguage String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  analysis       Analysis?
 }
 
 model Analysis {
-  id                     String       @id @default(cuid())
-  entryId                String       @unique
-  entry                  JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  grammarScore           Int
-  phrasingScore          Int
-  vocabScore             Int
-  feedbackJson           String?      @db.Text
-  feedbackJsonEncrypted  String?      @db.Text
-  rawAiResponse          String?      @db.Text
-  rawAiResponseEncrypted String?      @db.Text
-  createdAt              DateTime     @default(now())
-  mistakes               Mistake[]
+  id            String       @id @default(cuid())
+  entryId       String       @unique
+  entry         JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  grammarScore  Int
+  phrasingScore Int
+  vocabScore    Int
+  feedbackJson  String       @db.Text
+  rawAiResponse String       @db.Text
+  createdAt     DateTime     @default(now())
+  mistakes      Mistake[]
 }
 
 model Mistake {
-  id                     String         @id @default(cuid())
-  analysisId             String
-  analysis               Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  type                   String
-  originalText           String?        @db.Text
-  originalTextEncrypted  String?        @db.Text
-  correctedText          String?        @db.Text
-  correctedTextEncrypted String?        @db.Text
-  explanation            String?        @db.Text
-  explanationEncrypted   String?        @db.Text
-  createdAt              DateTime       @default(now())
-  srsReviewItem          SrsReviewItem?
+  id            String         @id @default(cuid())
+  analysisId    String
+  analysis      Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  type          String
+  originalText  String         @db.Text
+  correctedText String         @db.Text
+  explanation   String         @db.Text
+  createdAt     DateTime       @default(now())
+  srsReviewItem SrsReviewItem?
 }
 
 model SrsReviewItem {
