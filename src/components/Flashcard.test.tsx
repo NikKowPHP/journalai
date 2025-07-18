@@ -40,14 +40,12 @@ describe("Flashcard", () => {
   });
 
   // Test 1: Verify initial state
-  it("shows front content and 'Show Answer' button initially, but not back content", () => {
+  it("shows front content and helper text initially, but not back content", () => {
     render(<Flashcard frontContent={frontContent} backContent={backContent} />);
 
     // Check what's visible
     expect(screen.getByText(frontContent)).toBeVisible();
-    expect(
-      screen.getByRole("button", { name: "Show Answer" }),
-    ).toBeVisible();
+    expect(screen.getByText("Click card to show answer")).toBeVisible();
 
     // Check what's not in the document
     expect(screen.queryByText(backContent)).not.toBeInTheDocument();
@@ -63,7 +61,7 @@ describe("Flashcard", () => {
   });
 
   // Test 2: Verify state after flipping
-  it("reveals back content and review buttons when 'Show Answer' is clicked", () => {
+  it("reveals back content and review buttons when the card is clicked", () => {
     render(
       <Flashcard
         frontContent={frontContent}
@@ -72,14 +70,15 @@ describe("Flashcard", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+    // Click the card itself to flip it
+    fireEvent.click(screen.getByText(frontContent));
 
     // Front content is still visible
     expect(screen.getByText(frontContent)).toBeVisible();
 
-    // "Show Answer" button is now hidden
+    // "Click card to show answer" text is now hidden
     expect(
-      screen.queryByRole("button", { name: "Show Answer" }),
+      screen.queryByText("Click card to show answer"),
     ).not.toBeInTheDocument();
 
     // Back content is now visible
@@ -108,7 +107,8 @@ describe("Flashcard", () => {
         />,
       );
 
-      fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+      // Click the card to reveal the review buttons
+      fireEvent.click(screen.getByText(frontContent));
       fireEvent.click(
         screen.getByRole("button", { name: new RegExp(buttonName, "i") }),
       );
@@ -128,7 +128,7 @@ describe("Flashcard", () => {
 
     it("renders TTS buttons with correct languages for a 'MISTAKE' type card", () => {
       render(<Flashcard {...props} type="MISTAKE" />);
-      fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+      fireEvent.click(screen.getByText(props.frontContent));
 
       const ttsButtons = screen.getAllByTestId("tts-button");
       expect(ttsButtons).toHaveLength(2);
@@ -144,7 +144,7 @@ describe("Flashcard", () => {
 
     it("renders TTS buttons with correct languages for a 'TRANSLATION' type card", () => {
       render(<Flashcard {...props} type="TRANSLATION" />);
-      fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+      fireEvent.click(screen.getByText(props.frontContent));
 
       const ttsButtons = screen.getAllByTestId("tts-button");
       expect(ttsButtons).toHaveLength(2);

@@ -1,3 +1,4 @@
+
 /** @jest-environment jsdom */
 import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
@@ -54,11 +55,10 @@ describe("TTSButton", () => {
     });
 
     render(<TTSButton text="Hello" lang="en-US" />);
-    // The component gracefully handles this by not rendering anything, which is a valid approach.
-    // However, if it rendered a disabled button, we would test for that.
-    // Let's stick with the current implementation's result.
-    const button = screen.queryByRole("button");
-    expect(button).toBeNull();
+    // The component now renders a disabled button instead of null, which is better for layout consistency.
+    const button = screen.getByRole("button");
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
 
     Object.defineProperty(window, "speechSynthesis", {
       value: originalSpeechSynthesis,

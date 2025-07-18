@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./button";
 import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logger } from "@/lib/logger";
 
 interface TTSButtonProps {
   text: string;
@@ -43,7 +44,8 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
   }, [lang]);
 
   const handleSpeak = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    logger.info(`handling speak : ${isSupported} ${isVoiceAvailable} ${isSpeaking}`)
+    // e.stopPropagation();
     if (!isSupported || !isVoiceAvailable || isSpeaking) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
