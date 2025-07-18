@@ -1,125 +1,307 @@
+### [BASH_COMMANDS]
+```bash
+touch docs/key-rotation-runbook.md
+```
+### docs/key-rotation-runbook.md
+```markdown
+# Key Rotation Runbook
+
+This document outlines the process for rotating the `APP_ENCRYPTION_KEY`.
+
+**This process involves downtime or a maintenance window.**
+
+## Process
+
+1.  **Generate a New Key:**
+    ```bash
+    openssl rand -base64 32
+    ```
+
+2.  **Update Environment Variables:**
+    -   Add a new environment variable `APP_ENCRYPTION_KEY_NEW` with the new key.
+    -   The application will need to be modified to read both the old and new keys for decryption.
+
+3.  **Run Migration Script:**
+    -   A new migration script will be required to re-encrypt all data with the new key.
+    -   The script will read data decrypted with the old key and re-encrypt it with the new key.
+
+4.  **Finalize Rotation:**
+    -   Once all data is re-encrypted, `APP_ENCRYPTION_KEY` can be updated with the new key's value.
+    -   The `APP_ENCRYPTION_KEY_NEW` variable can be removed.
+
+## Lessons Learned from Incident (July 2025)
+
+The previous data encryption migration highlighted a critical risk with Prisma's migration generation. When renaming columns (`@map` or manual rename), Prisma may generate a `DROP COLUMN` and `ADD COLUMN` sequence instead of a safe `RENAME COLUMN` statement, leading to data loss.
+
+**Critical takeaway:** For any migration involving column renames or type changes on critical data, **always** use the `--create-only` flag and **manually inspect the generated SQL** before applying it to a production database. If the SQL is destructive, edit it manually to perform a safe operation.
+```
 ### docs/phases/phase-l-after-implementation.md
 ```markdown
 ### Part 1: Analysis & Discovery
 - [x] **Identify Key Files:**
-    -   `prisma/schema.prisma`: To add new encrypted columns and later remove old plaintext ones.
-    -   `src/lib/encryption.ts`: **(New File)** To house the `encrypt` and `decrypt` utility functions.
-    -   `scripts/encrypt-existing-data.ts`: **(New File)** For the one-time data migration script.
+    -   `prisma/schema.prisma`: To be corrected to re-introduce encrypted columns, then modified for the final cleanup.
+    -   `prisma/migrations/20250718075835_drop_plaintext_columns/migration.sql`: **(Review only)** Analyze this file to confirm it incorrectly dropped the `...Encrypted` columns. This is the source of the problem.
+    -   `src/lib/encryption.ts`: The core encryption/decryption logic.
+    -   All API routes that read/write sensitive data: `/api/journal/route.ts`, `/api/journal/[id]/route.ts`, `/api/analyze/route.ts`, `/api/journal/[id]/retry-analysis/route.ts`.
+    -   `scripts/encrypt-existing-data.cts`: The script that needs to be re-run.
     -   `docs/key-rotation-runbook.md`: **(New File)** For future operational documentation.
-    -   `.env.example` & Vercel Environment Variables: To manage the `APP_ENCRYPTION_KEY`.
-    -   API Routes to modify: `/api/journal/route.ts`, `/api/journal/[id]/route.ts`, `/api/analyze/route.ts`, `/api/journal/[id]/retry-analysis/route.ts`.
 
 - [x] **Map Data/State Flow:**
-    -   **Write Flow:** Trace how plaintext data from the client (`JournalEditor`) is sent to the API, where it will be encrypted before being stored in new database columns.
-    -   **Read/Analysis Flow:** Trace how encrypted data is fetched from the database, decrypted on the server, processed (either sent to Gemini or directly to the client), and ensuring the plaintext version is discarded from memory immediately after use.
-    -   **Migration Flow:** Understand that existing plaintext data in the DB will be read, encrypted, and written to new columns by a one-off script.
+    -   **Current Broken State:** The application code expects `...Encrypted` columns which were dropped. The database still correctly contains the original plaintext columns. API requests involving journals and analyses are currently failing due to this schema mismatch.
+    -   **Goal State:** All sensitive text fields in the database are stored in their final, non-nullable columns (e.g., `content`, `originalText`) as encrypted ciphertext. The application transparently handles all encryption and decryption.
 
 - [x] **Pinpoint Logic:**
-    -   **Fields for Encryption:** `JournalEntry.content`, `Analysis.feedbackJson`, `Analysis.rawAiResponse`, `Mistake.originalText`, `Mistake.correctedText`, `Mistake.explanation`.
-    -   **Fields to Exclude from Encryption:** `Analysis` scores (`grammarScore`, etc.) must remain as numbers for querying and performance.
-    -   **Benchmark Decryption Performance:** Before implementation, write a micro-benchmark within the `encryption.ts` test suite to measure the performance overhead of decrypting a typical journal entry. This will inform if list-view optimizations are needed.
+    -   The immediate task is to restore the database schema by re-adding the temporary `...Encrypted` fields.
+    -   The `encrypt-existing-data.cts` script will be used to re-populate these restored fields from the existing plaintext data.
+    -   The final, most critical task is to create and **manually verify** a new Prisma migration that correctly drops the old plaintext columns and renames the encrypted columns.
 
 ### Part 2: Core Logic Implementation
-- [x] **Generate and Secure Encryption Key:**
-    -   [x] Generate a cryptographically strong 256-bit key using `openssl rand -base64 32`.
-    -   [x] Add the key to Vercel Environment Variables as `APP_ENCRYPTION_KEY` for Production.
-    -   [x] Add the key to a local `.env` file (which is in `.gitignore`) for development.
+- [x] **Phase 1: Restore the Schema (Re-add Encrypted Fields):**
+    -   [x] **CRITICAL:** Modify `prisma/schema.prisma`. Re-add all the `...Encrypted` columns you previously added, ensuring they are nullable. This reverts the schema to the intended pre-cleanup state.
+        ```prisma
+        // Example for JournalEntry in prisma/schema.prisma
+        model JournalEntry {
+          // ... other fields
+          content        String   @db.Text
+          contentEncrypted String? @db.Text // RE-ADD THIS LINE
+        }
+        // ... Re-add all other `...Encrypted` fields to Analysis and Mistake models
+        ```
+    -   [ ] Run a new migration to apply this fix: `npx prisma migrate dev --name fix_restore_encrypted_columns`. This creates a new migration file that adds the columns back to your database.
 
-- [x] **Create Encryption Service:**
-    -   [x] Create `src/lib/encryption.ts`.
-    -   [x] Implement `encrypt(text: string): string` and `decrypt(encryptedData: string): string` using Node.js `crypto` with `AES-256-GCM`. The stored format should be `iv:authTag:ciphertext` for self-contained decryption.
-    -   [x] Add a startup health check (e.g., in a global middleware or initialization file) that throws a fatal error if `process.env.APP_ENCRYPTION_KEY` is not defined, preventing the app from starting in an insecure state.
+- [ ] **Phase 2: Re-run the Data Encryption Script:**
+    -   [ ] **Test on a Clone First:** Before touching production, restore a backup of your production DB to a staging environment. Run the script against this clone to ensure it completes successfully and to estimate the runtime.
+    -   [ ] Run the backfill script on the production database: `npm run db:encrypt`.
+    -   [ ] **Verify Success:** After the script finishes, connect to your production DB. Run a query to confirm there are no `NULL` values in the `...Encrypted` columns for rows that have plaintext content. `SELECT count(*) FROM "JournalEntry" WHERE content IS NOT NULL AND "contentEncrypted" IS NULL;` This query must return `0`. Repeat for `Analysis` and `Mistake` tables.
 
-- [x] **Phase 1: Add Encrypted Fields to Schema:**
-    -   [x] In `prisma/schema.prisma`, for each targeted field, add a new nullable `_Encrypted` field (e.g., `contentEncrypted String? @db.Text`).
-    -   [x] Run `npx prisma migrate dev --name add_encrypted_fields` and deploy this schema change.
+- [x] **Phase 3: Update Application Code to be Encrypted-Only:**
+    -   [x] Go through all modified API routes (`/api/journal`, `/api/analyze`, etc.).
+    -   [x] **Remove all fallback logic.** The code must now *only* read from and write to the `...Encrypted` fields. It should never read from the old plaintext fields.
+    -   [x] For write operations, stop writing to the old plaintext fields.
+    -   [ ] Deploy these code changes.
 
-- [x] **Phase 2: Implement Dual Read/Write Logic in APIs:**
-    -   [x] **Write Operations (Journal/Analysis Creation):** Modify `POST /api/journal` and `POST /api/analyze` to encrypt data and write to the *new* `_Encrypted` columns, while still writing plaintext to the *old* columns for backward compatibility during the transition.
-    -   [x] **Read Operations (Journal/Analysis Fetching):** Modify all endpoints that read these records to implement a fallback system: check if the `_Encrypted` field exists and decrypt it; if it's `null`, use the old plaintext field.
-
-- [x] **Phase 3: Create Batch-Processing Backfill Migration Script:**
-    -   [x] Create `scripts/encrypt-existing-data.ts`.
-    -   [x] The script must process records in batches (e.g., 100 at a time) to avoid long-running transactions and performance degradation on the live database.
-    -   [x] Implement functions to migrate `JournalEntry`, `Analysis`, and `Mistake` tables, finding all records where the `_Encrypted` field is `null`, encrypting the corresponding plaintext field, and updating the record.
-    -   [x] Ensure the script is idempotent (can be safely re-run without side effects).
+- [ ] **Phase 4: The SAFE Final Cleanup Migration:**
+    1.  **Modify the Schema:** In `prisma/schema.prisma`, perform the final change:
+        -   **DELETE** the original plaintext columns (e.g., `content`, `originalText`).
+        -   **RENAME** the `...Encrypted` columns to their original names (e.g., `contentEncrypted` becomes `content`) and make them non-nullable.
+        -   **Ensure** fields that were previously `Json` (`feedbackJson`, `rawAiResponse`) are correctly typed as `String @db.Text`.
+    2.  **Generate the Migration File (without applying):** Run `npx prisma migrate dev --name cleanup_finalize_encryption --create-only`. This flag is critical; it creates the migration file without running it.
+    3.  **STOP. MANUALLY INSPECT THE GENERATED SQL.** Open the new file at `prisma/migrations/..._cleanup_finalize_encryption/migration.sql`.
+        -   **DANGER SIGN:** Look for `DROP COLUMN "contentEncrypted"`. If you see this, Prisma is misinterpreting the rename.
+        -   **CORRECT SQL:** The file should contain `ALTER TABLE "JournalEntry" RENAME COLUMN "contentEncrypted" TO "content";` and `ALTER TABLE "JournalEntry" DROP COLUMN "content";` (if you are reverting a previous bad migration step). Ensure the end result is a single, encrypted `content` column.
+        -   **Manually Edit the SQL if Necessary:** If Prisma generated a dangerous `DROP` and `ADD` sequence, replace it with the correct `RENAME COLUMN` and `DROP COLUMN` statements.
+    4.  **Apply the Verified Migration:** Once you are 100% confident the SQL is safe, apply the migration to your database (e.g., `npx prisma migrate deploy` for production).
 
 ### Part 3: UI/UX & Polish
-- [x] **Loading States:**
-    -   [x] Confirm that existing skeleton loaders on pages like `/journal/[id]` adequately cover any minor latency added by server-side decryption. No new loaders should be needed.
-- [x] **Disabled States:**
-    -   [x] This is a backend-focused feature; no UI changes for disabled states are required.
-- [x] **User Feedback:**
-    -   [x] The migration script should have clear `console.log` statements indicating which table is being processed, the current batch number, and total records migrated to provide visibility during execution.
-- [x] **Smooth Transitions:**
-    -   [x] No UI changes are needed for transitions.
+- [ ] **Loading States:**
+    -   [ ] After the final migration is complete, manually navigate through the app to ensure the existing skeleton loaders and spinners are still effective and the user experience is smooth.
+- [ ] **User Feedback:**
+    -   [ ] Ensure the migration script provides clear, verbose logging, indicating which table is being processed, the current batch number, and total records migrated.
 
 ### Part 4: Robustness & Edge Case Handling
-- [x] **Handle API Errors:**
-    -   [x] Wrap all `decrypt` calls in API routes within `try...catch` blocks. If decryption fails, log the specific error internally and return a generic, user-friendly error response (e.g., `500 - Data integrity error`). Do not expose raw crypto errors.
-    -   [x] **Graceful Degradation for List Views:** In the `GET /api/journal` endpoint, if one entry in a list fails to decrypt, log the error for that entry but return the rest of the list successfully, preventing a single corrupted record from breaking the entire page.
-- [x] **Handle User Interruption:**
-    -   [x] The API-level encryption/decryption is atomic per request and requires no special handling. The migration script's batching and idempotency ensure it can be stopped and restarted without data loss or corruption.
-- [x] **Input Validation:**
-    -   [x] The `encrypt` and `decrypt` functions in `src/lib/encryption.ts` must gracefully handle `null`, `undefined`, and empty string inputs to prevent runtime errors.
+- [x] **Decryption Error Handling:**
+    -   [x] Re-verify that all `decrypt` calls in your final API code are wrapped in `try...catch` blocks. On failure, they must log the specific error and return a generic `500` error to the client to avoid leaking information or crashing.
+- [x] **Graceful Degradation for List Views:**
+    -   [x] Re-verify that the `GET /api/journal` endpoint can handle a single failed decryption without crashing the entire request, ensuring the user's list view is still populated with valid entries.
 
 ### Part 5: Comprehensive Testing
-- [x] **Unit Tests:**
-    -   [x] Create `src/lib/encryption.test.ts`.
-    -   [x] Test that `decrypt(encrypt(text))` returns the original `text`.
-    -   [x] Test edge cases: empty strings, multi-byte UTF-8 characters, and long text blocks.
-    -   [x] Test that functions throw an error if `APP_ENCRYPTION_KEY` is not set.
-
-- [ ] **Component Tests:**
-    -   [ ] Not applicable for this backend-focused feature.
-
+- [ ] **Unit Tests:**
+    -   [ ] Re-run `npm test src/lib/encryption.test.ts` to confirm the core crypto logic is still valid.
 - [ ] **End-to-End (E2E) Manual Test Plan:**
-    -   [ ] **Test Script on Production Data Clone:** Before running on the live database, clone the production DB and run the migration script against the clone to verify its correctness and estimate runtime.
-    -   [ ] **Pre-Migration Test (Dual-State Code Deployed):**
-        -   [ ] Verify creating a new journal works.
-        -   [ ] Verify viewing an old (plaintext) journal works.
-        -   [ ] Verify analyzing both an old and a new journal works.
-    -   [ ] **Post-Migration Test (After Backfill Script Run):**
-        -   [ ] Verify viewing several old, now-encrypted journals and their analyses works correctly.
-    -   [ ] **Post-Cleanup Test (After Dropping Plaintext Columns):**
-        -   [ ] Thoroughly test all create, read, and analyze functionality to confirm the application works with only encrypted data.
-    -   [ ] **Error Paths:**
-        -   [ ] Manually corrupt an encrypted value in the database. Attempt to view it and verify a graceful error is returned by the API, and the UI handles it without crashing.
+    -   [ ] **Post-Recovery Verification:** After re-running the encryption script (Part 2, Phase 2), manually query the database to confirm both `content` and `contentEncrypted` columns have data.
+    -   [ ] **Pre-Cleanup Test:** After deploying the encrypted-only code (Part 2, Phase 3), perform a full smoke test: create a journal, analyze it, view it. This validates that the app is correctly using the `...Encrypted` columns.
+    -   [ ] **Post-Cleanup Test:** After the final, manually-verified migration (Part 2, Phase 4), perform a complete regression test.
+        -   [ ] **Happy Path:** Create a new user, write a journal, get analysis, create SRS cards.
+        -   [ ] **Legacy Data Path:** Log in as an old user and view a journal entry that was migrated by your script. Ensure it's readable.
+    -   [ ] **Error Path:** Manually connect to the DB and alter an encrypted string to be invalid. Attempt to view that specific journal entry. Confirm the UI shows a graceful error for that item and does not crash the entire page.
 
 ### Part 6: Cleanup & Finalization
-- [x] **Remove Temporary Code:**
-    -   [x] After the production migration is complete and verified, remove all fallback logic that reads from or writes to the old plaintext columns in all API routes.
-- [x] **Drop Obsolete Plaintext Columns via Migration:**
-    -   [x] In `prisma/schema.prisma`, remove all old plaintext column definitions (e.g., `content`, `originalText`).
-    -   [x] Change all `_Encrypted` columns to be non-nullable (e.g., `contentEncrypted String @db.Text`).
-    -   [x] Run `npx prisma migrate deploy --name drop_plaintext_columns` in production.
-- [x] **Code Review & Refactor:**
-    -   [x] Conduct a thorough review of all changes, focusing on the `encryption.ts` utility and the modified API routes to ensure no security anti-patterns were introduced.
+- [ ] **Remove Migration Script:**
+    -   [ ] Once the final migration is successfully applied in production, delete `scripts/encrypt-existing-data.cts` from your repository.
+- [ ] **Code Review:**
+    -   [ ] Conduct a final, thorough code review of all modified API routes to ensure no legacy code (referencing old plaintext columns or `...Encrypted` temporary columns) remains.
 - [x] **Documentation:**
-    -   [x] Add JSDoc comments to `encrypt` and `decrypt` explaining the algorithm and data format.
-    -   [x] Create a `docs/key-rotation-runbook.md` file outlining the high-level steps required for a future key rotation, noting that it will involve a new data migration.
+    -   [x] Update the `docs/key-rotation-runbook.md` file with a "Lessons Learned" section, noting the critical importance of manually verifying migration SQL for rename operations to prevent data loss.
+    -   [ ] Update your `README.md` or other technical documentation to state that sensitive data is encrypted at the application layer.
 ```
 ### prisma/schema.prisma
 ```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String    @id
+  email               String    @unique
+  supabaseAuthId      String    @unique
+  nativeLanguage      String?
+  defaultTargetLanguage String?
+  writingStyle        String?
+  writingPurpose      String?
+  selfAssessedLevel   String?
+  status              String    @default("ACTIVE") // e.g., ACTIVE, DELETION_PENDING
+  lastUsageReset      DateTime? // Timestamp for resetting daily limits
+  onboardingCompleted Boolean   @default(false)
+
+  // Monetization
+  stripeCustomerId   String?   @unique
+  subscriptionTier   String    @default("FREE")
+  subscriptionStatus String?
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  topics           Topic[]
+  journalEntries   JournalEntry[]
+  srsItems         SrsReviewItem[]
+  languageProfiles LanguageProfile[]
+  suggestedTopics  SuggestedTopic[]
+}
+
+model LanguageProfile {
+  id                    String  @id @default(cuid())
+  userId                String
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  language              String
+  aiAssessedProficiency Float   @default(2.0)
+  proficiencySubScores  Json?
+
+  @@unique([userId, language])
+}
+
+model Topic {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  targetLanguage String?
+  isMastered     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  journalEntries JournalEntry[]
+
+  @@unique([userId, title, targetLanguage])
+}
+
+model JournalEntry {
+  id               String    @id @default(cuid())
+  authorId         String
+  author           User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  topicId          String
+  topic            Topic     @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  content          String?   @db.Text
+  contentEncrypted String?   @db.Text
+  targetLanguage   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  analysis         Analysis?
+}
+
+model Analysis {
+  id                     String    @id @default(cuid())
+  entryId                String    @unique
+  entry                  JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  grammarScore           Int
+  phrasingScore          Int
+  vocabScore             Int
+  feedbackJson           String?   @db.Text
+  feedbackJsonEncrypted  String?   @db.Text
+  rawAiResponse          String?   @db.Text
+  rawAiResponseEncrypted String?   @db.Text
+  createdAt              DateTime  @default(now())
+  mistakes               Mistake[]
+}
+
+model Mistake {
+  id                     String         @id @default(cuid())
+  analysisId             String
+  analysis               Analysis       @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  type                   String
+  originalText           String?        @db.Text
+  originalTextEncrypted  String?        @db.Text
+  correctedText          String?        @db.Text
+  correctedTextEncrypted String?        @db.Text
+  explanation            String?        @db.Text
+  explanationEncrypted   String?        @db.Text
+  createdAt              DateTime       @default(now())
+  srsReviewItem          SrsReviewItem?
+}
+
+model SrsReviewItem {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           String
+  frontContent   String
+  backContent    String
+  context        String?
+  mistakeId      String?   @unique
+  mistake        Mistake?  @relation(fields: [mistakeId], references: [id], onDelete: Cascade)
+  targetLanguage String?
+  nextReviewAt   DateTime
+  lastReviewedAt DateTime?
+  interval       Int       @default(1)
+  easeFactor     Float     @default(2.5)
+  createdAt      DateTime  @default(now())
+}
+
+model SuggestedTopic {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  targetLanguage String
+  createdAt      DateTime @default(now())
+
+  @@unique([userId, title, targetLanguage])
+}
+
+model ProcessedWebhook {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  type        String
+  processedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 ```
 ### src/app/admin/users/[id]/page.tsx
-```typescript
+```tsx
 ```
 ### src/app/api/analyze/route.ts
-```typescript
+```ts
 ```
 ### src/app/api/journal/[id]/retry-analysis/route.ts
-```typescript
+```ts
+
+```
+### src/app/api/journal/[id]/route.ts
+```ts
 ```
 ### src/app/api/journal/route.ts
-```typescript
+```ts
+
 ```
 ### src/app/api/srs/create-from-mistake/route.ts
-```typescript
+```ts
 ```
-### src/app/api/srs/deck/route.ts
-```typescript
+
+### [BASH_COMMANDS]
+```bash
+mkdir -p scripts
+touch scripts/encrypt-existing-data.cts
 ```
-### src/lib/encryption.ts
+### scripts/encrypt-existing-data.cts
 ```typescript
 ```

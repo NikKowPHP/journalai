@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -28,26 +27,27 @@ export async function GET(req: NextRequest) {
     select: {
       id: true,
       content: true,
+      contentEncrypted: true,
       createdAt: true,
       topic: { select: { title: true } },
       analysis: true,
     },
   });
 
-  const decryptedJournals = journals.reduce(
-    (acc: typeof journals, journal) => {
-      const decryptedContent = decrypt(journal.content);
-      if (decryptedContent !== null) {
-        acc.push({ ...journal, content: decryptedContent });
-      } else {
+  const decryptedJournals = journals
+    .map((journal) => {
+      const contentToDecrypt = journal.contentEncrypted ?? journal.content;
+      const decryptedContent = decrypt(contentToDecrypt);
+
+      if (decryptedContent === null) {
         logger.error(
           `Failed to decrypt journal entry content for id: ${journal.id}. Skipping.`,
         );
+        return null;
       }
-      return acc;
-    },
-    [],
-  );
+      return { ...journal, content: decryptedContent };
+    })
+    .filter((j): j is NonNullable<typeof j> => j !== null);
 
   return NextResponse.json(decryptedJournals);
 }
@@ -95,7 +95,8 @@ export async function POST(req: NextRequest) {
 
     const newJournal = await prisma.journalEntry.create({
       data: {
-        content: encrypt(content),
+        contentEncrypted: encrypt(content),
+        content: null, // Don't write to plaintext field
         topicId: topic.id,
         authorId: user.id,
         targetLanguage,

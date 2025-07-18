@@ -1,9 +1,10 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
-import { decrypt } from "@/lib/encryption";
+import { decrypt, encrypt } from "@/lib/encryption";
 
 // GET handler to fetch a single journal with its analysis
 export async function GET(
@@ -42,55 +43,39 @@ export async function GET(
   if (!journal)
     return NextResponse.json({ error: "Journal not found" }, { status: 404 });
 
-  // Decrypt fields if they exist
-  const journalWithEncrypted = journal as typeof journal & {
-    contentEncrypted?: string | null;
-  };
-  if (journalWithEncrypted.contentEncrypted) {
-    journal.content =
-      decrypt(journalWithEncrypted.contentEncrypted) || journal.content;
-  }
+  // Decrypt fields
+  const contentToDecrypt =
+    (journal as any).contentEncrypted ?? (journal.content as string);
+  journal.content = decrypt(contentToDecrypt);
 
   if (journal.analysis) {
-    const analysisWithEncrypted = journal.analysis as typeof journal.analysis & {
-      feedbackJsonEncrypted?: string | null;
-      rawAiResponseEncrypted?: string | null;
-    };
+    const analysis = journal.analysis as any;
+    const feedbackToDecrypt =
+      analysis.feedbackJsonEncrypted ?? analysis.feedbackJson;
+    analysis.feedbackJson = decrypt(feedbackToDecrypt);
 
-    if (analysisWithEncrypted.feedbackJsonEncrypted) {
-      const decryptedString = decrypt(
-        analysisWithEncrypted.feedbackJsonEncrypted,
-      );
-      journal.analysis.feedbackJson =
-        decryptedString ?? journal.analysis.feedbackJson;
-    }
-    if (analysisWithEncrypted.rawAiResponseEncrypted) {
-      const decryptedJson = decrypt(
-        analysisWithEncrypted.rawAiResponseEncrypted,
-      );
-      journal.analysis.rawAiResponse = decryptedJson
-        ? JSON.parse(decryptedJson)
-        : journal.analysis.rawAiResponse;
-    }
-    if (journal.analysis.mistakes) {
-      journal.analysis.mistakes = journal.analysis.mistakes.map((mistake) => {
-        const m = { ...mistake } as typeof mistake & {
-          originalTextEncrypted?: string | null;
-          correctedTextEncrypted?: string | null;
-          explanationEncrypted?: string | null;
-        };
-        if (m.originalTextEncrypted) {
-          m.originalText =
-            decrypt(m.originalTextEncrypted) || m.originalText;
-        }
-        if (m.correctedTextEncrypted) {
-          m.correctedText =
-            decrypt(m.correctedTextEncrypted) || m.correctedText;
-        }
-        if (m.explanationEncrypted) {
-          m.explanation = decrypt(m.explanationEncrypted) || m.explanation;
-        }
-        return m;
+    const rawResponseToDecrypt =
+      analysis.rawAiResponseEncrypted ?? analysis.rawAiResponse;
+    const decryptedRawResponse = decrypt(rawResponseToDecrypt);
+    analysis.rawAiResponse = decryptedRawResponse
+      ? JSON.parse(decryptedRawResponse)
+      : null;
+
+    if (analysis.mistakes) {
+      analysis.mistakes = analysis.mistakes.map((mistake: any) => {
+        const originalToDecrypt =
+          mistake.originalTextEncrypted ?? mistake.originalText;
+        mistake.originalText = decrypt(originalToDecrypt);
+
+        const correctedToDecrypt =
+          mistake.correctedTextEncrypted ?? mistake.correctedText;
+        mistake.correctedText = decrypt(correctedToDecrypt);
+
+        const explanationToDecrypt =
+          mistake.explanationEncrypted ?? mistake.explanation;
+        mistake.explanation = decrypt(explanationToDecrypt);
+
+        return mistake;
       });
     }
   }
@@ -139,7 +124,8 @@ export async function PUT(
         authorId: user.id,
       },
       data: {
-        content,
+        contentEncrypted: encrypt(content),
+        content: null, // Do not write to plaintext field
         topicId,
       },
     });

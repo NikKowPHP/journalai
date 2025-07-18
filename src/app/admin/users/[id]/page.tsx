@@ -48,7 +48,10 @@ const UserDetailPage = async ({ params }: UserDetailPageProps) => {
 
   // Decrypt journal content for display
   const decryptedJournalEntries = user.journalEntries.map((entry) => {
-    const decryptedContent = decrypt(entry.content);
+    // The schema now has both fields. Prioritize the new encrypted one.
+    const contentToDecrypt =
+      (entry as any).contentEncrypted ?? (entry.content as string);
+    const decryptedContent = decrypt(contentToDecrypt);
     return {
       ...entry,
       content: decryptedContent || "[Decryption Failed]",

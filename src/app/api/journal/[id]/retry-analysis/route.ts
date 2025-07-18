@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
@@ -66,7 +65,8 @@ export async function POST(
       );
     }
 
-    const decryptedContent = decrypt(journal.content);
+    const contentToDecrypt = journal.contentEncrypted ?? journal.content;
+    const decryptedContent = decrypt(contentToDecrypt);
     if (decryptedContent === null) {
       throw new Error(`Failed to decrypt content for journal ${journalId}`);
     }
@@ -110,14 +110,14 @@ export async function POST(
           grammarScore: analysisResult.grammarScore,
           phrasingScore: analysisResult.phrasingScore,
           vocabScore: analysisResult.vocabularyScore,
-          feedbackJson: encrypt(analysisResult.feedback),
-          rawAiResponse: encrypt(JSON.stringify(analysisResult)),
+          feedbackJsonEncrypted: encrypt(analysisResult.feedback),
+          rawAiResponseEncrypted: encrypt(JSON.stringify(analysisResult)),
           mistakes: {
             create: analysisResult.mistakes.map((mistake) => ({
               type: mistake.type,
-              originalText: encrypt(mistake.original),
-              correctedText: encrypt(mistake.corrected),
-              explanation: encrypt(mistake.explanation),
+              originalTextEncrypted: encrypt(mistake.original),
+              correctedTextEncrypted: encrypt(mistake.corrected),
+              explanationEncrypted: encrypt(mistake.explanation),
             })),
           },
         },

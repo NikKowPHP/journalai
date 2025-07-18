@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Decrypt content before sending to AI
-    const decryptedContent = decrypt(journal.content);
+    const contentToDecrypt = journal.contentEncrypted ?? journal.content;
+    const decryptedContent = decrypt(contentToDecrypt);
     if (decryptedContent === null) {
       throw new Error(`Failed to decrypt content for journal ${journalId}`);
     }
@@ -104,21 +105,21 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 4. Save the results
+    // 4. Save the results to encrypted fields
     const newAnalysis = await prisma.analysis.create({
       data: {
         entryId: journalId,
         grammarScore: analysisResult.grammarScore,
         phrasingScore: analysisResult.phrasingScore,
         vocabScore: analysisResult.vocabularyScore,
-        feedbackJson: encrypt(analysisResult.feedback),
-        rawAiResponse: encrypt(JSON.stringify(analysisResult)),
+        feedbackJsonEncrypted: encrypt(analysisResult.feedback),
+        rawAiResponseEncrypted: encrypt(JSON.stringify(analysisResult)),
         mistakes: {
           create: analysisResult.mistakes.map((mistake) => ({
             type: mistake.type,
-            originalText: encrypt(mistake.original),
-            correctedText: encrypt(mistake.corrected),
-            explanation: encrypt(mistake.explanation),
+            originalTextEncrypted: encrypt(mistake.original),
+            correctedTextEncrypted: encrypt(mistake.corrected),
+            explanationEncrypted: encrypt(mistake.explanation),
           })),
         },
       },
