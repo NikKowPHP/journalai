@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./button";
 import { Volume2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface TTSButtonProps {
   text: string;
@@ -13,6 +14,7 @@ interface TTSButtonProps {
 export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
   const [isSupported, setIsSupported] = useState(false);
   const [isVoiceAvailable, setIsVoiceAvailable] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -42,7 +44,7 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
 
   const handleSpeak = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isSupported || !isVoiceAvailable) return;
+    if (!isSupported || !isVoiceAvailable || isSpeaking) return;
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = lang;
@@ -52,6 +54,10 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
     if (voice) {
       utterance.voice = voice;
     }
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
 
     window.speechSynthesis.cancel(); // Cancel any previous speech
     window.speechSynthesis.speak(utterance);
@@ -72,7 +78,12 @@ export const TTSButton: React.FC<TTSButtonProps> = ({ text, lang }) => {
 
   return (
     <Button size="icon" variant="ghost" onClick={handleSpeak}>
-      <Volume2 className="h-4 w-4" />
+      <Volume2
+        className={cn(
+          "h-4 w-4 transition-colors",
+          isSpeaking && "text-primary animate-pulse",
+        )}
+      />
     </Button>
   );
 };

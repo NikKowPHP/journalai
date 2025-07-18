@@ -1,3 +1,4 @@
+
 import {
   useEditor,
   EditorContent,
@@ -195,40 +196,38 @@ const StuckWriterHelper = ({
   };
 
   return (
-    <div>
-      <Card className="mt-4 p-4 border-primary/50 bg-secondary/30 relative animate-in fade-in duration-500">
-        <CardHeader className="p-0 pb-2 flex-row justify-between items-center">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Lightbulb className="h-4 w-4 text-primary" />
-            Need a nudge?
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={onDismiss}
+    <Card className="mt-4 p-4 border-primary/50 bg-secondary/30 relative animate-in fade-in slide-in-from-top-2 duration-500">
+      <CardHeader className="p-0 pb-2 flex-row justify-between items-center">
+        <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 text-primary" />
+          Need a nudge?
+        </CardTitle>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={onDismiss}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </CardHeader>
+      <CardContent className="p-0">
+        <GuidedPopover
+          isOpen={isTranslateNew}
+          onDismiss={markTranslateAsSeen}
+          title="Translate Suggestions"
+          description="Don't understand a suggestion? Just select the text to translate it."
+        >
+          <ul
+            ref={containerRef}
+            className="space-y-1 text-sm text-muted-foreground list-disc pl-5 underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
           >
-            <X className="h-4 w-4" />
-          </Button>
-        </CardHeader>
-        <CardContent className="p-0">
-          <GuidedPopover
-            isOpen={isTranslateNew}
-            onDismiss={markTranslateAsSeen}
-            title="Translate Suggestions"
-            description="Don't understand a suggestion? Just select the text to translate it."
-          >
-            <ul
-              ref={containerRef}
-              className="space-y-1 text-sm text-muted-foreground list-disc pl-5 underline decoration-dashed decoration-[color:var(--border)] underline-offset-2 cursor-help"
-            >
-              {suggestions.map((suggestion, index) => (
-                <li key={index}>{suggestion}</li>
-              ))}
-            </ul>
-          </GuidedPopover>
-        </CardContent>
-      </Card>
+            {suggestions.map((suggestion, index) => (
+              <li key={index}>{suggestion}</li>
+            ))}
+          </ul>
+        </GuidedPopover>
+      </CardContent>
       {shouldEnableTranslation && isVisible && selectedText && (
         <TranslationTooltip
           selectedText={selectedText}
@@ -238,7 +237,7 @@ const StuckWriterHelper = ({
           onClose={close}
         />
       )}
-    </div>
+    </Card>
   );
 };
 
@@ -353,7 +352,13 @@ export function JournalEditor({
   return (
     <div>
       <WritingAids topicTitle={topicTitle} editor={editor} />
-      <div className="border rounded-lg overflow-hidden">
+      {showStuckUI && stuckSuggestions && (
+        <StuckWriterHelper
+          suggestions={stuckSuggestions}
+          onDismiss={() => setShowStuckUI(false)}
+        />
+      )}
+      <div className="border rounded-lg overflow-hidden mt-4">
         {editor && (
           <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
             <div className="flex gap-1 p-1 bg-popover text-popover-foreground border border-border rounded-md shadow-md ">
@@ -421,12 +426,6 @@ export function JournalEditor({
           )}
         </div>
       </div>
-      {showStuckUI && stuckSuggestions && (
-        <StuckWriterHelper
-          suggestions={stuckSuggestions}
-          onDismiss={() => setShowStuckUI(false)}
-        />
-      )}
       <TranslatorDialog
         open={isTranslatorOpen}
         onOpenChange={setIsTranslatorOpen}
