@@ -1,5 +1,7 @@
+
 import { Resend } from "resend";
 import { prisma } from "@/lib/db";
+import { logger } from "../logger";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -21,12 +23,12 @@ export async function sendProgressReport(userId: string) {
     });
 
     if (!user || !user.email) {
-      console.error(`User or user email not found for ID: ${userId}`);
+      logger.error(`User or user email not found for ID: ${userId}`);
       return;
     }
 
     if (!user.defaultTargetLanguage) {
-      console.log(
+      logger.info(
         `Skipping weekly report for user ${userId}: no default language set.`,
       );
       return;
@@ -102,8 +104,8 @@ export async function sendProgressReport(userId: string) {
       html: emailHtml,
     });
 
-    console.log(`Progress report sent to ${user.email}`);
+    logger.info(`Progress report sent to ${user.email}`);
   } catch (error) {
-    console.error("Error sending progress report:", error);
+    logger.error("Error sending progress report:", error);
   }
 }

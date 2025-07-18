@@ -1,4 +1,3 @@
-
 // src/lib/hooks/useAnalytics.ts
 import { usePostHog } from "posthog-js/react";
 
@@ -11,9 +10,20 @@ const mockPostHog = {
 
 /**
  * A safe hook to access the PostHog instance.
- * In environments where PostHog is not available (e.g., during tests or if it fails to initialize),
- * it returns a mock object with no-op functions to prevent application crashes.
- * @returns {PostHog} The PostHog instance or a mock object.
+ *
+ * This hook retrieves the PostHog client from the context provided by `PostHogProvider`.
+ * It wraps the `capture` method in a safety check to prevent analytics calls
+ * from crashing the application in environments where PostHog is not available
+ * (e.g., during tests, Storybook) or fails to initialize. In such cases, it returns
+ * a mock object with no-op functions.
+ *
+ * @returns The fully-typed PostHog instance for use in components and hooks, or a mock object if unavailable.
+ * @example
+ * const analytics = useAnalytics();
+ *
+ * const handleClick = () => {
+ *   analytics.capture('Button Clicked', { buttonName: 'Sign Up' });
+ * };
  */
 export const useAnalytics = () => {
   try {
@@ -27,9 +37,12 @@ export const useAnalytics = () => {
         return;
       }
       try {
-        posthog.capture(...args);
+        // Return the result of the original capture method
+        return posthog.capture(...args);
       } catch (e) {
         console.error("PostHog capture error:", e);
+        // Return undefined on error to match the expected return type
+        return;
       }
     };
 
@@ -38,7 +51,7 @@ export const useAnalytics = () => {
       capture, // Override with the safe version
     };
   } catch (error) {
-    console.warn("PostHog context not found. Analytics will be disabled.");
+    // This can happen in environments where the provider is not available.
     return mockPostHog;
   }
 };

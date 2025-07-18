@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ClipboardPaste, X } from "lucide-react";
+import { logger } from "@/lib/logger";
 
 interface TranslationInputProps {
   sourceText: string;
@@ -24,7 +25,7 @@ export function TranslationInput({
       const text = await navigator.clipboard.readText();
       onTextChange(text);
     } catch (err) {
-      console.error("Failed to read clipboard contents: ", err);
+      logger.warn("Failed to read clipboard contents: ", err);
     }
   };
 

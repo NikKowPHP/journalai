@@ -1,6 +1,8 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
+import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
@@ -104,7 +106,7 @@ export async function GET(req: NextRequest) {
       subskillProficiencyOverTime,
     });
   } catch (error) {
-    console.error("Error fetching analytics:", error);
+    logger.error("Error fetching analytics:", error);
     return NextResponse.json(
       { error: "Failed to fetch analytics" },
       { status: 500 },

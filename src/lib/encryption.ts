@@ -1,5 +1,5 @@
-
 import crypto from "crypto";
+import { logger } from "./logger";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
@@ -76,7 +76,7 @@ export function decrypt(
 
     return decrypted;
   } catch (error) {
-    console.error("Decryption failed:", error);
+    logger.error("Decryption failed:", error);
     // Return null to prevent crashing the app on a single corrupted entry.
     return null;
   }
