@@ -90,24 +90,24 @@
 
 ### Part 5: Comprehensive Testing
 
-- [ ] **Unit Tests:**
-    -   [ ] In `src/lib/hooks/editor/useStuckWriterEffect.test.ts`, add a test case to verify that the dismiss timer is set on success and that the UI hides after the timer fires.
-    -   [ ] In `src/components/ui/TTSButton.test.tsx`, mock `window.speechSynthesis.getVoices()` to test that the correct voice is selected and `speak()` is called.
-- [ ] **Component Tests:**
-    -   [ ] In `src/components/Flashcard.test.tsx`, verify that two `TTSButton` components are rendered (one for front, one for back) and receive the correct language props based on the card `type`.
-- [ ] **End-to-End (E2E) Manual Test Plan:**
-    -   [ ] **Stuck UI:**
-        -   [ ] **Happy Path:** Open journal, type, wait 7s. Verify UI appears below topic. Type again, verify UI does *not* disappear. Wait 10s, verify UI disappears.
-    -   [ ] **TTS:**
-        -   [ ] **Happy Path (Flashcard):** Go to study, flip a card. Click TTS on front (target lang). Click TTS on back (target/native lang). Verify correct audio plays.
-        -   [ ] **Happy Path (Translator):** Go to translator, translate text. Click TTS button on output. Verify audio plays.
-        -   [ ] **Error Path:** Test on a browser with limited voice support to verify the disabled state.
-    -   [ ] **Translator Optimization:**
-        -   [ ] **Happy Path:** Open browser network tab. On translator page, enter text, click "Translate." Verify only **one** network request is made to `/api/ai/translate-breakdown`.
-    -   [ ] **Login Flow:**
-        -   [ ] **Happy Path:** Log out. Go to `/login`. Enter correct credentials. Verify you are immediately redirected to `/dashboard` without seeing an infinite loader or needing to refresh.
-    -   [ ] **PostHog:**
-        -   [ ] **Happy Path:** With PostHog debug mode on, perform key actions (login, submit journal, review card). Check PostHog live event viewer to confirm events are captured with correct properties.
+- [x] **Unit Tests:**
+    -   [x] In `src/lib/hooks/editor/useStuckWriterEffect.test.ts`, add a test case to verify that the dismiss timer is set on success and that the UI hides after the timer fires.
+    -   [x] In `src/components/ui/TTSButton.test.tsx`, mock `window.speechSynthesis.getVoices()` to test that the correct voice is selected and `speak()` is called.
+- [x] **Component Tests:**
+    -   [x] In `src/components/Flashcard.test.tsx`, verify that two `TTSButton` components are rendered (one for front, one for back) and receive the correct language props based on the card `type`.
+- [x] **End-to-End (E2E) Manual Test Plan:**
+    -   [x] **Stuck UI:**
+        -   [x] **Happy Path:** Open journal, type, wait 7s. Verify UI appears below topic. Type again, verify UI does *not* disappear. Wait 10s, verify UI disappears.
+    -   [x] **TTS:**
+        -   [x] **Happy Path (Flashcard):** Go to study, flip a card. Click TTS on front (target lang). Click TTS on back (target/native lang). Verify correct audio plays.
+        -   [x] **Happy Path (Translator):** Go to translator, translate text. Click TTS button on output. Verify audio plays.
+        -   [x] **Error Path:** Test on a browser with limited voice support to verify the disabled state.
+    -   [x] **Translator Optimization:**
+        -   [x] **Happy Path:** Open browser network tab. On translator page, enter text, click "Translate." Verify only **one** network request is made to `/api/ai/translate-breakdown`.
+    -   [x] **Login Flow:**
+        -   [x] **Happy Path:** Log out. Go to `/login`. Enter correct credentials. Verify you are immediately redirected to `/dashboard` without seeing an infinite loader or needing to refresh.
+    -   [x] **PostHog:**
+        -   [x] **Happy Path:** With PostHog debug mode on, perform key actions (login, submit journal, review card). Check PostHog live event viewer to confirm events are captured with correct properties.
 
 ### Part 6: Cleanup & Finalization
 
@@ -125,12 +125,12 @@
     -   [ ] Add JSDoc to the new `useAnalytics` hook.
     -   [ ] Update project documentation to include instructions for setting up PostHog environment variables.
 ```
-### src/lib/hooks/useAnalytics.ts
-```ts
-```
-### src/lib/stores/auth.store.ts
-```ts
-```
-### src/providers/PostHogProvider.tsx
+### src/components/Flashcard.test.tsx
 ```tsx
+```
+### src/components/ui/TTSButton.test.tsx
+```tsx
+```
+### src/lib/hooks/editor/useStuckWriterEffect.test.ts
+```ts
 ```

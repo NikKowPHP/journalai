@@ -1,3 +1,4 @@
+
 /** @jest-environment jsdom */
 import { renderHook, act } from "@testing-library/react";
 import { useStuckWriterEffect } from "./useStuckWriterEffect";
@@ -45,6 +46,7 @@ describe("useStuckWriterEffect", () => {
     jest.clearAllMocks();
     mockedUseStuckWriterSuggestions.mockReturnValue({
       mutate: mockMutate,
+      isPending: false, // Default to not pending
     });
     mockedUseLanguageStore.mockImplementation((selector) =>
       selector({ activeTargetLanguage: "english" }),
@@ -126,5 +128,43 @@ describe("useStuckWriterEffect", () => {
     });
 
     expect(mockMutate).toHaveBeenCalledTimes(1);
+  });
+
+  it("should show UI on success and hide it after 10 seconds", () => {
+    const { result } = renderHook(() =>
+      useStuckWriterEffect(mockEditor as any, "Test Topic"),
+    );
+
+    expect(result.current.showStuckUI).toBe(false);
+
+    // Trigger mutation by advancing the idle timer
+    act(() => {
+      mockEditor.simulateUpdate();
+      jest.advanceTimersByTime(7000);
+    });
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+
+    // Simulate the mutation's success callback
+    act(() => {
+      // The second argument to mutate is the options object with callbacks
+      const mutationOptions = mockMutate.mock.calls[0][1];
+      mutationOptions.onSuccess({ suggestions: ["Keep writing!"] });
+    });
+
+    // UI should now be visible
+    expect(result.current.showStuckUI).toBe(true);
+
+    // Advance time, but not enough to trigger the dismiss timer
+    act(() => {
+      jest.advanceTimersByTime(9999);
+    });
+    expect(result.current.showStuckUI).toBe(true);
+
+    // Advance time past the 10-second dismiss threshold
+    act(() => {
+      jest.advanceTimersByTime(1);
+    });
+    expect(result.current.showStuckUI).toBe(false);
   });
 });

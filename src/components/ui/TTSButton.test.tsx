@@ -8,7 +8,10 @@ import { TTSButton } from "./TTSButton";
 class MockSpeechSynthesisUtterance {
   text: string;
   lang = "";
-  voice = null;
+  voice: SpeechSynthesisVoice | null = null;
+  onstart = () => {};
+  onend = () => {};
+  onerror = () => {};
   constructor(text: string) {
     this.text = text;
   }
@@ -18,7 +21,8 @@ global.SpeechSynthesisUtterance = MockSpeechSynthesisUtterance as any;
 // Mock window.speechSynthesis
 const mockSpeak = jest.fn();
 const mockCancel = jest.fn();
-let mockVoices: any[] = [];
+let mockVoices: SpeechSynthesisVoice[] = [];
+
 Object.defineProperty(window, "speechSynthesis", {
   value: {
     speak: mockSpeak,
@@ -55,7 +59,7 @@ describe("TTSButton", () => {
   });
 
   it("renders a disabled button if the required voice is not available", async () => {
-    mockVoices = [{ lang: "fr-FR" }];
+    mockVoices = [{ lang: "fr-FR" } as SpeechSynthesisVoice];
     render(<TTSButton text="Hello" lang="en-US" />);
     const button = await screen.findByRole("button");
     expect(button).toBeDisabled();
@@ -66,15 +70,20 @@ describe("TTSButton", () => {
   });
 
   it("renders an enabled button if the voice is available", async () => {
-    mockVoices = [{ lang: "en-US" }];
+    mockVoices = [{ lang: "en-US" } as SpeechSynthesisVoice];
     render(<TTSButton text="Hello" lang="en-US" />);
     const button = await screen.findByRole("button");
     expect(button).not.toBeDisabled();
   });
 
-  it("calls speechSynthesis.speak with correct text and lang on click", async () => {
-    mockVoices = [{ lang: "es-ES" }];
-    render(<TTSButton text="Hola" lang="es-ES" />);
+  it("calls speechSynthesis.speak with correct text, lang, and selected voice on click", async () => {
+    const enUsVoice = { lang: "en-US", name: "Google US English" };
+    mockVoices = [
+      { lang: "fr-FR", name: "Frenchie" },
+      enUsVoice,
+    ] as SpeechSynthesisVoice[];
+
+    render(<TTSButton text="Hola" lang="en-US" />);
 
     const button = await screen.findByRole("button");
     fireEvent.click(button);
@@ -83,6 +92,7 @@ describe("TTSButton", () => {
     const utterance = mockSpeak.mock.calls[0][0];
     expect(utterance).toBeInstanceOf(MockSpeechSynthesisUtterance);
     expect(utterance.text).toBe("Hola");
-    expect(utterance.lang).toBe("es-ES");
+    expect(utterance.lang).toBe("en-US");
+    expect(utterance.voice).toBe(enUsVoice);
   });
 });

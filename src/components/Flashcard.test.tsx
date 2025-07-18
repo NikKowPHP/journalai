@@ -12,9 +12,11 @@ jest.mock("lucide-react", () => ({
   XCircle: () => <div data-testid="x-icon" />,
 }));
 
-// Mock TTSButton and GuidedPopover
+// Mock TTSButton to inspect its props
 jest.mock("./ui/TTSButton", () => ({
-  TTSButton: () => <div data-testid="tts-button" />,
+  TTSButton: ({ text, lang }: { text: string; lang: string }) => (
+    <div data-testid="tts-button" data-text={text} data-lang={lang} />
+  ),
 }));
 jest.mock("./ui/GuidedPopover", () => ({
   GuidedPopover: ({ children }: { children: React.ReactNode }) => (
@@ -95,20 +97,65 @@ describe("Flashcard", () => {
     [0, "Forgot"],
     [3, "Good"],
     [5, "Easy"],
-  ])("calls onReview with quality %i when '%s' is clicked", (quality, buttonName) => {
-    render(
-      <Flashcard
-        frontContent={frontContent}
-        backContent={backContent}
-        onReview={onReviewMock}
-      />,
-    );
+  ])(
+    "calls onReview with quality %i when '%s' is clicked",
+    (quality, buttonName) => {
+      render(
+        <Flashcard
+          frontContent={frontContent}
+          backContent={backContent}
+          onReview={onReviewMock}
+        />,
+      );
 
-    fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
-    fireEvent.click(
-      screen.getByRole("button", { name: new RegExp(buttonName, "i") }),
-    );
+      fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+      fireEvent.click(
+        screen.getByRole("button", { name: new RegExp(buttonName, "i") }),
+      );
 
-    expect(onReviewMock).toHaveBeenCalledWith(quality);
+      expect(onReviewMock).toHaveBeenCalledWith(quality);
+    },
+  );
+
+  describe("Flashcard TTS Buttons", () => {
+    const props = {
+      frontContent: "Hola",
+      backContent: "Hello",
+      nativeLanguage: "english",
+      targetLanguage: "spanish",
+      onReview: jest.fn(),
+    };
+
+    it("renders TTS buttons with correct languages for a 'MISTAKE' type card", () => {
+      render(<Flashcard {...props} type="MISTAKE" />);
+      fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+
+      const ttsButtons = screen.getAllByTestId("tts-button");
+      expect(ttsButtons).toHaveLength(2);
+
+      // Front of card is always target language
+      expect(ttsButtons[0]).toHaveAttribute("data-text", props.frontContent);
+      expect(ttsButtons[0]).toHaveAttribute("data-lang", "es-ES");
+
+      // Back of MISTAKE card is also target language
+      expect(ttsButtons[1]).toHaveAttribute("data-text", props.backContent);
+      expect(ttsButtons[1]).toHaveAttribute("data-lang", "es-ES");
+    });
+
+    it("renders TTS buttons with correct languages for a 'TRANSLATION' type card", () => {
+      render(<Flashcard {...props} type="TRANSLATION" />);
+      fireEvent.click(screen.getByRole("button", { name: "Show Answer" }));
+
+      const ttsButtons = screen.getAllByTestId("tts-button");
+      expect(ttsButtons).toHaveLength(2);
+
+      // Front of card is always target language
+      expect(ttsButtons[0]).toHaveAttribute("data-text", props.frontContent);
+      expect(ttsButtons[0]).toHaveAttribute("data-lang", "es-ES");
+
+      // Back of TRANSLATION card is native language
+      expect(ttsButtons[1]).toHaveAttribute("data-text", props.backContent);
+      expect(ttsButtons[1]).toHaveAttribute("data-lang", "en-US");
+    });
   });
 });
