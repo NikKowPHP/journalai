@@ -9,7 +9,8 @@
     "lint": "next lint",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "prisma:seed": "ts-node prisma/seed.cts"
+    "prisma:seed": "ts-node prisma/seed.cts",
+    "db:encrypt": "ts-node -r dotenv/config scripts/encrypt-existing-data.cts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.cts"

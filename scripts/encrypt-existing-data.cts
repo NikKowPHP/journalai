@@ -1,5 +1,4 @@
-
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, JournalEntry, Analysis, Mistake } from "@prisma/client";
 import { encrypt } from "../src/lib/encryption";
 import { logger } from "../src/lib/logger";
 
@@ -8,11 +7,23 @@ const BATCH_SIZE = 100;
 
 async function migrateJournalEntries() {
   logger.info("Starting migration for JournalEntry...");
+  const totalCount = await prisma.journalEntry.count({
+    where: { contentEncrypted: null },
+  });
+  logger.info(`Found ${totalCount} JournalEntries to migrate.`);
+
+  if (totalCount === 0) {
+    logger.info("No JournalEntries to migrate.");
+    return;
+  }
+
+  let processedCount = 0;
+  let batchNumber = 1;
   let hasMore = true;
   let cursor: string | undefined = undefined;
 
   while (hasMore) {
-    const entries = await prisma.journalEntry.findMany({
+    const entries: JournalEntry[] = await prisma.journalEntry.findMany({
       take: BATCH_SIZE,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       where: {
@@ -28,7 +39,9 @@ async function migrateJournalEntries() {
       continue;
     }
 
-    logger.info(`Processing batch of ${entries.length} journal entries...`);
+    logger.info(
+      `Processing JournalEntry batch ${batchNumber} (${entries.length} records)...`,
+    );
     for (const entry of entries) {
       const encryptedContent = encrypt(entry.content);
       await prisma.journalEntry.update({
@@ -37,7 +50,11 @@ async function migrateJournalEntries() {
           contentEncrypted: encryptedContent,
         },
       });
+      processedCount++;
     }
+
+    logger.info(`Processed ${processedCount} of ${totalCount} records.`);
+    batchNumber++;
 
     cursor = entries[entries.length - 1].id;
     if (entries.length < BATCH_SIZE) {
@@ -49,11 +66,23 @@ async function migrateJournalEntries() {
 
 async function migrateAnalyses() {
   logger.info("Starting migration for Analysis...");
+  const totalCount = await prisma.analysis.count({
+    where: { OR: [{ feedbackJsonEncrypted: null }, { rawAiResponseEncrypted: null }] },
+  });
+  logger.info(`Found ${totalCount} Analyses to migrate.`);
+
+  if (totalCount === 0) {
+    logger.info("No Analyses to migrate.");
+    return;
+  }
+
+  let processedCount = 0;
+  let batchNumber = 1;
   let hasMore = true;
   let cursor: string | undefined = undefined;
 
   while (hasMore) {
-    const analyses = await prisma.analysis.findMany({
+    const analyses: Analysis[] = await prisma.analysis.findMany({
       take: BATCH_SIZE,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       where: {
@@ -69,7 +98,9 @@ async function migrateAnalyses() {
       continue;
     }
 
-    logger.info(`Processing batch of ${analyses.length} analyses...`);
+    logger.info(
+      `Processing Analysis batch ${batchNumber} (${analyses.length} records)...`,
+    );
     for (const analysis of analyses) {
       const encryptedFeedback = encrypt(JSON.stringify(analysis.feedbackJson));
       const encryptedRawResponse = encrypt(
@@ -83,7 +114,10 @@ async function migrateAnalyses() {
           rawAiResponseEncrypted: encryptedRawResponse,
         },
       });
+      processedCount++;
     }
+    logger.info(`Processed ${processedCount} of ${totalCount} records.`);
+    batchNumber++;
 
     cursor = analyses[analyses.length - 1].id;
     if (analyses.length < BATCH_SIZE) {
@@ -95,11 +129,29 @@ async function migrateAnalyses() {
 
 async function migrateMistakes() {
   logger.info("Starting migration for Mistake...");
+  const totalCount = await prisma.mistake.count({
+    where: {
+      OR: [
+        { originalTextEncrypted: null },
+        { correctedTextEncrypted: null },
+        { explanationEncrypted: null },
+      ],
+    },
+  });
+  logger.info(`Found ${totalCount} Mistakes to migrate.`);
+
+  if (totalCount === 0) {
+    logger.info("No Mistakes to migrate.");
+    return;
+  }
+
+  let processedCount = 0;
+  let batchNumber = 1;
   let hasMore = true;
   let cursor: string | undefined = undefined;
 
   while (hasMore) {
-    const mistakes = await prisma.mistake.findMany({
+    const mistakes: Mistake[] = await prisma.mistake.findMany({
       take: BATCH_SIZE,
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       where: {
@@ -119,7 +171,9 @@ async function migrateMistakes() {
       continue;
     }
 
-    logger.info(`Processing batch of ${mistakes.length} mistakes...`);
+    logger.info(
+      `Processing Mistake batch ${batchNumber} (${mistakes.length} records)...`,
+    );
     for (const mistake of mistakes) {
       await prisma.mistake.update({
         where: { id: mistake.id },
@@ -129,8 +183,10 @@ async function migrateMistakes() {
           explanationEncrypted: encrypt(mistake.explanation),
         },
       });
+      processedCount++;
     }
-
+    logger.info(`Processed ${processedCount} of ${totalCount} records.`);
+    batchNumber++;
     cursor = mistakes[mistakes.length - 1].id;
     if (mistakes.length < BATCH_SIZE) {
       hasMore = false;
