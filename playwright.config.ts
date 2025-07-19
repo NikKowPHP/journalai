@@ -1,8 +1,10 @@
 
 import { defineConfig, devices } from "@playwright/test";
 import path from "path";
+import dotenv from "dotenv";
 
-// Note: dotenv is no longer needed here as it's handled by the npm script.
+// Read from test specific .env file.
+dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
 // Use a distinct port for E2E tests to avoid conflicts with local development
 const PORT = process.env.PORT || 3001;
@@ -21,6 +23,12 @@ export default defineConfig({
     url: baseURL,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
+    env: {
+      DATABASE_URL: process.env.DATABASE_URL!,
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      APP_ENCRYPTION_KEY: process.env.APP_ENCRYPTION_KEY!,
+    },
   },
 
   use: {

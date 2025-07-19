@@ -12,7 +12,7 @@
     "test:coverage": "jest --coverage",
     "prisma:seed": "ts-node prisma/seed.cts",
     "db:encrypt": "ts-node -r dotenv/config scripts/encrypt-existing-data.cts",
-    "test:e2e": "dotenv -e .env.test -- playwright test"
+    "test:e2e": "playwright test"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.cts"
@@ -77,7 +77,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
-    "dotenv-cli": "^7.4.2",
+    "dotenv": "^16.4.5",
     "eslint": "^9.29.0",
     "eslint-config-next": "15.3.3",
     "eslint-config-prettier": "^10.1.5",
