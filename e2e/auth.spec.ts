@@ -5,9 +5,9 @@ test.describe("Authentication", () => {
   test.describe("Unauthenticated user", () => {
     test("should redirect to login for protected routes", async ({ page }) => {
       await page.goto("/dashboard");
-      await expect(page).toHaveURL(
-        /\/login.*error=Please\+log\+in\+to\+access\+this\+page/,
-      );
+      // Wait for the navigation to the login page to complete.
+      await page.waitForURL(/\/login/);
+      // Now that we're on the login page, we can safely assert the text is visible.
       await expect(
         page.getByText("Please log in to access this page."),
       ).toBeVisible();

@@ -14,8 +14,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 
 export default function SignUpForm() {
+  const router = useRouter();
   const { signUp, error, loading, clearError } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +56,9 @@ export default function SignUpForm() {
       return;
     }
 
-    if (data && !data.session && data?.user?.confirmation_sent_at) {
+    if (data?.session) {
+      router.push("/dashboard");
+    } else if (data && !data.session && data?.user?.confirmation_sent_at) {
       setVerificationSent(true);
       setEmail("");
       setPassword("");

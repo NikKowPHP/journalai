@@ -20,6 +20,6 @@ module.exports = {
   transformIgnorePatterns: ["/node_modules/(?!(@supabase|zustand)/)"],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
   testMatch: ["**/?(*.)+(spec|test).[tj]s?(x)"],
-  modulePathIgnorePatterns: [],
+  modulePathIgnorePatterns: ["<rootDir>/e2e/"],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
 };

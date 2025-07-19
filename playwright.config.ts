@@ -76,7 +76,6 @@ export default defineConfig({
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        storageState: ".auth/user.json",
       },
       dependencies: ["setup"],
       testIgnore: "e2e/onboarding.spec.ts", // Onboarding runs with a fresh user
@@ -86,7 +85,6 @@ export default defineConfig({
       name: "firefox",
       use: {
         ...devices["Desktop Firefox"],
-        storageState: ".auth/user.json",
       },
       dependencies: ["setup"],
       testIgnore: "e2e/onboarding.spec.ts",
@@ -96,7 +94,6 @@ export default defineConfig({
       name: "webkit",
       use: {
         ...devices["Desktop Safari"],
-        storageState: ".auth/user.json",
       },
       dependencies: ["setup"],
       testIgnore: "e2e/onboarding.spec.ts",

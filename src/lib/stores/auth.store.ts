@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
@@ -56,7 +57,12 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw new Error(data.error || "Failed to sign in");
       }
       const supabase = createClient();
-      await supabase.auth.refreshSession();
+      // Explicitly set the session to ensure client state updates reliably for tests.
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      } else {
+        await supabase.auth.refreshSession();
+      }
       if (posthog) posthog.capture("User Signed In");
       return { error: null };
     } catch (err: unknown) {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -123,22 +124,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith(route),
   );
 
+  // This simplified effect handles client-side navigation to protected routes
+  // after a user has logged out. The middleware can't catch this scenario.
   useEffect(() => {
-    if (loading) return; // Don't do anything until auth state is confirmed
-
-    if (user && isAuthPage) {
-      router.replace("/dashboard");
+    if (!loading && !user && isProtectedRoute) {
+      router.replace("/login?error=Your session has expired. Please log in again.");
     }
-    if (!user && isProtectedRoute) {
-      router.replace("/login");
-    }
-  }, [loading, user, isAuthPage, isProtectedRoute, router]);
+  }, [loading, user, isProtectedRoute, pathname, router]);
 
-  // NEW "GATEKEEPER" RENDER LOGIC
-  // Show the spinner if:
-  // 1. The initial auth state is still loading.
-  // 2. A redirect is about to happen (e.g., logged-in user on /login).
-  if (loading || (user && isAuthPage) || (!user && isProtectedRoute)) {
+  // Only show a global spinner for the very initial auth state load.
+  if (loading) {
     return <GlobalSpinner />;
   }
 
