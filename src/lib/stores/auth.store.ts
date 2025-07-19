@@ -30,12 +30,17 @@ export const useAuthStore = create<AuthState>((set) => ({
     const supabase = createClient();
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === "SIGNED_IN" && session?.user) {
-          // Sync user with our backend to ensure they have a profile
+        // Sync user with our backend on initial load or sign-in to ensure profile exists.
+        if (
+          (event === "INITIAL_SESSION" || event === "SIGNED_IN") &&
+          session?.user
+        ) {
           fetch("/api/auth/sync-user", { method: "POST" }).catch((e) =>
             console.error("Failed to sync user on auth state change:", e),
           );
         }
+
+        // Update the store with the new session and set loading to false.
         set({ user: session?.user ?? null, loading: false });
       },
     );
@@ -57,20 +62,19 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw new Error(data.error || "Failed to sign in");
       }
       const supabase = createClient();
-      // Explicitly set the session to ensure client state updates reliably for tests.
       if (data.session) {
         await supabase.auth.setSession(data.session);
+        // Manually update the store state to prevent race conditions in tests.
+        set({ user: data.user, loading: false, error: null });
       } else {
-        await supabase.auth.refreshSession();
+        await supabase.auth.refreshSession(); // Fallback to trigger listener
       }
       if (posthog) posthog.capture("User Signed In");
       return { error: null };
     } catch (err: unknown) {
       const error = err as Error;
-      set({ error: error.message });
+      set({ error: error.message, loading: false, user: null });
       return { error: error.message };
-    } finally {
-      set({ loading: false });
     }
   },
 
@@ -89,7 +93,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (data.session) {
         const supabase = createClient();
-        await supabase.auth.refreshSession();
+        await supabase.auth.setSession(data.session);
+        // Manually update the store state for immediate consistency.
+        set({ user: data.user, loading: false, error: null });
         if (posthog) posthog.capture("User Signed Up");
       } else if (data?.user?.confirmation_sent_at) {
         if (posthog)
