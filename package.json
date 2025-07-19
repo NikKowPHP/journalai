@@ -1,3 +1,4 @@
+
 {
   "name": "linguascribe",
   "version": "0.1.0",
@@ -10,7 +11,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "prisma:seed": "ts-node prisma/seed.cts",
-    "db:encrypt": "ts-node -r dotenv/config scripts/encrypt-existing-data.cts"
+    "db:encrypt": "ts-node -r dotenv/config scripts/encrypt-existing-data.cts",
+    "test:e2e": "dotenv -e .env.test -- playwright test"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.cts"
@@ -64,6 +66,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@eslint/js": "^9.29.0",
+    "@playwright/test": "^1.45.3",
     "@supabase/ssr": "^0.6.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/react": "^16.0.0",
@@ -74,6 +77,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
+    "dotenv-cli": "^7.4.2",
     "eslint": "^9.29.0",
     "eslint-config-next": "15.3.3",
     "eslint-config-prettier": "^10.1.5",
