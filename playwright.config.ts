@@ -6,6 +6,37 @@ import dotenv from "dotenv";
 // Read from test specific .env file.
 dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
+// Add a check to ensure Supabase credentials are not placeholders
+if (
+  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL.includes("your-test-project") ||
+  !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes("your-test-project")
+) {
+  console.error(
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+  );
+  console.error(
+    "!!! E2E TEST CONFIGURATION ERROR                                     !!!",
+  );
+  console.error(
+    "!!!------------------------------------------------------------------!!!",
+  );
+  console.error(
+    "!!! Your '.env.test' file contains placeholder values for Supabase.  !!!",
+  );
+  console.error(
+    "!!! Please replace them with credentials from a real, dedicated    !!!",
+  );
+  console.error(
+    "!!! test project. See the instructions in '.env.test' for details. !!!",
+  );
+  console.error(
+    "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",
+  );
+  process.exit(1); // Exit with an error code to stop the test run
+}
+
 // Use a distinct port for E2E tests to avoid conflicts with local development
 const PORT = process.env.PORT || 3001;
 const baseURL = `http://localhost:${PORT}`;

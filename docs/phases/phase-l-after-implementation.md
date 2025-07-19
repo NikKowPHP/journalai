@@ -1,35 +1,18 @@
-### .env.test
-```
-# This file is used for Playwright E2E tests.
-#
-# Before running tests, ensure the database container is running:
-# docker-compose up -d db
+It appears you're encountering E2E test failures related to database state and incorrect test assertions. I can resolve these issues.
 
-# Point to the local PostgreSQL database running in Docker
-DATABASE_URL="postgresql://postgres:postgres@localhost:5433/prepai?schema=public"
+Based on the logs, there are two problems:
 
-# --- IMPORTANT ---
-# You MUST provide credentials for a TEST Supabase project below.
-# E2E tests require a real Supabase project for authentication.
-# It is STRONGLY recommended to create a separate project for testing.
-# In your test project's auth settings, you MUST disable "Enable email confirmation".
-NEXT_PUBLIC_SUPABASE_URL="https://your-test-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-test-project-anon-key"
+1.  **Authentication Setup Failure**: The `auth.setup.ts` test is failing because of a `Unique constraint failed on the fields: (\`email\`)` error in the database. This happens when the `test@example.com` user is re-created in your Supabase test project, but a stale record with the same email already exists in your local test database. I will make the `ensureUserInDb` function more robust to handle this by detecting and removing stale records before creating new ones, ensuring your test setup is resilient.
 
-# Credentials for the pre-existing test user in your TEST Supabase project.
-# This user must be created manually once in your Supabase dashboard.
-TEST_USER_EMAIL="test@example.com"
-TEST_USER_PASSWORD="PasswordForTesting123!"
+2.  **Incorrect Onboarding Test**: The `onboarding.spec.ts` test fails because it incorrectly assumes that all dialogs close after the initial profile setup. In reality, the application progresses to the next onboarding step, which displays a new modal dialog ("Your First Entry"). The test also incorrectly tries to access a part of the application that is inaccessible due to this modal. I will correct the test to reflect the application's actual behavior by asserting that the next onboarding step appears and removing the impossible assertions.
 
-# Encryption key for tests
-APP_ENCRYPTION_KEY="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
-```
-### e2e/auth.spec.ts
+These changes will fix the E2E test suite.
+
+--------------------------------------------------------------------------------
+### e2e/onboarding.spec.ts
 ```typescript
 ```
-### package.json
-```json
-```
-### playwright.config.ts
+--------------------------------------------------------------------------------
+### src/lib/user.ts
 ```typescript
 ```
